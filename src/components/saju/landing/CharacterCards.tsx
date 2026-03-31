@@ -1,0 +1,211 @@
+"use client";
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { Link } from "@/i18n/routing";
+import { CHARACTER_LIST } from "@/lib/saju/characters";
+import { loginWithGoogle } from "@/services/auth/actions";
+
+interface CharacterCardsProps {
+  isLoggedIn?: boolean;
+}
+
+export default function CharacterCards({ isLoggedIn = false }: CharacterCardsProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const children = el.children;
+    if (!children.length) return;
+    const firstChild = children[0] as HTMLElement;
+    const cardWidth = firstChild.offsetWidth;
+    const gap = parseFloat(getComputedStyle(el).columnGap || "0");
+    const index = Math.round(scrollLeft / (cardWidth + gap));
+    if (index >= 0 && index < CHARACTER_LIST.length) {
+      setActiveIndex(index);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const scrollTo = useCallback((index: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const children = el.children;
+    if (!children[index]) return;
+    const child = children[index] as HTMLElement;
+    el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: "smooth" });
+  }, []);
+
+  // 5초마다 자동 스크롤 (무한루프)
+  const isHoveredRef = useRef(false);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (isHoveredRef.current) return;
+      setActiveIndex((prev) => {
+        const next = (prev + 1) % CHARACTER_LIST.length;
+        scrollTo(next);
+        return next;
+      });
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [scrollTo]);
+
+  return (
+    <div className="pt-5 md:pt-8 pb-3 md:pb-6">
+      <div
+        ref={scrollRef}
+        onMouseEnter={() => { isHoveredRef.current = true; }}
+        onMouseLeave={() => { isHoveredRef.current = false; }}
+        onTouchStart={() => { isHoveredRef.current = true; }}
+        onTouchEnd={() => { isHoveredRef.current = false; }}
+        className="grid grid-flow-col auto-cols-[72vw] md:auto-cols-[280px] gap-3 md:gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 scrollbar-hide"
+      >
+        {CHARACTER_LIST.map((char) => (
+          <div key={char.id} className="snap-center">
+            <CharacterCard char={char} isLoggedIn={isLoggedIn} />
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-center gap-1.5 py-3">
+        {CHARACTER_LIST.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === activeIndex ? "w-6 bg-purple-500" : "w-1.5 bg-gray-600"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_LIST)[number]; isLoggedIn?: boolean }) {
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  const cardContent = (
+    <div className="group rounded-2xl overflow-hidden cursor-pointer bg-[#13131a] border border-[#2a2a3a] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+      {/* 이미지 영역 — 고정 비율 */}
+      <div className="aspect-[2/3] relative flex-shrink-0">
+        <Image
+          src={char.cardImage}
+          alt={char.name}
+          fill
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+          sizes="(min-width: 768px) 25vw, 75vw"
+        />
+        <div className="absolute top-3 left-3 z-[1]">
+          <span
+            className="text-xs font-bold px-3 py-1.5 rounded-full text-white shadow-lg"
+            style={{ backgroundColor: char.color }}
+          >
+            {char.service}
+          </span>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div
+          className="absolute bottom-0 left-0 right-0 p-4"
+          style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
+        >
+          <h3 className="text-lg md:text-xl font-bold text-white">{char.name}</h3>
+          <p className="text-xs text-white/80 font-medium">{char.title}</p>
+        </div>
+      </div>
+
+      {/* 정보 영역 */}
+      <div className="p-4 flex flex-col flex-1">
+        <p className="text-sm text-gray-300 italic leading-snug line-clamp-2">
+          &ldquo;{char.quote}&rdquo;
+        </p>
+
+        <div className="flex gap-1.5 mt-2.5 overflow-hidden">
+          {char.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[11px] px-2 py-1 rounded-full border border-[#2a2a3a] text-gray-400 bg-[#0e0e15] whitespace-nowrap"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between pt-3 border-t border-[#2a2a3a] mt-auto">
+          {!isLoggedIn && (
+            <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
+              <span className="text-yellow-400">&#9733;</span> 가입시 3별 무료 지급
+            </span>
+          )}
+          <span className={`text-xs font-bold bg-purple-600 text-white px-3 py-1.5 rounded-lg shadow-md group-hover:bg-purple-500 transition-colors ${isLoggedIn ? 'ml-auto' : ''}`}>
+            대화하기
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoggedIn) {
+    return <Link href={`/chat/${char.id}`} className="block h-full">{cardContent}</Link>;
+  }
+
+  return (
+    <>
+      <div className="h-full" onClick={() => setShowLoginPrompt(true)}>{cardContent}</div>
+
+      {showLoginPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          onClick={() => setShowLoginPrompt(false)}
+        >
+          <div
+            className="bg-[#13131a] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <span className="text-2xl">&#9733;</span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1">가입하고 바로 시작하세요</h3>
+              <p className="text-sm text-gray-400 mb-5">
+                가입하면 <span className="text-yellow-400 font-semibold">★ 3개</span>를 무료로 드려요!
+                <br />
+                바로 대화를 시작할 수 있어요
+              </p>
+
+              <form action={async () => { await loginWithGoogle(`/chat/${char.id}`); }}>
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl transition-colors cursor-pointer"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                  Google로 시작하기
+                </button>
+              </form>
+
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="mt-3 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                나중에 할게요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
