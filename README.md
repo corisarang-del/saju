@@ -60,6 +60,18 @@
 
 ## 시작하기
 
+### AI 코딩 도구로 셋업하기 (추천)
+
+Claude Code, Cursor, Windsurf 등 AI 코딩 도구를 사용한다면 [`llm.md`](llm.md)를 컨텍스트로 전달하세요. 프로젝트 구조, 셋업 순서, 커스터마이징 방법이 모두 정리되어 있습니다.
+
+```
+# Claude Code에서
+cat llm.md  # 자동으로 컨텍스트에 포함됩니다
+
+# Cursor/Windsurf에서
+# llm.md 파일을 열고 "이 프로젝트 셋업해줘"라고 말하세요
+```
+
 ### 사전 요구사항
 
 - Node.js 18+
@@ -70,7 +82,7 @@
 ### 설치
 
 ```bash
-git clone https://github.com/your-username/drsaju-opensource.git
+git clone https://github.com/imgompanda/drsaju-opensource.git
 cd drsaju-opensource
 npm install
 cp .env.example .env.local
@@ -221,6 +233,16 @@ The Manseryeok (Ten Thousand Year Calendar) calculations are handled precisely b
 
 ## Getting Started
 
+### Setup with AI Coding Tools (Recommended)
+
+If you're using Claude Code, Cursor, Windsurf, or similar AI coding tools, pass [`llm.md`](llm.md) as context. It contains the full project structure, setup steps, and customization guide.
+
+```
+# In Claude Code — llm.md is automatically included in context
+
+# In Cursor/Windsurf — open llm.md and say "Set up this project"
+```
+
 ### Prerequisites
 
 - Node.js 18+
@@ -231,7 +253,7 @@ The Manseryeok (Ten Thousand Year Calendar) calculations are handled precisely b
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/drsaju-opensource.git
+git clone https://github.com/imgompanda/drsaju-opensource.git
 cd drsaju-opensource
 npm install
 cp .env.example .env.local
