@@ -1,10 +1,15 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseConfig } from "./config";
+
+type BrowserSupabaseClient = ReturnType<typeof createBrowserClient>;
 
 export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseConfig = getSupabaseConfig(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseConfig) {
     console.warn("Supabase credentials missing. Returning mock client.");
     return {
       auth: {
@@ -37,8 +42,8 @@ export function createClient() {
         }),
         delete: () => ({ eq: () => ({ data: null, error: null }) }),
       }),
-    } as any;
+    } as unknown as BrowserSupabaseClient;
   }
 
-  return createBrowserClient(supabaseUrl, supabaseKey);
+  return createBrowserClient(supabaseConfig.url, supabaseConfig.key);
 }

@@ -8,9 +8,9 @@ interface JsonLdProps {
 // 기본 Organization 데이터
 const defaultOrganization = {
   "@type": "Organization",
-  name: "Dr.Saju",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://drsaju.com",
-  logo: `${process.env.NEXT_PUBLIC_APP_URL || "https://drsaju.com"}/logo.png`,
+  name: "월간사주",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.com",
+  logo: `${process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.com"}/logo.png`,
   contactPoint: {
     "@type": "ContactPoint",
     email: "your-email@example.com",
@@ -21,13 +21,13 @@ const defaultOrganization = {
 // 기본 WebSite 데이터
 const defaultWebSite = {
   "@type": "WebSite",
-  name: "Dr.Saju",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://drsaju.com",
+  name: "월간사주",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.com",
   potentialAction: {
     "@type": "SearchAction",
     target: {
       "@type": "EntryPoint",
-      urlTemplate: `${process.env.NEXT_PUBLIC_APP_URL || "https://drsaju.com"}/search?q={search_term_string}`,
+      urlTemplate: `${process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.com"}/search?q={search_term_string}`,
     },
     "query-input": "required name=search_term_string",
   },
@@ -36,7 +36,7 @@ const defaultWebSite = {
 // SaaS 애플리케이션 데이터
 const defaultSoftwareApplication = {
   "@type": "SoftwareApplication",
-  name: "Dr.Saju",
+  name: "월간사주",
   applicationCategory: "EntertainmentApplication",
   operatingSystem: "Web",
   offers: {

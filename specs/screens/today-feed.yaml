@@ -1,0 +1,24 @@
+version: "2.0"
+screen:
+  name: 오늘피드
+  route: /[locale]/today
+  layout: mobile-tab
+data_requirements:
+  - resource: daily_agent_feeds
+    needs: [characterId, date, actionCards, timeline]
+  - resource: conversation_memories
+    needs: [recentSummary, messageCount, toneLevel]
+components:
+  - id: action_cards
+    type: card-list
+    position: main
+    function: 오늘 할 일, 피할 일, 관계 조언 표시
+  - id: day_timeline
+    type: timeline
+    position: main
+    function: 아침 점심 저녁 흐름 표시
+tests:
+  - name: 오늘피드 기본 로드
+    when: 사주 정보가 있는 사용자가 접속
+    then: [행동카드 3개 표시, 타임라인 3개 표시]
+

@@ -16,7 +16,7 @@ export default function ShareCard({ readingId, name }: ShareCardProps) {
       ? `${window.location.origin}/reading/${readingId}/result`
       : "";
 
-  const shareText = `${name}님의 사주분석 결과를 확인해보세요! - 닥터사주`;
+  const shareText = `${name}님의 사주분석 결과를 확인해보세요! - 월간사주`;
 
   const handleCopyLink = async () => {
     try {
@@ -33,7 +33,7 @@ export default function ShareCard({ readingId, name }: ShareCardProps) {
       window.Kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "닥터사주 - AI 사주분석",
+          title: "월간사주 - AI 사주분석",
           description: shareText,
           imageUrl: `${window.location.origin}/og-image.png`,
           link: {
@@ -60,7 +60,7 @@ export default function ShareCard({ readingId, name }: ShareCardProps) {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: "닥터사주 - AI 사주분석",
+          title: "월간사주 - AI 사주분석",
           text: shareText,
           url: shareUrl,
         });

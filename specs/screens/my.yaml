@@ -1,0 +1,24 @@
+version: "2.0"
+screen:
+  name: 마이
+  route: /[locale]/my
+  layout: mobile-tab
+data_requirements:
+  - resource: conversation_memories
+    needs: [messageCount, toneLevel]
+  - resource: payments
+    needs: [productType, status, entitlement]
+components:
+  - id: profile_summary
+    type: section
+    position: main
+    function: 사주 프로필 요약
+  - id: billing_options
+    type: list
+    position: main
+    function: 구독과 단품 결제 상태 표시
+tests:
+  - name: 결제 선택지 표시
+    when: 무료 할당량 소진
+    then: [구독 옵션 표시, 단품 옵션 표시]
+

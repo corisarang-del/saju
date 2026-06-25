@@ -27,8 +27,8 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
       <nav
         className={`sticky top-0 z-50 transition-all duration-200 ${
           scrolled
-            ? "bg-[#0a0a0f]/90 backdrop-blur-lg border-b border-[#2a2a3a] shadow-lg shadow-black/20"
-            : "bg-[#0a0a0f] border-b border-[#2a2a3a]"
+            ? "bg-white/88 backdrop-blur-lg border-b border-stone-200 shadow-lg shadow-stone-300/20"
+            : "bg-[#f7f3ea] border-b border-stone-200"
         }`}
       >
         <div className="px-4 h-12 flex items-center justify-between">
@@ -49,12 +49,12 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
             <Link href="/" className="flex items-center gap-2">
               <Image
                 src="/characters/hyunwoo-avatar-v3.jpg"
-                alt="닥터사주"
+                alt="월간사주"
                 width={28}
                 height={28}
-                className="rounded-full"
+                className="rounded-full ring-1 ring-teal-900/10"
               />
-              <span className="text-lg font-extrabold text-white">닥터사주</span>
+              <span className="text-lg font-extrabold text-slate-950">월간사주</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
               <form action={async () => { await loginWithGoogle('/'); }}>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-teal-900 hover:bg-teal-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -77,7 +77,7 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
                 {isAdmin && (
                   <Link
                     href="/admin/analytics/overview"
-                    className="flex items-center gap-1 text-[11px] font-medium text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 transition-colors px-2 py-1.5 rounded-lg"
+                    className="flex items-center gap-1 text-[11px] font-medium text-teal-800 bg-teal-50 hover:bg-teal-100 transition-colors px-2 py-1.5 rounded-lg"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
@@ -87,14 +87,14 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
                 )}
                 <button
                   onClick={() => setShowReferral(true)}
-                  className="flex items-center gap-1 text-[11px] font-semibold bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25 transition-colors px-2.5 py-1.5 rounded-lg"
+                  className="flex items-center gap-1 text-[11px] font-semibold bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors px-2.5 py-1.5 rounded-lg"
                 >
                   <span>&#9733;</span>
                   친구초대하고 1별 받기
                 </button>
                 <Link
                   href="/coin-shop"
-                  className="flex items-center gap-1 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+                  className="flex items-center gap-1 text-sm text-amber-700 hover:text-amber-800 transition-colors"
                 >
                   <span>&#9733;</span>
                   <span className="font-medium">충전</span>

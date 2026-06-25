@@ -3,6 +3,7 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseConfig } from "@/utils/supabase/config";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -24,11 +25,13 @@ export async function middleware(request: NextRequest) {
   // 4. Protect dashboard routes — redirect to login if not authenticated
   const pathname = request.nextUrl.pathname;
   if (PROTECTED_PATTERN.test(pathname)) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseConfig = getSupabaseConfig(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    );
 
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    if (supabaseConfig) {
+      const supabase = createServerClient(supabaseConfig.url, supabaseConfig.key, {
         cookies: {
           getAll() {
             return request.cookies.getAll();

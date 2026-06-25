@@ -1,0 +1,18 @@
+version: "2.0"
+screen:
+  name: 캐릭터
+  route: /[locale]
+  layout: mobile-tab
+data_requirements:
+  - resource: characters
+    needs: [id, name, title, service, avatar, cardImage, tone]
+components:
+  - id: character_carousel
+    type: carousel
+    position: main
+    function: 상담 캐릭터 선택
+tests:
+  - name: 하나 캐릭터 표시
+    when: 캐릭터 화면 접속
+    then: [하나 카드 표시, 궁합 서비스 표시]
+

@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { buildAuthCallbackUrl, getSiteUrl } from "@/lib/auth/oauth";
 
 /**
  * Initiates the Google OAuth flow.
@@ -10,11 +11,8 @@ import { headers } from "next/headers";
  */
 export async function loginWithGoogle(next?: string) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-
-  const redirectTo = next
-    ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
-    : `${origin}/auth/callback`;
+  const siteUrl = getSiteUrl((await headers()).get("origin"));
+  const redirectTo = buildAuthCallbackUrl({ siteUrl, next });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -39,11 +37,8 @@ export async function loginWithGoogle(next?: string) {
  */
 export async function loginWithKakao(next?: string) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-
-  const redirectTo = next
-    ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
-    : `${origin}/auth/callback`;
+  const siteUrl = getSiteUrl((await headers()).get("origin"));
+  const redirectTo = buildAuthCallbackUrl({ siteUrl, next });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "kakao",
@@ -67,13 +62,13 @@ export async function loginWithKakao(next?: string) {
  */
 export async function loginWithMagicLink(email: string) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+  const siteUrl = getSiteUrl((await headers()).get("origin"));
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       // Allows the user to be redirected to the dashboard after clicking the link
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: buildAuthCallbackUrl({ siteUrl }),
     },
   });
 

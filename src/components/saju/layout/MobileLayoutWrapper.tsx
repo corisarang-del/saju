@@ -4,6 +4,8 @@ import { useState } from 'react';
 import SajuNavbar from '@/components/saju/landing/SajuNavbar';
 import LoginSidebar from '@/components/saju/landing/LoginSidebar';
 import type { CharacterType } from '@/lib/saju/characters';
+import { Link, usePathname } from '@/i18n/routing';
+import { Bot, CalendarDays, FileText, MessageCircle, UserRound } from 'lucide-react';
 
 interface MobileLayoutWrapperProps {
   isLoggedIn: boolean;
@@ -49,9 +51,17 @@ export default function MobileLayoutWrapper({
   children,
 }: MobileLayoutWrapperProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const tabs = [
+    { href: '/', label: '캐릭터', icon: Bot },
+    { href: '/today', label: '오늘피드', icon: CalendarDays },
+    { href: currentReading ? `/chat/${currentReading.characterId}` : '/chat/charon_m', label: '채팅', icon: MessageCircle },
+    { href: '/reports', label: '리포트', icon: FileText },
+    { href: '/my-readings', label: '마이', icon: UserRound },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-[100dvh] bg-[#f7f3ea] text-slate-900">
       <SajuNavbar isLoggedIn={isLoggedIn} isAdmin={isAdmin} onMenuToggle={() => setSidebarOpen((v) => !v)} />
 
       <div className="flex">
@@ -85,8 +95,30 @@ export default function MobileLayoutWrapper({
           </div>
         )}
 
-        <div className="flex-1 min-w-0">{children}</div>
+        <div className="flex-1 min-w-0 pb-20 lg:pb-0">{children}</div>
       </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-stone-200/80 bg-white/92 backdrop-blur-xl lg:hidden">
+        <div className="grid grid-cols-5 px-2 py-2">
+          {tabs.map((tab) => {
+            const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
+            const Icon = tab.icon;
+
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                  active ? 'bg-teal-900 text-white' : 'text-slate-500 hover:bg-stone-100 hover:text-slate-900'
+                }`}
+              >
+                <Icon size={18} strokeWidth={1.8} />
+                <span className="max-w-full truncate">{tab.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

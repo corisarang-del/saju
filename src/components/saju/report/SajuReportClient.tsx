@@ -155,7 +155,7 @@ export default function SajuReportClient({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `닥터사주_${name.trim()}_종합분석리포트_${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.download = `월간사주_${name.trim()}_종합분석리포트_${new Date().toISOString().slice(0, 10)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

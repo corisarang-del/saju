@@ -3,10 +3,10 @@
 @plugin "@tailwindcss/typography";
 @plugin "daisyui" {
   themes:
-    drsaju --default;
+    monthlysaju --default;
 }
 
-@custom-variant dark (&:is([data-theme="drsajudark"] *));
+@custom-variant dark (&:is([data-theme="monthlysajudark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -50,7 +50,7 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  /* 닥터사주 Dark Design System Colors */
+  /* 월간사주 Dark Design System Colors */
   --color-toss-blue: #8b5cf6;
   --color-toss-blue-light: rgba(139, 92, 246, 0.1);
   --color-toss-blue-dark: #7c3aed;
@@ -63,8 +63,8 @@
   --color-toss-red: #ef4444;
 }
 
-/* ===== 닥터사주 Dark Theme ===== */
-[data-theme="drsaju"] {
+/* ===== 월간사주 Dark Theme ===== */
+[data-theme="monthlysaju"] {
   --color-base-100: #0a0a0f;
   --color-base-200: #13131a;
   --color-base-300: #1e1e2a;

@@ -1,0 +1,13 @@
+version: "2.0"
+resources:
+  characters:
+    fields: [id, name, title, service, avatar, cardImage, tone]
+  daily_agent_feeds:
+    fields: [id, userId, readingId, characterId, date, actionCards, timeline]
+  conversation_memories:
+    fields: [id, userId, readingId, characterId, recurringConcerns, recentSummary, messageCount, toneLevel]
+  monthly_reports:
+    fields: [id, userId, readingId, month, strategy, conversationSummary, premiumSections]
+  payments:
+    fields: [id, userId, productType, status, entitlement]
+

@@ -1,10 +1,11 @@
 {
-  "name": "drsaju-opensource",
+  "name": "monthly-saju",
   "version": "1.0.0",
-  "description": "Dr.Saju - AI-powered Korean Four Pillars (Saju) analysis service",
-  "author": "Dr.Saju Contributors",
+  "description": "월간사주 - 먼저 챙겨주는 사주친구이자 대화형 인생운 코치",
+  "author": "Monthly Saju Contributors",
   "license": "MIT",
   "private": true,
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

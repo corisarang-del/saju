@@ -319,7 +319,7 @@ export async function getBehaviorData(from: string, to: string) {
   // 캐릭터 이름 매핑
   const CHARACTER_NAMES: Record<string, string> = {
     charon_m: "현우 (종합분석)",
-    charon_f: "소연 (궁합분석)",
+    charon_f: "하나 (궁합분석)",
     minjun: "민준 (재물분석)",
     haeun: "하은 (운세분석)",
     doctor: "현우 (레거시)",

@@ -1,6 +1,6 @@
 # 기여 가이드 (Contributing Guide)
 
-닥터사주(Dr.Saju) 프로젝트에 관심을 가져주셔서 감사합니다! 이 문서는 프로젝트에 기여하는 방법을 안내합니다.
+월간사주(월간사주) 프로젝트에 관심을 가져주셔서 감사합니다! 이 문서는 프로젝트에 기여하는 방법을 안내합니다.
 
 ## 목차
 
@@ -43,8 +43,8 @@
 
 ```bash
 # 저장소를 Fork한 후 Clone
-git clone https://github.com/your-username/drsaju-opensource.git
-cd drsaju-opensource
+git clone https://github.com/your-username/monthlysaju-opensource.git
+cd monthlysaju-opensource
 ```
 
 ### 2. 브랜치 생성

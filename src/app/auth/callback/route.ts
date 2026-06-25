@@ -6,6 +6,7 @@ import { sendWelcomeEmail } from "@/services/email/actions";
 import { trackEvent } from "@/lib/analytics/track";
 import { processReferral } from "@/services/referral/actions";
 import { getReferralCodeFromHeaders } from "@/services/referral/cookie";
+import { buildLocalizedRedirectPath, sanitizeAuthNext } from "@/lib/auth/oauth";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -19,12 +20,8 @@ export async function GET(request: Request) {
     ?.split("=")[1];
   const locale = (localeCookie || routing.defaultLocale) as "en" | "ko";
 
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get("next") ?? "/dashboard";
-
-  // Only add locale prefix for non-default locales (en has no prefix)
-  const localePrefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-  const localizedNext = `${localePrefix}${next.startsWith("/") ? next : `/${next}`}`;
+  const next = sanitizeAuthNext(searchParams.get("next"));
+  const localizedNext = buildLocalizedRedirectPath(next, locale);
 
   // Magic Link는 code 파라미터를 사용
   if (code) {

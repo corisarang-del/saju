@@ -1,0 +1,22 @@
+version: "2.0"
+screen:
+  name: 리포트
+  route: /[locale]/reports
+  layout: mobile-tab
+data_requirements:
+  - resource: monthly_reports
+    needs: [month, strategy, conversationSummary, premiumSections]
+components:
+  - id: monthly_strategy
+    type: section
+    position: main
+    function: 월간 전략 리포트 표시
+  - id: premium_report_cta
+    type: button
+    position: main
+    function: 종합 사주 백서 구매 유도
+tests:
+  - name: 유료 백서 잠금
+    when: entitlement가 없음
+    then: [백서 CTA 표시, 기본 리포트 표시]
+

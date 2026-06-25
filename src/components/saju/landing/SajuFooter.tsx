@@ -38,7 +38,7 @@ export default function SajuFooter() {
             </a>
           </div>
           <p className="text-[11px] text-gray-700">
-            &copy; 2026 닥터사주
+            &copy; 2026 월간사주
           </p>
         </div>
       </div>

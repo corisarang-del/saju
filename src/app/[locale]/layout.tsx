@@ -21,23 +21,23 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://drsaju.com";
+  await params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://monthly-saju.com";
 
   return {
     title: {
-      template: "%s | 닥터사주",
-      default: "닥터사주 - 데이터 기반 AI 사주",
+      template: "%s | 월간사주",
+      default: "월간사주 - 먼저 챙겨주는 사주친구",
     },
     description:
-      "사주팔자 · 자미두수 · 서양점성술 데이터 기반 AI 사주 분석. 무료 3회 체험 후 별 충전으로 무제한 대화.",
+      "사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치.",
     metadataBase: new URL(baseUrl),
     alternates: {
       canonical: baseUrl,
     },
-    authors: [{ name: "닥터사주" }],
-    creator: "닥터사주",
-    publisher: "Your Company Name",
+    authors: [{ name: "월간사주" }],
+    creator: "월간사주",
+    publisher: "월간사주",
     icons: {
       icon: [
         { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -54,7 +54,7 @@ export async function generateMetadata({
       "사주팔자",
       "운세",
       "2026년 운세",
-      "닥터사주",
+      "월간사주",
       "사주 상담",
       "자미두수",
       "서양점성술",
@@ -64,10 +64,10 @@ export async function generateMetadata({
     ],
     openGraph: {
       type: "website",
-      siteName: "닥터사주",
-      title: "닥터사주 - 데이터 기반 AI 사주",
+      siteName: "월간사주",
+      title: "월간사주 - 먼저 챙겨주는 사주친구",
       description:
-        "사주팔자 · 자미두수 · 서양점성술 데이터 기반 AI 사주 분석. 무료 3회 체험 후 별 충전으로 무제한 대화.",
+        "사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치.",
       url: baseUrl,
       locale: "ko_KR",
       images: [
@@ -75,15 +75,15 @@ export async function generateMetadata({
           url: `${baseUrl}/og-image.png`,
           width: 1200,
           height: 630,
-          alt: "닥터사주 - 데이터 기반 AI 사주",
+          alt: "월간사주 - 먼저 챙겨주는 사주친구",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "닥터사주 - 데이터 기반 AI 사주",
+      title: "월간사주 - 먼저 챙겨주는 사주친구",
       description:
-        "사주팔자 · 자미두수 · 서양점성술 데이터 기반 AI 사주 분석. 무료 3회 체험 후 별 충전으로 무제한 대화.",
+        "사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치.",
       images: [`${baseUrl}/og-image.png`],
     },
     robots: {
@@ -125,10 +125,10 @@ export default async function LocaleLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "닥터사주",
-              url: "https://drsaju.com",
+              name: "월간사주",
+              url: "https://monthly-saju.com",
               description:
-                "사주팔자 · 자미두수 · 서양점성술 데이터 기반 AI 사주 분석 서비스. 무료 3회 체험.",
+                "사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치.",
               inLanguage: "ko",
             }),
           }}
@@ -140,8 +140,8 @@ export default async function LocaleLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Your Company Name",
-              url: "https://drsaju.com",
+              name: "월간사주",
+              url: "https://monthly-saju.com",
               contactPoint: {
                 "@type": "ContactPoint",
                 email: "your-email@example.com",
@@ -157,9 +157,9 @@ export default async function LocaleLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Product",
-              name: "닥터사주 별 충전",
+              name: "월간사주 상담권",
               description:
-                "데이터 기반 AI 사주 분석 서비스. 사주팔자 · 자미두수 · 서양점성술 통합 분석. 무료 3회 체험 후 별 충전으로 무제한 대화.",
+                "오늘피드, 캐릭터 상담, 월간 리포트를 위한 월간사주 상담권과 멤버십.",
               offers: {
                 "@type": "AggregateOffer",
                 lowPrice: "9900",
@@ -181,10 +181,10 @@ export default async function LocaleLayout({
               mainEntity: [
                 {
                   "@type": "Question",
-                  name: "닥터사주는 어떤 서비스인가요?",
+                  name: "월간사주는 어떤 서비스인가요?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "닥터사주는 사주팔자 · 자미두수 · 서양점성술을 데이터 기반으로 통합 분석하는 AI 사주 서비스입니다. 생년월일시를 입력하면 AI가 성격, 연애, 재물, 직업, 건강 등을 실시간 채팅으로 분석해줍니다.",
+                    text: "월간사주는 사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치입니다.",
                   },
                 },
                 {
@@ -214,10 +214,10 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="data-theme"
-            defaultTheme="drsaju"
-            forcedTheme="drsaju"
+            defaultTheme="monthlysaju"
+            forcedTheme="monthlysaju"
             disableTransitionOnChange
-            value={{ drsaju: "drsaju" }}
+            value={{ monthlysaju: "monthlysaju" }}
           >
             {children}
             <Toaster />

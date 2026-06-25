@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 // 레퍼럴 쿠키 이름
-const REFERRAL_COOKIE_NAME = "_drsaju_ref";
+const REFERRAL_COOKIE_NAME = "_monthlysaju_ref";
 // 쿠키 유효기간: 7일 (초 단위)
 const REFERRAL_COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 

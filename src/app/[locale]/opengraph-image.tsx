@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const runtime = "nodejs";
-export const alt = "닥터사주 — AI 사주 상담사와 대화하세요";
+export const alt = "월간사주 — AI 사주 상담사와 대화하세요";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -115,7 +115,7 @@ export default async function Image() {
                 lineHeight: 1.2,
               }}
             >
-              닥터사주
+              월간사주
             </span>
             <span
               style={{
@@ -142,7 +142,7 @@ export default async function Image() {
             }}
           >
             <span style={{ fontSize: "17px", fontWeight: 700, color: "#a78bfa" }}>
-              drsaju.com
+              monthlysaju.com
             </span>
             <span style={{ fontSize: "15px", color: "#52525b" }}>
               사주명리 · 궁합 · 운세

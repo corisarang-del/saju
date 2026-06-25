@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseConfig } from "./config";
 
 export async function updateSession(
   request: NextRequest,
@@ -8,20 +9,18 @@ export async function updateSession(
   // BOILERPLATE-SAFEGUARD:
   // If Supabase keys are not set or are default placeholders, we skip the session check.
   // This allows the landing page to work without crashing for users who haven't set up .env yet.
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseConfig = getSupabaseConfig(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
 
-  if (
-    !supabaseUrl ||
-    !supabaseKey ||
-    supabaseUrl === "https://your-project-id.supabase.co"
-  ) {
+  if (!supabaseConfig) {
     // Return response without refreshing session cookies
     return response;
   }
 
   try {
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    const supabase = createServerClient(supabaseConfig.url, supabaseConfig.key, {
       cookies: {
         getAll() {
           return request.cookies.getAll();

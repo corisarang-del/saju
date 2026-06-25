@@ -12,7 +12,7 @@ const testimonials = [
     name: "변*희",
     age: "40대 여성",
     color: "#f472b6",
-    text: "사주보러 자주 다녔는데 매번 다른 얘기 들었거든요.. 닥터사주에서 본 건 진짜 소름 ㄷㄷ",
+    text: "사주보러 자주 다녔는데 매번 다른 얘기 들었거든요.. 월간사주에서 본 건 진짜 소름 ㄷㄷ",
     time: "오후 5:17",
   },
   {
@@ -56,7 +56,7 @@ export default function SajuTestimonials() {
           실제 이용 후기
         </h2>
         <p className="text-xs text-gray-600 mb-6">
-          닥터사주를 이용해주신 분들의 생생한 후기
+          월간사주를 이용해주신 분들의 생생한 후기
         </p>
 
         {/* 찐반응 카카오톡 대화 */}

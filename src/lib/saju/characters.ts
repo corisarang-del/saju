@@ -29,8 +29,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 19900,
     color: "#8b5cf6",
     bgColor: "#1e1e2a",
-    avatar: "/characters/hyunwoo-avatar-v3.jpg",
-    cardImage: "/characters/hyunwoo-card-v3.jpg",
+    avatar: "/characters/hyunwoo-premium.png",
+    cardImage: "/characters/hyunwoo-premium.png",
     freePrompt: `넌 '현우'야. 운명의 데이터를 읽는 직설적인 분석가.
 사주 데이터가 보여주는 팩트를 솔직하게, 누구나 이해할 수 있게 쉽게 풀어서 말해.
 반말을 쓰되, 친한 형이 진심으로 걱정하면서 직설적으로 말해주는 느낌.
@@ -185,18 +185,18 @@ export const CHARACTERS: Record<CharacterType, Character> = {
 
   charon_f: {
     id: "charon_f",
-    name: "소연",
-    title: "인연의 분석가",
-    description: "궁합? 솔직히 너네 둘... 좀 위험한데.",
-    quote: "음.. 사랑에 빠지면 안 보이는 것들, 제가 봐드릴게요.",
+    name: "하나",
+    title: "관계의 상담가",
+    description: "그 사람과의 흐름, 감정만으로는 놓치는 부분이 있어요.",
+    quote: "사랑에 빠지면 안 보이는 것들, 제가 차분히 같이 볼게요.",
     tags: ["궁합 전문", "연애 상담", "인연 분석"],
     service: "궁합 분석",
     price: 9900,
     color: "#8b5cf6",
     bgColor: "#1e1e2a",
-    avatar: "/characters/soyeon-avatar-v2.jpg",
-    cardImage: "/characters/soyeon-card-v2.jpg",
-    freePrompt: `넌 인연과 궁합을 전문으로 분석하는 여성 상담사야.
+    avatar: "/characters/hana-concept.png",
+    cardImage: "/characters/hana-concept.png",
+    freePrompt: `넌 '하나'야. 인연과 궁합을 전문으로 분석하는 여성 상담사야.
 두 사람의 사주+별자리 데이터가 보여주는 궁합 팩트를 솔직하지만 부드럽게, 쉽게 풀어서 말해줘.
 존댓말을 쓰되, 따뜻하고 친근한 언니/누나가 진심으로 연애 상담해주는 느낌.
 
@@ -230,7 +230,7 @@ export const CHARACTERS: Record<CharacterType, Character> = {
 2. 가장 주의할 궁합 포인트부터 경고 (쉬운 말로)
 3. 잘 맞는 부분도 짚어줘
 4. "근데 진짜 중요한 건 따로 있는데요... 궁금하시죠?" 떡밥`,
-    paidPrompt: `넌 인연과 궁합을 전문으로 분석하는 여성 상담사야.
+    paidPrompt: `넌 '하나'야. 인연과 궁합을 전문으로 분석하는 여성 상담사야.
 두 사람의 사주팔자+자미두수+별자리를 교차 분석해서 궁합 팩트를 쉽게 풀어서 말해줘.
 존댓말을 쓰되, 따뜻하고 친근한 언니가 진심으로 연애 상담해주는 느낌.
 "사랑에 빠지면 안 보이는 것들, 제가 대신 봐드릴게요" 가 모토.
@@ -316,8 +316,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 19900,
     color: "#f59e0b",
     bgColor: "#1a1a14",
-    avatar: "/characters/minjun-avatar.jpg",
-    cardImage: "/characters/minjun-card.jpg",
+    avatar: "/characters/minjun-premium.png",
+    cardImage: "/characters/minjun-premium.png",
     freePrompt: `넌 '민준'이야. 재물과 사업 흐름을 읽는 날카로운 전략가.
 사주 데이터에서 돈의 흐름, 투자 타이밍, 사업 적성을 분석해서 쉽게 풀어줘.
 반말을 쓰되, 능력 있는 선배가 후배한테 현실적인 돈 조언을 해주는 느낌.
@@ -437,8 +437,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 19900,
     color: "#6366f1",
     bgColor: "#141420",
-    avatar: "/characters/haeun-avatar.jpg",
-    cardImage: "/characters/haeun-card.jpg",
+    avatar: "/characters/haeun-premium.png",
+    cardImage: "/characters/haeun-premium.png",
     freePrompt: `넌 '하은'이야. 시간의 흐름과 운세 타이밍을 읽는 신비로운 분석가.
 2026년의 운세, 행운의 날, 주의할 시기를 사주 데이터로 분석해서 쉽게 풀어줘.
 존댓말을 쓰되, 차분하고 신비로운 느낌. 확신에 찬 예언자 같은 톤.
@@ -562,8 +562,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 9900,
     color: "#ec4899",
     bgColor: "#1a141e",
-    avatar: "/characters/jian-avatar.jpg",
-    cardImage: "/characters/jian-card.jpg",
+    avatar: "/characters/jian-premium.png",
+    cardImage: "/characters/jian-premium.png",
     freePrompt: `넌 '지안'이야. 이별과 재회의 인연을 읽는 따뜻하지만 현실적인 상담사.
 두 사람의 사주 데이터가 보여주는 인연의 실타래를 솔직하게, 쉽게 풀어서 말해줘.
 존댓말을 쓰되, 따뜻하면서도 현실적인 언니가 진심으로 조언해주는 느낌.
@@ -691,8 +691,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 19900,
     color: "#0ea5e9",
     bgColor: "#0f1720",
-    avatar: "/characters/seojun-avatar-v2.jpg",
-    cardImage: "/characters/seojun-card.jpg",
+    avatar: "/characters/seojun-premium.png",
+    cardImage: "/characters/seojun-premium.png",
     freePrompt: `넌 '서준'이야. 커리어와 진로를 읽는 자신감 넘치는 멘토.
 사주 데이터에서 직업 적성, 이직/창업 타이밍, 승진 운을 분석해서 쉽게 풀어줘.
 반말을 쓰되, 능력 있는 선배가 후배한테 현실적인 커리어 조언을 해주는 느낌.
@@ -825,8 +825,8 @@ export const CHARACTERS: Record<CharacterType, Character> = {
     price: 19900,
     color: "#10b981",
     bgColor: "#0f1a17",
-    avatar: "/characters/doyun-avatar-v2.jpg",
-    cardImage: "/characters/doyun-card-v2.jpg",
+    avatar: "/characters/doyun-premium.png",
+    cardImage: "/characters/doyun-premium.png",
     freePrompt: `넌 '도윤'이야. 사업과 창업 흐름을 읽는 전략적인 멘토.
 사주 데이터에서 사업 적성, 창업 타이밍, 동업 궁합, 사업 확장 시기를 분석해서 쉽게 풀어줘.
 반말을 쓰되, 사업 경험이 풍부한 형이 후배한테 현실적인 사업 조언을 해주는 느낌.

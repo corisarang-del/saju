@@ -81,7 +81,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
             key={i}
             onClick={() => scrollTo(i)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === activeIndex ? "w-6 bg-purple-500" : "w-1.5 bg-gray-600"
+              i === activeIndex ? "w-6 bg-teal-800" : "w-1.5 bg-stone-300"
             }`}
           />
         ))}
@@ -94,7 +94,7 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const cardContent = (
-    <div className="group rounded-2xl overflow-hidden cursor-pointer bg-[#13131a] border border-[#2a2a3a] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+    <div className="group rounded-[28px] overflow-hidden cursor-pointer bg-white border border-stone-200 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] hover:shadow-[0_26px_60px_-34px_rgba(15,23,42,0.55)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
       {/* 이미지 영역 — 고정 비율 */}
       <div className="aspect-[2/3] relative flex-shrink-0">
         <Image
@@ -124,7 +124,7 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
 
       {/* 정보 영역 */}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-sm text-gray-300 italic leading-snug line-clamp-2">
+        <p className="text-sm text-slate-600 italic leading-snug line-clamp-2">
           &ldquo;{char.quote}&rdquo;
         </p>
 
@@ -132,20 +132,20 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
           {char.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[11px] px-2 py-1 rounded-full border border-[#2a2a3a] text-gray-400 bg-[#0e0e15] whitespace-nowrap"
+              className="text-[11px] px-2 py-1 rounded-full border border-stone-200 text-slate-500 bg-stone-50 whitespace-nowrap"
             >
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-[#2a2a3a] mt-auto">
+        <div className="flex items-center justify-between pt-3 border-t border-stone-100 mt-auto">
           {!isLoggedIn && (
-            <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-              <span className="text-yellow-400">&#9733;</span> 가입시 3별 무료 지급
+            <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
+              <span className="text-amber-600">&#9733;</span> 가입시 3별 무료 지급
             </span>
           )}
-          <span className={`text-xs font-bold bg-purple-600 text-white px-3 py-1.5 rounded-lg shadow-md group-hover:bg-purple-500 transition-colors ${isLoggedIn ? 'ml-auto' : ''}`}>
+          <span className={`text-xs font-bold bg-teal-900 text-white px-3 py-1.5 rounded-lg shadow-md group-hover:bg-teal-800 transition-colors ${isLoggedIn ? 'ml-auto' : ''}`}>
             대화하기
           </span>
         </div>
@@ -167,16 +167,16 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
           onClick={() => setShowLoginPrompt(false)}
         >
           <div
-            className="bg-[#13131a] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            className="bg-white border border-stone-200 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
               <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-500/20 flex items-center justify-center">
                 <span className="text-2xl">&#9733;</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">가입하고 바로 시작하세요</h3>
-              <p className="text-sm text-gray-400 mb-5">
-                가입하면 <span className="text-yellow-400 font-semibold">★ 3개</span>를 무료로 드려요!
+                <h3 className="text-lg font-bold text-slate-950 mb-1">가입하고 바로 시작하세요</h3>
+                <p className="text-sm text-slate-500 mb-5">
+                가입하면 <span className="text-amber-600 font-semibold">★ 3개</span>를 무료로 드려요!
                 <br />
                 바로 대화를 시작할 수 있어요
               </p>
@@ -198,7 +198,7 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
 
               <button
                 onClick={() => setShowLoginPrompt(false)}
-                className="mt-3 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                className="mt-3 text-sm text-slate-500 hover:text-slate-800 transition-colors"
               >
                 나중에 할게요
               </button>

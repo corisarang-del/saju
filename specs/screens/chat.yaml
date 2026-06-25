@@ -1,0 +1,24 @@
+version: "2.0"
+screen:
+  name: 채팅
+  route: /[locale]/chat/[characterId]
+  layout: mobile-chat
+data_requirements:
+  - resource: characters
+    needs: [id, name, title, avatar, tone]
+  - resource: conversation_memories
+    needs: [recentSummary, recurringConcerns, messageCount, toneLevel]
+components:
+  - id: message_list
+    type: list
+    position: main
+    function: 대화 기록 표시
+  - id: chat_input
+    type: input
+    position: bottom
+    function: 질문 입력
+tests:
+  - name: 무료 할당량 소진
+    when: 남은 별이 0개
+    then: [결제 유도 표시, 입력 비활성화]
+

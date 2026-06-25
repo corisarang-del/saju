@@ -19,7 +19,7 @@ export function AuthForm() {
   return (
     <Card className="w-full max-w-[380px]">
       <CardHeader>
-        <CardTitle>닥터사주 로그인</CardTitle>
+        <CardTitle>월간사주 로그인</CardTitle>
         <CardDescription>Google 계정으로 로그인하세요.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">

@@ -3,7 +3,7 @@ import SajuLayout from "@/components/saju/layout/SajuLayout";
 import SajuFooter from "@/components/saju/landing/SajuFooter";
 
 export const metadata: Metadata = {
-  title: "환불 정책 | 닥터사주",
+  title: "환불 정책 | 월간사주",
 };
 
 export default function RefundPolicyPage() {
@@ -18,7 +18,7 @@ export default function RefundPolicyPage() {
             <section>
               <h2 className="text-base font-semibold text-gray-100 mb-3">1. 개요</h2>
               <p>
-                본 환불 정책은 Your Company Name(이하 &ldquo;회사&rdquo;)가 운영하는 닥터사주(drsaju.com, 이하 &ldquo;서비스&rdquo;)에서
+                본 환불 정책은 Your Company Name(이하 &ldquo;회사&rdquo;)가 운영하는 월간사주(monthlysaju.com, 이하 &ldquo;서비스&rdquo;)에서
                 제공하는 유료 서비스의 환불 조건 및 절차를 규정합니다.
               </p>
             </section>

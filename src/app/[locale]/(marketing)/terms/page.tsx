@@ -2,8 +2,8 @@ import { Link } from "@/i18n/routing";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "이용약관 | 닥터사주",
-  description: "닥터사주 서비스 이용약관",
+  title: "이용약관 | 월간사주",
+  description: "월간사주 서비스 이용약관",
 };
 
 export default function TermsPage() {
@@ -47,7 +47,7 @@ export default function TermsPage() {
             </h2>
             <p className="text-gray-300">
               이 약관은 Your Company Name(이하 &quot;회사&quot;)가 운영하는
-              &quot;닥터사주&quot;(drsaju.com, 이하 &quot;서비스&quot;)의 이용과
+              &quot;월간사주&quot;(monthlysaju.com, 이하 &quot;서비스&quot;)의 이용과
               관련하여 회사와 이용자 간의 권리, 의무 및 책임사항, 기타 필요한
               사항을 규정함을 목적으로 합니다.
             </p>

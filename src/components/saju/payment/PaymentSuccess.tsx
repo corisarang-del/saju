@@ -62,12 +62,16 @@ export default function PaymentSuccess({ readingId }: PaymentSuccessProps) {
   }, [readingId, router, state]);
 
   useEffect(() => {
-    startAnalysis();
+    const analysisTimer = window.setTimeout(() => {
+      void startAnalysis();
+    }, 0);
+
+    return () => window.clearTimeout(analysisTimer);
   }, [startAnalysis]);
 
   const handleGoogleLogin = () => {
     // 로그인 후 현재 페이지로 돌아오도록 redirectTo 설정
-    window.location.href = `/api/auth/google?redirectTo=${encodeURIComponent(window.location.pathname)}`;
+    window.location.href = `/api/auth/google?next=${encodeURIComponent(window.location.pathname)}`;
   };
 
   return (

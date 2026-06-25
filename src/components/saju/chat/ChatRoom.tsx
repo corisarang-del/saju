@@ -330,7 +330,7 @@ export default function ChatRoom({
                 {characterId === 'charon_m' ? (
                   <>사주 확인했어. 궁금한 거 있으면 물어봐.</>
                 ) : characterId === 'charon_f' ? (
-                  <>사주 확인했어요. 궁금한 점 편하게 물어봐 주세요.</>
+                  <>사주 확인했어요. 오늘 관계 흐름이든 그 사람과의 궁합이든 편하게 물어봐 주세요.</>
                 ) : characterId === 'minjun' ? (
                   <>좋아, 사주 봤어. 뭐가 궁금해?</>
                 ) : characterId === 'haeun' ? (

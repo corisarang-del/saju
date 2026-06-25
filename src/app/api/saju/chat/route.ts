@@ -1,5 +1,4 @@
-import { streamText, generateText } from "ai";
-import type { ModelMessage } from "@ai-sdk/provider-utils";
+import { streamText, generateText, type ModelMessage } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/utils/supabase/server";
 import { getCharacter } from "@/lib/saju/characters";
@@ -128,7 +127,7 @@ export async function POST(req: Request) {
     // 계산 실패 시 기본 데이터만 사용
   }
 
-  // 궁합 데이터 조회 (소연/charon_f 또는 지안/jian일 때)
+  // 궁합 데이터 조회 (하나/charon_f 또는 지안/jian일 때)
   let compatContext = '';
   if (characterId === 'charon_f' || characterId === 'jian') {
     const { data: compat } = await supabase

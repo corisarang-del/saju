@@ -29,7 +29,7 @@ export interface CountryData {
   count: number;
 }
 
-// 닥터사주 분석 대시보드 타입
+// 월간사주 분석 대시보드 타입
 
 export interface FunnelStep {
   label: string;

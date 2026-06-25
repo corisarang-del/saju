@@ -32,7 +32,7 @@ export interface ChatMessage {
   created_at: string;
 }
 
-// ─── 닥터사주 도메인 타입 ───
+// ─── 월간사주 도메인 타입 ───
 
 /** 고민 카테고리 */
 export type ConcernType =

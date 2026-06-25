@@ -1,0 +1,8 @@
+version: "2.0"
+screens:
+  - character
+  - today-feed
+  - chat
+  - reports
+  - my
+

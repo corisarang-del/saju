@@ -64,7 +64,7 @@ export async function notifyNewLead(opts: {
           : []),
         { name: "Summary", value: opts.summary || "No summary" },
       ],
-      footer: { text: "Dr.Saju Chatbot Lead" },
+      footer: { text: "월간사주 Chatbot Lead" },
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -107,7 +107,7 @@ export async function notifySubscription(opts: {
         { name: "Plan", value: opts.planName, inline: true },
         ...(opts.amount ? [{ name: "Amount", value: opts.amount, inline: true }] : []),
       ],
-      footer: { text: "Dr.Saju Payments" },
+      footer: { text: "월간사주 Payments" },
       timestamp: new Date().toISOString(),
     },
   ]);
