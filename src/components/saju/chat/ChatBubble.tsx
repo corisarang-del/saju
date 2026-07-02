@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { UIMessage } from 'ai';
 import type { Character } from '@/lib/saju/characters';
+import { getUiMessageDisplayText } from '@/lib/ai/ui-message-display';
 import CharacterAvatar from './CharacterAvatar';
 
 interface ChatBubbleProps {
@@ -13,13 +14,6 @@ interface ChatBubbleProps {
   suggestions?: string[];
   suggestionsLoading?: boolean;
   onSuggestionClick?: (text: string) => void;
-}
-
-function getTextContent(message: UIMessage): string {
-  return message.parts
-    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-    .map((p) => p.text)
-    .join('');
 }
 
 /** AI가 혹시 ---suggestions--- 마커를 포함했으면 제거 */
@@ -48,7 +42,7 @@ function renderContent(text: string) {
 
 export default function ChatBubble({ message, character, isLast, suggestions = [], suggestionsLoading, onSuggestionClick }: ChatBubbleProps) {
   const isUser = message.role === 'user';
-  const rawText = getTextContent(message);
+  const rawText = getUiMessageDisplayText(message);
   const content = !isUser ? stripSuggestionMarkers(rawText) : rawText;
   const [copied, setCopied] = useState(false);
 

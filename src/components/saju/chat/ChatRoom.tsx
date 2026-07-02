@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { TextStreamChatTransport, type UIMessage } from 'ai';
+import { DefaultChatTransport, type UIMessage } from 'ai';
 import { motion } from 'framer-motion';
 import { getCharacter, type CharacterType } from '@/lib/saju/characters';
 import ChatBubble from './ChatBubble';
@@ -13,6 +13,16 @@ import BirthInfoCard, { type BirthInfoData } from './BirthInfoCard';
 import OhangChart from './OhangChart';
 import { createReading } from '@/services/saju/actions';
 import { updateReadingMeta } from '@/services/saju/chat-actions';
+import {
+  getInitialAnalysisPrompt,
+  shouldAutoStartInitialAnalysis,
+} from '@/lib/saju/initial-analysis';
+import { getUserFacingChatErrorMessage } from '@/lib/ai/chat-error-handling';
+import { getChatCompletionFailureMessage } from '@/lib/ai/chat-completion-guard';
+import {
+  getChatMessagePlainText,
+  getFinishedAssistantText,
+} from '@/lib/ai/chat-finished-message';
 import { Link } from '@/i18n/routing';
 
 /** 오행 분포 */
@@ -51,10 +61,23 @@ export default function ChatRoom({
   const [readingId] = useState(initialReadingId);
   const [showBirthForm, setShowBirthForm] = useState(needsBirthInfo);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const isExhausted = starBalance <= 0;
+  const isExhausted = !isAdmin && starBalance <= 0;
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [showOhang, setShowOhang] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const autoStartKey = readingId ? `monthly-saju:auto-start:${readingId}:${characterId}` : null;
+
+  const handleChatError = useCallback((error?: Error) => {
+    if (autoStartKey) {
+      window.sessionStorage.removeItem(autoStartKey);
+    }
+    setChatError(
+      error
+        ? getUserFacingChatErrorMessage(error)
+        : '분석을 시작하지 못했어. 지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.',
+    );
+  }, [autoStartKey]);
 
   const fetchSuggestions = async (assistantText: string) => {
     setSuggestions([]);
@@ -80,13 +103,32 @@ export default function ChatRoom({
 
   const { messages, sendMessage, status } = useChat({
     transport: readingId
-      ? new TextStreamChatTransport({
+      ? new DefaultChatTransport({
           api: '/api/saju/chat',
           body: { readingId, characterId },
         })
       : undefined,
     messages: initialMessages,
-    onFinish: () => {
+    onError: (error) => {
+      handleChatError(error);
+    },
+    onFinish: ({ message, messages: finishedMessages, isError, finishReason }) => {
+      const lastUserMessage = [...finishedMessages].reverse().find((msg) => msg.role === 'user');
+      const lastUserText = lastUserMessage ? getChatMessagePlainText(lastUserMessage).trim() : '';
+      const assistantText = getFinishedAssistantText({ message, messages: finishedMessages });
+      const failureMessage = getChatCompletionFailureMessage({
+        assistantText,
+        finishReason,
+        isError,
+        isInitialAnalysis: lastUserText === getInitialAnalysisPrompt(characterId),
+      });
+
+      if (failureMessage) {
+        handleChatError(new Error(failureMessage));
+        return;
+      }
+
+      setChatError(null);
       setStarBalance((prev) => Math.max(0, prev - 1));
     },
   });
@@ -106,7 +148,12 @@ export default function ChatRoom({
           .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
           .map((p) => p.text)
           .join('');
-        if (text) fetchSuggestions(text);
+        if (text) {
+          const timer = window.setTimeout(() => {
+            void fetchSuggestions(text);
+          }, 0);
+          return () => window.clearTimeout(timer);
+        }
       }
     }
   }, [status, messages]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -119,10 +166,54 @@ export default function ChatRoom({
     }
   }, [messages, isLoading, showBirthForm, isAnalyzing]);
 
+  useEffect(() => {
+    const alreadyStarted = autoStartKey
+      ? window.sessionStorage.getItem(autoStartKey) === '1'
+      : false;
+
+    if (!shouldAutoStartInitialAnalysis({
+      readingId,
+      messageCount: messages.length,
+      needsBirthInfo: showBirthForm,
+      isAnalyzing,
+      isLoading,
+      isExhausted,
+      alreadyStarted,
+    })) {
+      return;
+    }
+
+    if (autoStartKey) {
+      window.sessionStorage.setItem(autoStartKey, '1');
+    }
+    void sendMessage({ text: getInitialAnalysisPrompt(characterId) }).catch(handleChatError);
+  }, [
+    autoStartKey,
+    characterId,
+    handleChatError,
+    isAnalyzing,
+    isExhausted,
+    isLoading,
+    messages.length,
+    readingId,
+    sendMessage,
+    showBirthForm,
+  ]);
+
   const handleSubmit = (value: string) => {
     if (!readingId || isExhausted || isLoading) return;
     setSuggestions([]);
-    sendMessage({ text: value });
+    setChatError(null);
+    void sendMessage({ text: value }).catch(handleChatError);
+  };
+
+  const retryInitialAnalysis = () => {
+    if (!readingId || isExhausted || isLoading) return;
+    if (autoStartKey) {
+      window.sessionStorage.removeItem(autoStartKey);
+    }
+    setChatError(null);
+    void sendMessage({ text: getInitialAnalysisPrompt(characterId) }).catch(handleChatError);
   };
 
   const handleBirthInfoComplete = (newReadingId: string) => {
@@ -230,13 +321,13 @@ export default function ChatRoom({
                   ) : characterId === 'charon_f' ? (
                     <>안녕하세요! <strong>{character.name}</strong>이에요. 두 분의 궁합을 봐드릴게요. 먼저 아래 정보를 알려주세요.</>
                   ) : characterId === 'minjun' ? (
-                    <>어이, 동생 왔어? 나 <strong>{character.name}</strong>인데, 니 사주에서 돈 냄새 좀 맡아볼게. 아래 정보부터 줘봐.</>
+                    <>반가워. 나 <strong>{character.name}</strong>인데, 네 사주에서 돈 흐름을 차분히 봐줄게. 아래 정보부터 알려줘.</>
                   ) : characterId === 'jian' ? (
                     <>안녕하세요, <strong>{character.name}</strong>이에요. 그 사람과의 인연.. 제가 한번 봐드릴게요. 먼저 아래 정보를 알려주세요.</>
                   ) : characterId === 'seojun' ? (
-                    <>어이, 나 <strong>{character.name}</strong>인데. 니 커리어? 사주가 다 말해주거든. 아래 정보부터 줘봐.</>
+                    <>반가워. 나 <strong>{character.name}</strong>인데, 네 커리어 흐름을 현실적으로 봐줄게. 아래 정보부터 알려줘.</>
                   ) : characterId === 'doyun' ? (
-                    <>어이, 나 <strong>{character.name}</strong>인데. 사업? 창업? 니 사주에 답이 있어. 아래 정보부터 줘봐.</>
+                    <>반가워. 나 <strong>{character.name}</strong>인데, 사업과 창업 타이밍을 같이 봐줄게. 아래 정보부터 알려줘.</>
                   ) : (
                     <>보이네요.. <strong>{character.name}</strong>이에요. 2026년 운세를 펼쳐볼게요. 먼저 아래 정보를 알려주세요.</>
                   )}
@@ -345,6 +436,22 @@ export default function ChatRoom({
                   <>사주 확인했어요. 궁금하신 점을 물어봐 주세요.</>
                 )}
               </div>
+            </div>
+          )}
+
+          {chatError && !isLoading && (
+            <div className="ml-2 sm:ml-10 max-w-sm rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3">
+              <p className="text-sm font-medium text-red-200">{chatError}</p>
+              <p className="mt-1 text-xs leading-relaxed text-red-200/70">
+                네 사주 정보는 저장돼 있어. 다시 누르면 같은 정보로 분석을 재시도할게.
+              </p>
+              <button
+                type="button"
+                onClick={retryInitialAnalysis}
+                className="mt-3 rounded-xl bg-red-500/20 px-3 py-2 text-xs font-semibold text-red-100 transition-colors hover:bg-red-500/30 active:scale-[0.98]"
+              >
+                다시 분석하기
+              </button>
             </div>
           )}
 

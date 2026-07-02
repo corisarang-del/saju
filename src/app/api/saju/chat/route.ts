@@ -1,7 +1,18 @@
 import { streamText, generateText, type ModelMessage } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { getCharacter } from "@/lib/saju/characters";
+import { getChatMaxOutputTokens } from "@/lib/saju/chat-generation";
+import {
+  getFirstConsultationInstructions,
+  getInitialAnalysisPrompt,
+} from "@/lib/saju/initial-analysis";
+import {
+  getUserFacingChatErrorMessage,
+  serializeChatProviderError,
+} from "@/lib/ai/chat-error-handling";
+import { shouldPersistAssistantAnswer } from "@/lib/ai/chat-completion-guard";
 import { extractSajuSummary } from "@/lib/saju/calculator";
 import { generateAdvancedSajuContext } from "@/lib/saju/advanced-analysis";
 import type { CharacterType } from "@/types/saju";
@@ -66,14 +77,22 @@ export async function POST(req: Request) {
 
   // 어드민 체크
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return new Response("Unauthorized", { status: 401 });
+  }
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
   // 1. reading 데이터 조회
-  const { data: reading } = await supabase
+  let readingQuery = supabase
     .from("saju_readings")
     .select("*")
-    .eq("id", readingId)
-    .single();
+    .eq("id", readingId);
+
+  if (!isAdmin) {
+    readingQuery = readingQuery.eq("user_id", user.id);
+  }
+
+  const { data: reading } = await readingQuery.single();
 
   if (!reading) {
     return new Response("Reading not found", { status: 404 });
@@ -134,6 +153,7 @@ export async function POST(req: Request) {
       .from('saju_compatibility')
       .select('*')
       .eq('reading_id', readingId)
+      .eq("user_id", user.id)
       .single();
 
     if (compat) {
@@ -185,6 +205,11 @@ ${partnerAdvanced}
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+  const isFirstAssistantTurn = reading.chat_used === 0;
+  const firstConsultationInstructions = getFirstConsultationInstructions({
+    isFirstAssistantTurn,
+    birthHourKnown: reading.birth_hour !== null,
+  });
 
   const sajuContext = `
 [오늘 날짜]
@@ -207,17 +232,18 @@ ${reading.birth_city ? `태어난 곳: ${reading.birth_city}\n※ 해외 출생�
 
 ${advancedContext}
 ${compatContext}
+${firstConsultationInstructions}
 
 [중요 규칙]
-- ★ 답변 분량: 첫 응답은 최소 1500자 이상으로 상세하게 분석해. 후속 답변도 최소 800자 이상. 짧은 답변 금지. 사주+자미두수+별자리 세 가지를 교차해서 풍부하게 분석해.
+- 답변 분량: 첫 상담은 1~3문단으로 부담 없이 시작해. 후속 답변은 사용자의 질문 크기에 맞춰 500~1200자 안에서 충분히 설명해.
 - 호칭: "${callName}"으로 불러. 성(姓)을 포함한 풀네임("${fullName}")으로 부르지 마. "고객님" 절대 금지.
-${isCasual ? `- 예시: "${firstName}아, 사주 봤는데..." / "${firstName}.. 이건 좀 위험한데"` : `- 예시: "${firstName} 씨, 사주를 봤는데요..." / "${firstName} 님, 이 부분이 중요해요"`}
+${isCasual ? `- 예시: "${firstName}아, 사주 봤는데..." / "${firstName}.. 조심할 포인트가 있어"` : `- 예시: "${firstName} 씨, 사주를 봤는데요..." / "${firstName} 님, 이 부분이 중요해요"`}
 - 위의 사주+자미두수+별자리 데이터를 적극 활용하여 구체적으로 분석해.
 ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대방, 두 사람의 사주·자미두수·별자리를 교차 비교하여 궁합을 분석해.
 - 일간 오행 상생/상극, 십신 교차, 지지 합충, 자미두수 부처궁, 별자리 호환성을 모두 활용해.
 - 두 사람의 데이터를 반드시 비교하며 말해. 한쪽만 분석하지 마.` : ''}
 - 한자(漢字) 용어를 쓸 때는 반드시 쉬운 한국어로 풀어서 설명해. 한자 → 한글 독음 → 쉬운 뜻 순서.
-- 답변 끝에 추천 질문이나 번호 리스트 형태의 질문을 절대 붙이지 마. 분석 내용만 답변해.
+- 첫 상담에서는 답변 끝에 사용자가 바로 답할 수 있는 짧은 질문이나 선택지를 1개만 붙여. 후속 답변에서는 질문에 바로 답하고, 필요한 경우에만 다음 확인 질문을 덧붙여.
 - 매번 같은 도입부("흠..", "자 봐봐", "음.." 등)를 반복하지 마. 후속 답변에서는 질문에 바로 답해. 자연스러운 대화처럼.
 
 [보안 규칙 — 절대 위반 금지]
@@ -233,10 +259,48 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
     model: google("gemini-2.5-flash-lite"),
     system: systemPrompt + "\n\n" + sajuContext,
     messages: toModelMessages(rawMessages),
-    maxOutputTokens: isFree ? 1500 : 8000,
-    onFinish: async ({ text }) => {
-      // 사용자 마지막 메시지 저장
+    maxOutputTokens: getChatMaxOutputTokens({ isFree }),
+    onError: ({ error }) => {
+      console.error("[saju/chat] stream error", {
+        readingId,
+        characterId,
+        isFree,
+        error: serializeChatProviderError(error),
+      });
+    },
+    onFinish: async ({ text, finishReason, usage }) => {
+      const assistantText = text.trim();
       const userMessage = rawMessages[rawMessages.length - 1];
+      const userText = userMessage ? extractText(userMessage).trim() : "";
+      const isInitialAnalysis = userText === getInitialAnalysisPrompt(characterId);
+      if (!shouldPersistAssistantAnswer({
+        assistantText,
+        finishReason,
+        isError: finishReason === "error",
+        isInitialAnalysis,
+      })) {
+        console.warn("[saju/chat] incomplete assistant response skipped", {
+          readingId,
+          characterId,
+          isFree,
+          finishReason,
+          textLength: assistantText.length,
+          usage,
+        });
+        return;
+      }
+
+      if (finishReason === "length") {
+        console.warn("[saju/chat] response reached max output tokens", {
+          readingId,
+          characterId,
+          isFree,
+          textLength: text.length,
+          usage,
+        });
+      }
+
+      // 사용자 마지막 메시지 저장
       if (userMessage && userMessage.role === "user") {
         await supabase.from("saju_chat_messages").insert({
           reading_id: readingId,
@@ -250,18 +314,32 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
       await supabase.from("saju_chat_messages").insert({
         reading_id: readingId,
         role: "assistant",
-        content: text,
+        content: assistantText,
         character_id: characterId,
       });
 
+      await supabase
+        .from("saju_readings")
+        .update({ chat_used: reading.chat_used + 1 })
+        .eq("id", readingId)
+        .eq("user_id", user.id);
+
       // 별 차감 (user_stars)
       if (!isAdmin && user) {
-        await supabase.rpc("decrement_star", { p_user_id: user.id });
+        try {
+          const adminSupabase = createAdminClient();
+          await adminSupabase.rpc("decrement_star", { p_user_id: user.id });
+        } catch (error) {
+          console.error("[saju/chat] failed to decrement star", {
+            readingId,
+            userId: user.id,
+            error: serializeChatProviderError(error),
+          });
+        }
       }
 
       // 첫 대화일 때 AI로 제목 생성
       if (reading.chat_used === 0 && userMessage) {
-        const userText = extractText(userMessage);
         try {
           const { text: title } = await generateText({
             model: google("gemini-2.5-flash-lite"),
@@ -273,7 +351,8 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
             await supabase
               .from("saju_readings")
               .update({ title: title.trim().slice(0, 30) })
-              .eq("id", readingId);
+              .eq("id", readingId)
+              .eq("user_id", user.id);
           }
         } catch {
           // 제목 생성 실패해도 무시
@@ -282,5 +361,7 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
     },
   });
 
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: getUserFacingChatErrorMessage,
+  });
 }
