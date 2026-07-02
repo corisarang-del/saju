@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-function generateBoxShadowStars(n: number) {
+function seededRandom(seed: number) {
+  let value = seed;
+  return () => {
+    value = (value * 1664525 + 1013904223) % 4294967296;
+    return value / 4294967296;
+  };
+}
+
+function generateBoxShadowStars(n: number, seed: number) {
+  const random = seededRandom(seed);
   let value = "";
   for (let i = 0; i < n; i++) {
-    const x = Math.floor(Math.random() * 2000);
-    const y = Math.floor(Math.random() * 2000);
+    const x = Math.floor(random() * 2000);
+    const y = Math.floor(random() * 2000);
     value += `${x}px ${y}px var(--star-color)${i < n - 1 ? ", " : ""}`;
   }
   return value;
@@ -15,21 +24,14 @@ function generateBoxShadowStars(n: number) {
 
 export function ParallaxBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const [smallStars, setSmallStars] = useState("");
-  const [mediumStars, setMediumStars] = useState("");
-  const [largeStars, setLargeStars] = useState("");
+  const smallStars = useMemo(() => generateBoxShadowStars(700, 11), []);
+  const mediumStars = useMemo(() => generateBoxShadowStars(200, 23), []);
+  const largeStars = useMemo(() => generateBoxShadowStars(100, 37), []);
 
   const { scrollYProgress } = useScroll();
   const ySmall = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const yMedium = useTransform(scrollYProgress, [0, 1], [0, -400]);
   const yLarge = useTransform(scrollYProgress, [0, 1], [0, -600]);
-
-  useEffect(() => {
-    setSmallStars(generateBoxShadowStars(700));
-    setMediumStars(generateBoxShadowStars(200));
-    setLargeStars(generateBoxShadowStars(100));
-  }, []);
 
   return (
     <div

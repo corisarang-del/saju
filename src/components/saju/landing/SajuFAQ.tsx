@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { formatWon, STAR_PACKS, SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+
+const priceText = STAR_PACKS.map((pack) => `별 ${pack.stars}개 ${formatWon(pack.price)}`).join(", ");
 
 const faqs = [
   {
     q: "별(★)은 뭔가요?",
-    a: "별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 모든 상담사에서 공통으로 사용됩니다. 로그인하면 총 3개를 무료로 드리고, 더 필요하시면 코인샵에서 충전할 수 있어요.",
+    a: `별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 모든 상담사에서 공통으로 사용됩니다. 로그인하면 3회 무료 상담을 먼저 이용할 수 있고, 추가 충전 가격은 ${priceText}입니다.`,
   },
   {
     q: "무료로도 이용할 수 있나요?",
-    a: "네, 로그인하시면 별 3개를 무료로 드려요. 어떤 상담사든 자유롭게 사용하실 수 있습니다.",
+    a: "네, 로그인하면 3회 무료 상담을 먼저 이용할 수 있어요. 어떤 상담사든 자유롭게 사용하실 수 있습니다.",
   },
   {
     q: "사주 분석이 정확한가요?",
@@ -25,7 +28,7 @@ const faqs = [
   },
   {
     q: "환불이 가능한가요?",
-    a: "대화 크레딧 구매 후 사용 전이라면 전액 환불이 가능합니다. 이메일(your-email@example.com)로 문의해주세요.",
+    a: `대화 크레딧 구매 후 사용 전이라면 전액 환불이 가능합니다. 이메일(${SUPPORT_CONTACT.email})로 문의해주세요.`,
   },
   {
     q: "개인정보는 안전한가요?",
@@ -37,19 +40,19 @@ export default function SajuFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-10 px-4 bg-[#0e0e15]">
+    <section className="py-10 px-4 bg-[#f6f1e8]">
       <div className="max-w-lg mx-auto">
-        <h2 className="text-base font-bold text-gray-100 mb-5">자주 묻는 질문</h2>
+        <h2 className="text-base font-bold text-stone-950 mb-5">자주 묻는 질문</h2>
         <div className="space-y-1">
           {faqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={i} className="border-b border-[#2a2a3a] last:border-b-0">
+              <div key={i} className="border-b border-stone-300/70 last:border-b-0">
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                   className="w-full flex items-center justify-between py-4 text-left"
                 >
-                  <span className="text-sm font-semibold text-gray-200 pr-4">
+                  <span className="text-sm font-semibold text-stone-900 pr-4">
                     {faq.q}
                   </span>
                   <svg
@@ -57,7 +60,7 @@ export default function SajuFAQ() {
                     height="16"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#6b7280"
+                    stroke="#78716c"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -69,7 +72,7 @@ export default function SajuFAQ() {
                   </svg>
                 </button>
                 {isOpen && (
-                  <p className="text-sm text-gray-500 leading-relaxed pb-4 -mt-1">
+                  <p className="text-sm text-stone-600 leading-relaxed pb-4 -mt-1">
                     {faq.a}
                   </p>
                 )}

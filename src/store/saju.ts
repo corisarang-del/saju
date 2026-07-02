@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import type { SajuInputForm, Gender, ConcernType } from "@/types/saju";
+import type { SajuInputForm } from "@/types/saju";
 
 type AnalysisStatus =
   | "idle"

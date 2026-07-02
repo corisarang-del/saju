@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SajuLayout from "@/components/saju/layout/SajuLayout";
 import SajuFooter from "@/components/saju/landing/SajuFooter";
+import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
 
 export const metadata: Metadata = {
   title: "환불 정책 | 월간사주",
@@ -18,7 +19,7 @@ export default function RefundPolicyPage() {
             <section>
               <h2 className="text-base font-semibold text-gray-100 mb-3">1. 개요</h2>
               <p>
-                본 환불 정책은 Your Company Name(이하 &ldquo;회사&rdquo;)가 운영하는 월간사주(monthlysaju.com, 이하 &ldquo;서비스&rdquo;)에서
+                본 환불 정책은 월간사주(이하 &ldquo;회사&rdquo;)가 운영하는 월간사주(monthlysaju.com, 이하 &ldquo;서비스&rdquo;)에서
                 제공하는 유료 서비스의 환불 조건 및 절차를 규정합니다.
               </p>
             </section>
@@ -64,7 +65,7 @@ export default function RefundPolicyPage() {
             <section>
               <h2 className="text-base font-semibold text-gray-100 mb-3">5. 환불 절차</h2>
               <ol className="list-decimal list-inside space-y-1.5 text-gray-400">
-                <li>이메일(<a href="mailto:your-email@example.com" className="text-purple-400 hover:text-purple-300">your-email@example.com</a>)로 환불 요청</li>
+                <li>이메일(<a href={SUPPORT_CONTACT.mailto} className="text-purple-400 hover:text-purple-300">{SUPPORT_CONTACT.email}</a>)로 환불 요청</li>
                 <li>요청 시 기재 사항: 결제자 이메일, 결제일시, 결제금액, 환불 사유</li>
                 <li>회사는 요청 접수 후 3영업일 이내에 환불 가능 여부를 안내합니다</li>
                 <li>환불 승인 시, 원래 결제 수단으로 5~10영업일 이내에 환불 처리됩니다</li>
@@ -83,8 +84,8 @@ export default function RefundPolicyPage() {
               <h2 className="text-base font-semibold text-gray-100 mb-3">7. 문의</h2>
               <div className="text-gray-400 space-y-1">
                 <p>환불 관련 문의는 아래로 연락해 주세요.</p>
-                <p>이메일: <a href="mailto:your-email@example.com" className="text-purple-400 hover:text-purple-300">your-email@example.com</a></p>
-                <p>상호: Your Company Name | 대표: Your Name</p>
+                <p>이메일: <a href={SUPPORT_CONTACT.mailto} className="text-purple-400 hover:text-purple-300">{SUPPORT_CONTACT.email}</a></p>
+                <p>상호: 월간사주</p>
               </div>
             </section>
           </div>

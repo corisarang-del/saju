@@ -1,5 +1,5 @@
 import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
+import { getAnalysisModel } from '@/lib/ai/model';
 import type { FourPillarsDetail } from 'manseryeok';
 import type {
   FiveElementDistribution,
@@ -15,7 +15,7 @@ import {
   parseAIResponse,
 } from '../prompts';
 
-const model = google('gemini-2.5-flash-lite');
+const model = getAnalysisModel();
 
 /**
  * 무료 미리보기 텍스트를 생성합니다 (150자 이내).

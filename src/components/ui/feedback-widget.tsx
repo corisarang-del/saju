@@ -35,7 +35,7 @@ export function FeedbackWidget() {
       toast.success(t("success"));
       setMessage("");
       setOpen(false);
-    } catch (error) {
+    } catch {
       toast.error(t("error"));
     } finally {
       setLoading(false);

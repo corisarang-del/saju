@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BIRTH_DATE_PRIVACY_NOTICE } from "@/lib/content/trust-copy";
 
 const SIJI = [
   { value: "unknown", label: "모름" },
@@ -60,12 +61,21 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
     return getDaysInMonth(Number(year), Number(month));
   }, [year, month]);
 
-  // 월이 바뀌면 일 초과 시 리셋
-  useMemo(() => {
-    if (day && Number(day) > maxDay) {
+  const handleYearChange = (nextYear: string) => {
+    setYear(nextYear);
+    const nextMaxDay = getDaysInMonth(Number(nextYear), Number(month));
+    if (day && Number(day) > nextMaxDay) {
       setDay("");
     }
-  }, [maxDay, day]);
+  };
+
+  const handleMonthChange = (nextMonth: string) => {
+    setMonth(nextMonth);
+    const nextMaxDay = getDaysInMonth(Number(year), Number(nextMonth));
+    if (day && Number(day) > nextMaxDay) {
+      setDay("");
+    }
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -103,6 +113,15 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         </p>
       </div>
 
+      <div className="rounded-2xl border border-[#E5EDF8] bg-[#F7FAFF] px-4 py-3 text-left">
+        <p className="text-[13px] font-semibold text-[#191F28]">
+          {BIRTH_DATE_PRIVACY_NOTICE.title}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-[#6B7684]">
+          {BIRTH_DATE_PRIVACY_NOTICE.body}
+        </p>
+      </div>
+
       {/* 이름 */}
       <div>
         <Label
@@ -128,38 +147,75 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         <Label className="text-sm font-medium text-[#191F28] mb-1.5 block">
           생년월일
         </Label>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="1990"
-            min={1940}
-            max={2010}
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="flex-[2] border border-gray-200 rounded-xl px-3 py-3 text-center text-lg focus:border-[#3182F6] focus:ring-1 focus:ring-[#3182F6] outline-none"
-          />
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="1"
-            min={1}
-            max={12}
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-3 text-center text-lg focus:border-[#3182F6] focus:ring-1 focus:ring-[#3182F6] outline-none"
-          />
-          <input
-            type="number"
-            inputMode="numeric"
-            placeholder="1"
-            min={1}
-            max={maxDay}
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-3 text-center text-lg focus:border-[#3182F6] focus:ring-1 focus:ring-[#3182F6] outline-none"
-          />
+        <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="birth-year" className="text-xs text-[#6B7684]">
+              태어난 연도
+            </Label>
+            <div className="relative">
+              <input
+                id="birth-year"
+                aria-label="태어난 연도"
+                type="number"
+                inputMode="numeric"
+                placeholder="1990"
+                min={1940}
+                max={2010}
+                value={year}
+                onChange={(e) => handleYearChange(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-8 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+              />
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+                년
+              </span>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="birth-month" className="text-xs text-[#6B7684]">
+              월
+            </Label>
+            <div className="relative">
+              <input
+                id="birth-month"
+                aria-label="태어난 월"
+                type="number"
+                inputMode="numeric"
+                placeholder="03"
+                min={1}
+                max={12}
+                value={month}
+                onChange={(e) => handleMonthChange(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+              />
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+                월
+              </span>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="birth-day" className="text-xs text-[#6B7684]">
+              일
+            </Label>
+            <div className="relative">
+              <input
+                id="birth-day"
+                aria-label="태어난 일"
+                type="number"
+                inputMode="numeric"
+                placeholder="21"
+                min={1}
+                max={maxDay}
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+              />
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+                일
+              </span>
+            </div>
+          </div>
         </div>
+        <p className="mt-1.5 text-xs text-[#8B95A1]">예: 1998 / 03 / 21</p>
         {(errors.year || errors.month || errors.day) && (
           <p className="text-red-500 text-xs mt-1">생년월일을 입력해주세요</p>
         )}
@@ -182,6 +238,9 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             ))}
           </SelectContent>
         </Select>
+        <p className="mt-1.5 text-xs leading-relaxed text-[#6B7684]">
+          태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
+        </p>
       </div>
 
       {/* 성별 */}
@@ -189,13 +248,16 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         <Label className="text-sm font-medium text-[#191F28] mb-1.5 block">
           성별
         </Label>
+        <p className="mb-2 text-xs leading-relaxed text-[#6B7684]">
+          성별은 사주 계산 기준에 필요해서만 사용해.
+        </p>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setGender("male")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               gender === "male"
-                ? "border-[#3182F6] bg-[#3182F6]/5 text-[#3182F6]"
+                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -206,7 +268,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setGender("female")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               gender === "female"
-                ? "border-[#3182F6] bg-[#3182F6]/5 text-[#3182F6]"
+                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -229,7 +291,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setCalendar("solar")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               calendar === "solar"
-                ? "border-[#3182F6] bg-[#3182F6]/5 text-[#3182F6]"
+                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -240,7 +302,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setCalendar("lunar")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               calendar === "lunar"
-                ? "border-[#3182F6] bg-[#3182F6]/5 text-[#3182F6]"
+                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -252,7 +314,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
       {/* 다음 버튼 */}
       <button
         type="submit"
-        className="w-full bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-xl py-4 text-lg font-semibold transition-colors mt-2"
+        className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl py-4 text-lg font-semibold transition-colors mt-2"
       >
         다음
       </button>

@@ -14,6 +14,9 @@ export async function GET(
 
   // 현재 유저 확인
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").filter(Boolean);
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
@@ -24,7 +27,7 @@ export async function GET(
     .eq("id", id);
 
   if (!isAdmin) {
-    query = query.eq("status", "completed");
+    query = query.eq("status", "completed").eq("user_id", user.id);
   }
 
   const { data: reading, error } = await query.single();

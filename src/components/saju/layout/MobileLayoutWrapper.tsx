@@ -109,7 +109,7 @@ export default function MobileLayoutWrapper({
                 key={tab.href}
                 href={tab.href}
                 className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1.5 py-1.5 text-[11px] font-semibold transition-colors ${
-                  active ? 'bg-teal-900 text-white' : 'text-slate-500 hover:bg-stone-100 hover:text-slate-900'
+                  active ? 'bg-purple-700 text-white' : 'text-slate-500 hover:bg-stone-100 hover:text-slate-900'
                 }`}
               >
                 <Icon size={18} strokeWidth={1.8} />

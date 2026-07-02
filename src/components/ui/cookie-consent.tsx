@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Link } from "@/i18n/routing";
+import { useState } from "react";
 import { Cookie, XIcon } from "lucide-react";
 
 export function CookieConsent() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const consent = localStorage.getItem("cookie_consent");
-    if (consent === null) {
-      setShow(true);
-    }
-  }, []);
+  const [show, setShow] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      localStorage.getItem("cookie_consent") === null,
+  );
 
   const accept = () => {
     localStorage.setItem("cookie_consent", "true");
@@ -23,47 +21,56 @@ export function CookieConsent() {
     setShow(false);
   };
 
+  const dismiss = () => {
+    localStorage.setItem("cookie_consent", "dismissed");
+    setShow(false);
+  };
+
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 animate-in slide-in-from-bottom-5 duration-300">
-      <div className="rounded-2xl border border-[#2a2a3a] bg-[#13131a] p-5 shadow-2xl shadow-black/60">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
-            <Cookie className="h-4 w-4 text-purple-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] leading-relaxed text-gray-400">
-              더 나은 서비스를 위해 쿠키를 사용합니다.{" "}
-              <a
+    <div
+      role="region"
+      aria-label="쿠키 안내"
+      className="bg-[#fffaf0] px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-2 animate-in fade-in slide-in-from-top-2 duration-300"
+    >
+      <div className="mx-auto max-w-5xl rounded-2xl border border-stone-200/80 bg-white/90 p-3 shadow-[0_14px_35px_-30px_rgba(58,51,43,0.45)] backdrop-blur">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100">
+              <Cookie className="h-4 w-4 text-purple-700" />
+            </div>
+            <p className="min-w-0 text-[13px] leading-relaxed text-slate-600">
+              로그인과 서비스 이용에 필요한 쿠키만 사용해.{" "}
+              <Link
                 href="/privacy-policy"
-                className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
+                className="font-medium text-purple-700 underline underline-offset-2 transition-colors hover:text-purple-600"
               >
                 개인정보처리방침
-              </a>
+              </Link>
             </p>
           </div>
-          <button
-            onClick={() => setShow(false)}
-            className="shrink-0 rounded-lg p-1 text-gray-600 hover:text-gray-300 hover:bg-[#2a2a3a] transition-colors"
-            aria-label="닫기"
-          >
-            <XIcon className="h-3.5 w-3.5" />
-          </button>
-        </div>
-        <div className="mt-3.5 flex items-center justify-end gap-2">
-          <button
-            onClick={decline}
-            className="rounded-lg px-4 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-300 hover:bg-[#1e1e2a] transition-colors"
-          >
-            거부
-          </button>
-          <button
-            onClick={accept}
-            className="rounded-lg px-5 py-1.5 text-xs font-medium bg-purple-500 hover:bg-purple-400 text-white transition-colors"
-          >
-            동의
-          </button>
+          <div className="flex shrink-0 items-center justify-end gap-1.5 pl-11 sm:pl-0">
+            <button
+              onClick={decline}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 active:scale-[0.98]"
+            >
+              거부
+            </button>
+            <button
+              onClick={accept}
+              className="rounded-lg bg-purple-700 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-purple-600 active:scale-[0.98]"
+            >
+              동의
+            </button>
+            <button
+              onClick={dismiss}
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-stone-100 hover:text-purple-700 active:scale-[0.98]"
+              aria-label="닫기"
+            >
+              <XIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

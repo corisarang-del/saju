@@ -61,12 +61,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
   const [step, setStep] = useState<1 | 2>(1);
   const [createdReadingId, setCreatedReadingId] = useState<string | null>(null);
 
-  // 내 정보 (성/이름 분리, DB에는 합쳐서 저장)
-  const initLastName = initialData?.name ? (initialData.name.length >= 2 ? initialData.name.slice(0, 1) : '') : '';
-  const initFirstName = initialData?.name ? (initialData.name.length >= 2 ? initialData.name.slice(1) : initialData.name) : '';
-  const [lastName, setLastName] = useState(initLastName);
-  const [firstName, setFirstName] = useState(initFirstName);
-  const name = `${lastName}${firstName}`.trim();
+  const [name, setName] = useState(initialData?.name ?? '');
   const [year, setYear] = useState(initialData?.birthYear?.toString() ?? '');
   const [month, setMonth] = useState(initialData?.birthMonth?.toString() ?? '');
   const [day, setDay] = useState(initialData?.birthDay?.toString() ?? '');
@@ -98,7 +93,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
   }, [partnerYear, partnerMonth]);
 
   const handleStep1Submit = async () => {
-    if (!firstName.trim()) { setError('이름을 입력해주세요'); return; }
+    if (!name.trim()) { setError('이름을 입력해주세요'); return; }
     if (!year || Number(year) < 1940 || Number(year) > 2025) { setError('올바른 년도를 입력해주세요'); return; }
     if (!month || Number(month) < 1 || Number(month) > 12) { setError('올바른 월을 입력해주세요'); return; }
     if (!day || Number(day) < 1 || Number(day) > maxDay) { setError('올바른 일을 입력해주세요'); return; }
@@ -220,7 +215,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
         <div className="bg-[#13131a] rounded-2xl border border-[#2a2a3a] p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-6 h-6 rounded-full bg-pink-500/20 flex items-center justify-center">
-              <span className="text-xs">💕</span>
+              <span className="text-[10px] font-bold text-pink-200">2</span>
             </div>
             <p className="text-sm font-semibold text-gray-200">상대방 정보</p>
             <span className="text-[11px] text-gray-500 ml-auto">2/2</span>
@@ -232,35 +227,41 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
 
           <div>
             <label className="text-xs font-semibold text-gray-300 mb-1 block">이름</label>
-            <input type="text" placeholder="상대방 이름" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} className={inputClass} />
+            <input type="text" aria-label="상대방 이름" placeholder="상대방 이름" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} className={inputClass} />
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-300 mb-1 block">생년월일</label>
             <div className="flex gap-1.5">
-              <input type="number" inputMode="numeric" placeholder="1990" min={1940} max={2025} value={partnerYear} onChange={(e) => setPartnerYear(e.target.value)}
+              <input type="number" aria-label="상대방 태어난 연도" inputMode="numeric" placeholder="1990" min={1940} max={2025} value={partnerYear} onChange={(e) => setPartnerYear(e.target.value)}
                 className="flex-[2] border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
-              <input type="number" inputMode="numeric" placeholder="월" min={1} max={12} value={partnerMonth} onChange={(e) => setPartnerMonth(e.target.value)}
+              <input type="number" aria-label="상대방 태어난 월" inputMode="numeric" placeholder="월" min={1} max={12} value={partnerMonth} onChange={(e) => setPartnerMonth(e.target.value)}
                 className="flex-1 border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
-              <input type="number" inputMode="numeric" placeholder="일" min={1} max={partnerMaxDay} value={partnerDay} onChange={(e) => setPartnerDay(e.target.value)}
+              <input type="number" aria-label="상대방 태어난 일" inputMode="numeric" placeholder="일" min={1} max={partnerMaxDay} value={partnerDay} onChange={(e) => setPartnerDay(e.target.value)}
                 className="flex-1 border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
             </div>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-300 mb-1 block">태어난 시간</label>
-            <select value={partnerTime} onChange={(e) => setPartnerTime(e.target.value)} className={`${inputClass} bg-[#0e0e15]`}>
+            <select aria-label="상대방 태어난 시간" value={partnerTime} onChange={(e) => setPartnerTime(e.target.value)} className={`${inputClass} bg-[#0e0e15]`}>
               {SIJI.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">
+              태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
+            </p>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-300 mb-1 block">성별</label>
+            <p className="mb-2 text-[11px] leading-relaxed text-gray-500">
+              성별은 사주 계산 기준에 필요해서만 사용해.
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {(['male', 'female'] as const).map((g) => (
-                <button key={g} type="button" onClick={() => setPartnerGender(g)}
+                <button key={g} type="button" aria-pressed={partnerGender === g} onClick={() => setPartnerGender(g)}
                   className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
                     partnerGender === g
                       ? 'border-purple-500 bg-purple-500/10 text-purple-300'
@@ -276,7 +277,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
             <label className="text-xs font-semibold text-gray-300 mb-1 block">달력</label>
             <div className="grid grid-cols-2 gap-2">
               {(['solar', 'lunar'] as const).map((c) => (
-                <button key={c} type="button" onClick={() => setPartnerCalendar(c)}
+                <button key={c} type="button" aria-pressed={partnerCalendar === c} onClick={() => setPartnerCalendar(c)}
                   className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
                     partnerCalendar === c
                       ? 'border-purple-500 bg-purple-500/10 text-purple-300'
@@ -315,7 +316,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
         {isCompatibility(characterId) && !editMode && (
           <div className="flex items-center gap-2 mb-1">
             <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-              <span className="text-xs">👤</span>
+              <span className="text-[10px] font-bold text-purple-200">1</span>
             </div>
             <p className="text-sm font-semibold text-gray-200">내 정보</p>
             <span className="text-[11px] text-gray-500 ml-auto">1/2</span>
@@ -328,40 +329,41 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
 
         <div>
           <label className="text-xs font-semibold text-gray-300 mb-1 block">이름</label>
-          <div className="flex gap-1.5">
-            <input type="text" placeholder="성 (Last)" value={lastName} onChange={(e) => setLastName(e.target.value)}
-              className={`flex-[2] border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600`} />
-            <input type="text" placeholder="이름 (First)" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-              className={`flex-[3] border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-3 py-2.5 text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600`} />
-          </div>
+          <input type="text" aria-label="이름" placeholder="이름을 입력하세요" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
         </div>
 
         <div>
           <label className="text-xs font-semibold text-gray-300 mb-1 block">생년월일</label>
           <div className="flex gap-1.5">
-            <input type="number" inputMode="numeric" placeholder="1990" min={1940} max={2025} value={year} onChange={(e) => setYear(e.target.value)}
+            <input type="number" aria-label="태어난 연도" inputMode="numeric" placeholder="1990" min={1940} max={2025} value={year} onChange={(e) => setYear(e.target.value)}
               className="flex-[2] border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
-            <input type="number" inputMode="numeric" placeholder="월" min={1} max={12} value={month} onChange={(e) => setMonth(e.target.value)}
+            <input type="number" aria-label="태어난 월" inputMode="numeric" placeholder="월" min={1} max={12} value={month} onChange={(e) => setMonth(e.target.value)}
               className="flex-1 border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
-            <input type="number" inputMode="numeric" placeholder="일" min={1} max={maxDay} value={day} onChange={(e) => setDay(e.target.value)}
+            <input type="number" aria-label="태어난 일" inputMode="numeric" placeholder="일" min={1} max={maxDay} value={day} onChange={(e) => setDay(e.target.value)}
               className="flex-1 border border-[#2a2a3a] bg-[#0e0e15] rounded-xl px-2 py-2.5 text-center text-sm text-gray-200 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 outline-none placeholder:text-gray-600" />
           </div>
         </div>
 
         <div>
           <label className="text-xs font-semibold text-gray-300 mb-1 block">태어난 시간</label>
-          <select value={time} onChange={(e) => setTime(e.target.value)} className={`${inputClass} bg-[#0e0e15]`}>
+          <select aria-label="태어난 시간" value={time} onChange={(e) => setTime(e.target.value)} className={`${inputClass} bg-[#0e0e15]`}>
             {SIJI.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">
+            태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
+          </p>
         </div>
 
         <div>
           <label className="text-xs font-semibold text-gray-300 mb-1 block">성별</label>
+          <p className="mb-2 text-[11px] leading-relaxed text-gray-500">
+            성별은 사주 계산 기준에 필요해서만 사용해.
+          </p>
           <div className="grid grid-cols-2 gap-2">
             {(['male', 'female'] as const).map((g) => (
-              <button key={g} type="button" onClick={() => setGender(g)}
+              <button key={g} type="button" aria-pressed={gender === g} onClick={() => setGender(g)}
                 className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
                   gender === g
                     ? 'border-purple-500 bg-purple-500/10 text-purple-300'
@@ -377,7 +379,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
           <label className="text-xs font-semibold text-gray-300 mb-1 block">달력</label>
           <div className="grid grid-cols-2 gap-2">
             {(['solar', 'lunar'] as const).map((c) => (
-              <button key={c} type="button" onClick={() => setCalendar(c)}
+              <button key={c} type="button" aria-pressed={calendar === c} onClick={() => setCalendar(c)}
                 className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
                   calendar === c
                     ? 'border-purple-500 bg-purple-500/10 text-purple-300'
@@ -391,7 +393,7 @@ export default function BirthInfoCard({ characterId, onComplete, editMode, readi
 
         <div>
           <label className="text-xs font-semibold text-gray-300 mb-1 block">태어난 곳</label>
-          <input type="text" placeholder="서울, 부산, Tokyo 등" value={birthCity} onChange={(e) => setBirthCity(e.target.value)} className={inputClass} />
+          <input type="text" aria-label="태어난 곳" placeholder="서울, 부산, Tokyo 등" value={birthCity} onChange={(e) => setBirthCity(e.target.value)} className={inputClass} />
         </div>
 
         <div className="flex gap-2">

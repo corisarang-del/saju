@@ -107,16 +107,6 @@ const BRANCHES_HANJA = EARTHLY_BRANCHES_HANJA; // ['子','丑','寅','卯','辰'
 /** 지지(地支) 한글 */
 const BRANCHES_HANGUL = EARTHLY_BRANCHES;      // ['자','축','인','묘','진','사','오','미','신','유','술','해']
 
-/** 오행 매핑: 한글 → 영문 */
-const ELEMENT_MAP: Record<string, Element> = {
-  '목': 'wood', '화': 'fire', '토': 'earth', '금': 'metal', '수': 'water',
-};
-
-/** 음양 매핑: 한글 → 영문 */
-const YINYANG_MAP: Record<string, YinYang> = {
-  '양': 'yang', '음': 'yin',
-};
-
 /** 천간 오행 (甲乙=목, 丙丁=화, 戊己=토, 庚辛=금, 壬癸=수) */
 const STEM_ELEMENT: Element[] = [
   'wood', 'wood', 'fire', 'fire', 'earth',
@@ -315,25 +305,6 @@ const DIRECTIONAL_GROUPS: [number[], string][] = [
   [[11, 0, 1], '亥子丑 방합(북방수국)'],
 ];
 
-// ── 절기 데이터 ──
-// 각 월의 절입 시기 (월의 시작 절기)
-// 1월: 입춘(2/4경), 2월: 경칩(3/6경), 3월: 청명(4/5경), ...
-// 월주 계산용 절기 기준일 (양력 기준 대략적인 날짜)
-const JEOLGI_DATES: [number, number][] = [
-  [2, 4],   // 1월 (인월): 입춘 ~2/4
-  [3, 6],   // 2월 (묘월): 경칩 ~3/6
-  [4, 5],   // 3월 (진월): 청명 ~4/5
-  [5, 6],   // 4월 (사월): 입하 ~5/6
-  [6, 6],   // 5월 (오월): 망종 ~6/6
-  [7, 7],   // 6월 (미월): 소서 ~7/7
-  [8, 7],   // 7월 (신월): 입추 ~8/7
-  [9, 8],   // 8월 (유월): 백로 ~9/8
-  [10, 8],  // 9월 (술월): 한로 ~10/8
-  [11, 7],  // 10월 (해월): 입동 ~11/7
-  [12, 7],  // 11월 (자월): 대설 ~12/7
-  [1, 6],   // 12월 (축월): 소한 ~1/6
-];
-
 // ── 60갑자 ──
 function getGanzi60(): string[] {
   const result: string[] = [];
@@ -362,19 +333,6 @@ export function toHangul(hanja: string): string {
   return result;
 }
 
-/** 한글 → 한자 변환 */
-function toHanja(hangul: string): string {
-  let result = '';
-  for (const ch of hangul) {
-    const stemIdx = (STEMS_HANGUL as readonly string[]).indexOf(ch);
-    if (stemIdx >= 0) { result += STEMS_HANJA[stemIdx]; continue; }
-    const branchIdx = (BRANCHES_HANGUL as readonly string[]).indexOf(ch);
-    if (branchIdx >= 0) { result += BRANCHES_HANJA[branchIdx]; continue; }
-    result += ch;
-  }
-  return result;
-}
-
 /** 천간 한자의 인덱스 반환 */
 function stemIndex(ch: string): number {
   let idx = (STEMS_HANJA as readonly string[]).indexOf(ch);
@@ -389,16 +347,6 @@ function branchIndex(ch: string): number {
   if (idx >= 0) return idx;
   idx = (BRANCHES_HANGUL as readonly string[]).indexOf(ch);
   return idx;
-}
-
-/** manseryeok의 오행 문자열을 Element로 변환 */
-function toElement(korElement: string): Element {
-  return ELEMENT_MAP[korElement] ?? 'earth';
-}
-
-/** manseryeok의 음양 문자열을 YinYang으로 변환 */
-function toYinYang(korYinYang: string): YinYang {
-  return YINYANG_MAP[korYinYang] ?? 'yang';
 }
 
 // ──────────────────────────────────────────────
@@ -685,7 +633,6 @@ function calculateDaewoonStartAge(year: number, month: number, day: number, isFo
 
   if (isForward) {
     // 순행: 다음 절기까지의 일수
-    let found = false;
     for (const [jm, jd] of JEOLGI_SORTED) {
       if (jm > month || (jm === month && jd > day)) {
         const jeolgiDate = new Date(year, jm - 1, jd);
@@ -826,7 +773,6 @@ function analyzeSpecialSals(pillarGanzis: string[]): SajuResult['specialSals'] {
   // 양간만 해당. 양인 = 건록 + 1
   const yangin: number[] = [];
   if (dayStemIdx % 2 === 0) { // 양간
-    const yanginBranch = (UNSEONG_START[dayStemIdx] + 3 + 1) % 12; // 건록(3) + 1
     // 정정: 12운성에서 건록은 index 3 → 양인은 제왕(index 4)의 지지
     const yanginBranchCorrect = getYanginBranch(dayStemIdx);
     branchIndicesArr.forEach((bi, i) => {

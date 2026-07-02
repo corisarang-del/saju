@@ -11,7 +11,7 @@ const STATUS_BADGE: Record<
 > = {
   pending: { label: "대기", bg: "bg-gray-100", text: "text-[#8B95A1]" },
   preview: { label: "미리보기", bg: "bg-gray-100", text: "text-[#8B95A1]" },
-  paid: { label: "결제완료", bg: "bg-[#E8F3FF]", text: "text-[#3182F6]" },
+  paid: { label: "결제완료", bg: "bg-[#f3e8ff]", text: "text-[#7c3aed]" },
   generating: {
     label: "분석중",
     bg: "bg-[#FFF8E1]",
@@ -89,7 +89,7 @@ export default async function MyReadingsPage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center justify-center h-12 px-8 bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-xl text-sm font-semibold transition-colors"
+              className="inline-flex items-center justify-center h-12 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-sm font-semibold transition-colors"
             >
               지금 시작하기
             </Link>

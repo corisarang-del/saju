@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
+import { REPORT_STAR_COST } from '@/lib/monthly-saju/star-deduction';
 
 export async function POST(req: NextRequest) {
-  const { userId, amount, readingId } = await req.json();
+  const { userId, readingId } = await req.json();
 
-  if (!userId || !amount) {
+  if (!userId || !readingId) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
@@ -16,37 +18,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // 잔액 조회
-  const { data: stars } = await supabase
-    .from('user_stars')
-    .select('balance')
-    .eq('user_id', userId)
+  const { data: reading } = await supabase
+    .from('saju_readings')
+    .select('id')
+    .eq('id', readingId)
+    .eq('user_id', user.id)
     .single();
 
-  if (!stars || stars.balance < amount) {
+  if (!reading) {
+    return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
+  }
+
+  const adminSupabase = createAdminClient();
+  const { data, error } = await adminSupabase
+    .rpc("deduct_stars_for_report", {
+      p_user_id: user.id,
+      p_reading_id: readingId,
+    });
+
+  if (error || !data) {
     return NextResponse.json({ error: 'Insufficient stars' }, { status: 400 });
   }
 
-  const newBalance = stars.balance - amount;
-
-  // 잔액 차감
-  const { error: updateError } = await supabase
-    .from('user_stars')
-    .update({ balance: newBalance })
-    .eq('user_id', userId);
-
-  if (updateError) {
+  const result = Array.isArray(data) ? data[0] : data;
+  if (!result || typeof result.balance_after !== 'number') {
     return NextResponse.json({ error: 'Failed to deduct stars' }, { status: 500 });
   }
 
-  // 거래 이력 기록
-  await supabase.from('star_transactions').insert({
-    user_id: userId,
-    amount: -amount,
-    balance_after: newBalance,
-    type: 'report',
-    reading_id: readingId || null,
+  return NextResponse.json({
+    balance: result.balance_after,
+    amount: -REPORT_STAR_COST,
   });
-
-  return NextResponse.json({ balance: newBalance });
 }

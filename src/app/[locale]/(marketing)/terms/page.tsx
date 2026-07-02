@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/routing";
 import type { Metadata } from "next";
+import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
 
 export const metadata: Metadata = {
   title: "이용약관 | 월간사주",
@@ -46,7 +47,7 @@ export default function TermsPage() {
               제1조 (목적)
             </h2>
             <p className="text-gray-300">
-              이 약관은 Your Company Name(이하 &quot;회사&quot;)가 운영하는
+              이 약관은 월간사주(이하 &quot;회사&quot;)가 운영하는
               &quot;월간사주&quot;(monthlysaju.com, 이하 &quot;서비스&quot;)의 이용과
               관련하여 회사와 이용자 간의 권리, 의무 및 책임사항, 기타 필요한
               사항을 규정함을 목적으로 합니다.
@@ -149,7 +150,7 @@ export default function TermsPage() {
                 <ul className="list-disc list-inside pl-5 mt-1 space-y-1">
                   <li>30개: 9,900원</li>
                   <li>70개: 19,900원</li>
-                  <li>120개: 29,900원</li>
+                  <li>250개: 39,900원</li>
                 </ul>
               </li>
               <li>
@@ -172,7 +173,7 @@ export default function TermsPage() {
                     가능합니다.
                   </li>
                   <li>
-                    환불 요청은 이메일(your-email@example.com)을 통해 접수할 수
+                    환불 요청은 이메일({SUPPORT_CONTACT.email})을 통해 접수할 수
                     있습니다.
                   </li>
                   <li>
@@ -369,29 +370,18 @@ export default function TermsPage() {
             </p>
             <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-5 space-y-1.5 text-gray-300">
               <p>
-                <span className="text-gray-500">상호명:</span> Your Company Name
+                <span className="text-gray-500">상호명:</span> 월간사주
               </p>
               <p>
-                <span className="text-gray-500">대표자:</span> Your Name
-              </p>
-              <p>
-                <span className="text-gray-500">사업자등록번호:</span>{" "}
-                000-00-00000
-              </p>
-              <p>
-                <span className="text-gray-500">통신판매업 신고번호:</span> 제
-                0000-지역-0000 호
-              </p>
-              <p>
-                <span className="text-gray-500">소재지:</span> Your Address
+                <span className="text-gray-500">결제 처리:</span> Paddle
               </p>
               <p>
                 <span className="text-gray-500">이메일:</span>{" "}
                 <a
-                  href="mailto:your-email@example.com"
+                  href={SUPPORT_CONTACT.mailto}
                   className="text-purple-400 hover:text-purple-300 underline underline-offset-2"
                 >
-                  your-email@example.com
+                  {SUPPORT_CONTACT.email}
                 </a>
               </p>
             </div>

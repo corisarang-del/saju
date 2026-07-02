@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/routing";
+import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
@@ -384,10 +385,10 @@ export default function PrivacyPolicyPage() {
             <p className="mt-3">
               위 권리 행사는 서비스에 대해 이메일(
               <a
-                href="mailto:your-email@example.com"
+                href={SUPPORT_CONTACT.mailto}
                 className="text-blue-400 underline hover:text-blue-300"
               >
-                your-email@example.com
+                {SUPPORT_CONTACT.email}
               </a>
               )을 통해 하실 수 있으며, 서비스는 이에 대해 지체 없이 조치하겠습니다.
             </p>
@@ -531,15 +532,15 @@ export default function PrivacyPolicyPage() {
                 <strong className="text-gray-100">개인정보 보호책임자</strong>
               </p>
               <ul className="space-y-1 text-sm">
-                <li>성명: Your Name</li>
+                <li>성명: 월간사주 운영팀</li>
                 <li>직위: 대표</li>
                 <li>
                   이메일:{" "}
                   <a
-                    href="mailto:your-email@example.com"
+                    href={SUPPORT_CONTACT.mailto}
                     className="text-blue-400 underline hover:text-blue-300"
                   >
-                    your-email@example.com
+                    {SUPPORT_CONTACT.email}
                   </a>
                 </li>
               </ul>
@@ -647,19 +648,15 @@ export default function PrivacyPolicyPage() {
 
           {/* 사업자 정보 */}
           <section className="mt-12 border-t border-gray-800 pt-8 text-sm text-gray-500">
-            <p className="mb-1">상호명: Your Company Name</p>
-            <p className="mb-1">대표자: Your Name</p>
-            <p className="mb-1">사업자등록번호: 000-00-00000</p>
-            <p className="mb-1">
-              소재지: Your Address
-            </p>
+            <p className="mb-1">상호명: 월간사주</p>
+            <p className="mb-1">개인정보 보호책임자: 월간사주 운영팀</p>
             <p>
               이메일:{" "}
               <a
-                href="mailto:your-email@example.com"
+                href={SUPPORT_CONTACT.mailto}
                 className="text-gray-400 underline hover:text-gray-300"
               >
-                your-email@example.com
+                {SUPPORT_CONTACT.email}
               </a>
             </p>
           </section>

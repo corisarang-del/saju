@@ -23,11 +23,17 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // reading 조회
     const { data: reading, error: readError } = await supabase
       .from('saju_readings')
       .select('*')
       .eq('id', readingId)
+      .eq("user_id", user.id)
       .single();
 
     if (readError || !reading) {
@@ -49,7 +55,8 @@ export async function POST(req: NextRequest) {
     const { error: statusError } = await supabase
       .from('saju_readings')
       .update({ status: 'generating', updated_at: new Date().toISOString() })
-      .eq('id', readingId);
+      .eq('id', readingId)
+      .eq("user_id", user.id);
 
     if (statusError) {
       return NextResponse.json(
@@ -105,14 +112,16 @@ export async function POST(req: NextRequest) {
         status: 'completed',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', readingId);
+      .eq('id', readingId)
+      .eq("user_id", user.id);
 
     if (updateError) {
       // 실패 시 status를 failed로
       await supabase
         .from('saju_readings')
         .update({ status: 'failed', updated_at: new Date().toISOString() })
-        .eq('id', readingId);
+        .eq('id', readingId)
+        .eq("user_id", user.id);
 
       return NextResponse.json(
         { error: 'Failed to save analysis' },
@@ -129,10 +138,14 @@ export async function POST(req: NextRequest) {
       const body = await req.clone().json();
       if (body.readingId) {
         const supabase = await createClient();
-        await supabase
-          .from('saju_readings')
-          .update({ status: 'failed', updated_at: new Date().toISOString() })
-          .eq('id', body.readingId);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('saju_readings')
+            .update({ status: 'failed', updated_at: new Date().toISOString() })
+            .eq('id', body.readingId)
+            .eq("user_id", user.id);
+        }
       }
     } catch {
       // ignore cleanup error

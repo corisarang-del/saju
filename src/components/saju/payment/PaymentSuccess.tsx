@@ -79,13 +79,13 @@ export default function PaymentSuccess({ readingId }: PaymentSuccessProps) {
       <div className="max-w-sm w-full text-center">
         {/* 결제 완료 */}
         <div className="mb-8">
-          <div className="w-16 h-16 bg-[#E8F3FF] rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-[#f3e8ff] rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               width="32"
               height="32"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#3182F6"
+              stroke="#7c3aed"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -101,7 +101,7 @@ export default function PaymentSuccess({ readingId }: PaymentSuccessProps) {
         {/* 분석 상태 */}
         {state === "analyzing" && (
           <div className="bg-[#F9FAFB] rounded-2xl p-6 mb-6">
-            <div className="h-8 w-8 border-3 border-[#3182F6] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="h-8 w-8 border-3 border-[#7c3aed] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-[#191F28] font-semibold mb-1">
               AI가 사주를 분석하고 있어요...
             </p>
@@ -135,7 +135,7 @@ export default function PaymentSuccess({ readingId }: PaymentSuccessProps) {
                 setState("idle");
                 startAnalysis();
               }}
-              className="bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-xl px-6 h-11 text-sm font-semibold"
+              className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl px-6 h-11 text-sm font-semibold"
             >
               다시 시도
             </Button>

@@ -9,7 +9,7 @@ export default async function Image({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  await params;
 
   // Noto Sans KR for Korean text
   const notoSansKrBold = await fetch(
@@ -28,7 +28,7 @@ export default async function Image({
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #3182F6 0%, #1E40AF 100%)",
+          background: "linear-gradient(135deg, #7c3aed 0%, #581c87 100%)",
           fontFamily: "Noto Sans KR",
           position: "relative",
         }}

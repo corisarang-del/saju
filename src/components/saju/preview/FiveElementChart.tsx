@@ -38,8 +38,8 @@ export default function FiveElementChart({ elements }: FiveElementChartProps) {
           />
           <Radar
             dataKey="value"
-            stroke="#3182F6"
-            fill="#3182F6"
+            stroke="#7c3aed"
+            fill="#7c3aed"
             fillOpacity={0.2}
             strokeWidth={2}
           />

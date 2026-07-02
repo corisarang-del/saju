@@ -47,7 +47,7 @@ export default function PaddleCheckout({
       <Button
         onClick={handleCheckout}
         disabled={loading}
-        className="w-full h-14 bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-2xl text-lg font-semibold transition-colors disabled:opacity-50"
+        className="w-full h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl text-lg font-semibold transition-colors disabled:opacity-50"
       >
         {loading ? (
           <span className="flex items-center gap-2">

@@ -43,4 +43,21 @@ describe("chat_finished_message", () => {
       }),
     ).toBe("레거시 답변");
   });
+
+  it("returns_error_text_when_stream_finishes_with_provider_error_part", () => {
+    expect(
+      getFinishedAssistantText({
+        message: {
+          role: "assistant",
+          parts: [
+            {
+              type: "error",
+              errorText: "지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.",
+            },
+          ],
+        },
+        messages: [],
+      }),
+    ).toBe("지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.");
+  });
 });

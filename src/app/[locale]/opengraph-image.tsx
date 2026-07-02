@@ -30,7 +30,6 @@ export default async function Image() {
         }}
       >
         {/* 캐릭터 배경 이미지 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={bgBase64}
           alt=""

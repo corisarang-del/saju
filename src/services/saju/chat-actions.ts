@@ -7,6 +7,29 @@ import type { ChatMessage, CharacterType } from "@/types/saju";
 const readingIdSchema = z.string().uuid();
 const characterSchema = z.enum(["charon_m", "charon_f", "doctor", "minjun", "haeun", "jian", "seojun", "doyun"]);
 
+async function requireOwnedReading(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  readingId: string,
+): Promise<{ userId: string | null; error: string | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { userId: null, error: "로그인이 필요합니다." };
+  }
+
+  const { data: reading } = await supabase
+    .from("saju_readings")
+    .select("id")
+    .eq("id", readingId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!reading) {
+    return { userId: null, error: "권한이 없습니다." };
+  }
+
+  return { userId: user.id, error: null };
+}
+
 /**
  * reading에 birth_city와 character_id를 업데이트합니다.
  */
@@ -33,11 +56,16 @@ export async function updateReadingMeta(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { error: ownership.error };
+  }
 
   const { error } = await supabase
     .from("saju_readings")
     .update(updateData)
-    .eq("id", readingId);
+    .eq("id", readingId)
+    .eq("user_id", ownership.userId);
 
   return { error: error?.message ?? null };
 }
@@ -54,6 +82,10 @@ export async function getChatMessages(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { data: [], error: ownership.error };
+  }
 
   const { data, error } = await supabase
     .from("saju_chat_messages")
@@ -82,6 +114,10 @@ export async function saveChatMessage(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { data: null, error: ownership.error };
+  }
 
   const { data, error } = await supabase
     .from("saju_chat_messages")
@@ -115,6 +151,10 @@ export async function getChatCredits(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { data: null, error: ownership.error };
+  }
 
   const { data, error } = await supabase
     .from("saju_readings")
@@ -145,6 +185,10 @@ export async function addChatCredits(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { error: ownership.error };
+  }
 
   // 현재 크레딧 조회
   const { data: reading, error: readError } = await supabase
@@ -163,7 +207,8 @@ export async function addChatCredits(
       chat_credits: reading.chat_credits + amount,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", readingId);
+    .eq("id", readingId)
+    .eq("user_id", ownership.userId);
 
   return { error: error?.message ?? null };
 }
@@ -180,6 +225,10 @@ export async function deleteReading(
   }
 
   const supabase = await createClient();
+  const ownership = await requireOwnedReading(supabase, readingId);
+  if (ownership.error) {
+    return { error: ownership.error };
+  }
 
   // 채팅 메시지 먼저 삭제
   await supabase
@@ -191,7 +240,8 @@ export async function deleteReading(
   const { error } = await supabase
     .from("saju_readings")
     .delete()
-    .eq("id", readingId);
+    .eq("id", readingId)
+    .eq("user_id", ownership.userId);
 
   return { error: error?.message ?? null };
 }

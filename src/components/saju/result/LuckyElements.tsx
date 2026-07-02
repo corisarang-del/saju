@@ -35,7 +35,7 @@ function getColorHex(colorName: string): string {
   for (const [key, hex] of Object.entries(COLOR_MAP)) {
     if (colorName.includes(key)) return hex;
   }
-  return "#3182F6";
+  return "#7c3aed";
 }
 
 export default function LuckyElements({ luckyElements }: LuckyElementsProps) {
@@ -72,7 +72,7 @@ export default function LuckyElements({ luckyElements }: LuckyElementsProps) {
           {item.chip ? (
             item.chip
           ) : (
-            <span className="text-2xl font-bold text-[#3182F6]">
+            <span className="text-2xl font-bold text-[#7c3aed]">
               {item.value}
             </span>
           )}

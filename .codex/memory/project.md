@@ -143,6 +143,24 @@
 - 관련 유틸은 `src/lib/ai/ui-message-display.ts`, `chat-completion-guard.ts`, `chat-finished-message.ts`에 분리했다.
 - 최근 검증 기준 `vitest`, `eslint`, `tsc --noEmit`, `next build`, `git diff --check`가 통과했다.
 
+## 2026-07-02 실사용 QA Gemini quota 현황
+- 로컬 바이너리 기준 `vitest`는 35개 파일 / 110개 테스트 통과, `eslint` 통과, env 검사 통과, `next build`는 권한 상승 환경에서 통과했다.
+- `pnpm test`는 pnpm 11 `allowBuilds` 설정 미확정으로 install 검사 단계에서 실패해 코드 실패와 분리했다.
+- `/ko`와 `/ko/reading` Playwright 스모크는 정상이고, 입력 1/2에서 2/2 고민 선택으로 전환되며 비로그인 분석 시작 시 `로그인이 필요합니다.`가 보인다.
+- 실제 Supabase 임시 유저로 `/api/saju/chat`을 호출했을 때 Gemini quota 초과 메시지가 사용자용 스트림 에러로 내려왔다.
+- 실패 상태에서 `saju_chat_messages` 저장 0건, 별 잔액 3 유지, `chat_used` 0 유지가 확인됐다.
+- 현재 환경에서는 실제 상담 답변 생성은 Gemini free tier quota 초과로 실패한다.
+- 관련 실패 보고서: `docs/qa/gemini-first-consultation-qa-2026-07-02-failed.md`.
+
+## 2026-07-03 Vertex ADC Gemini 전환
+- Google Agent Platform ADC 인증이 성공했고, 로컬 ADC 파일은 `/Users/apple/.config/gcloud/application_default_credentials.json`에 있다.
+- Google Cloud 프로젝트 아이디는 `project-3473cfe3-7869-4a96-855`, 프로젝트 번호는 `282867567918`이다.
+- 앱 실행 환경은 `AI_PROVIDER=vertex`, `AI_MODEL=gemini-2.5-flash-lite`, `GOOGLE_VERTEX_PROJECT=project-3473cfe3-7869-4a96-855`, `GOOGLE_VERTEX_LOCATION=us-central1` 조합을 기준으로 한다.
+- 기존 `@ai-sdk/google` API key 경로는 유지하되, Vertex/ADC 모드에서는 `@ai-sdk/google-vertex@3.0.146`을 사용한다.
+- 실제 Vertex ADC 호출에서 `gemini-2.5-flash-lite`가 `연결 성공`으로 응답했다.
+- 첫 상담 QA 스크립트도 Vertex provider를 사용할 수 있게 바뀌었고, 성공 리포트는 `docs/qa/gemini-first-consultation-qa-2026-07-02.md`에 남았다.
+- 최신 검증 기준 `pnpm test`, `pnpm lint`, `pnpm build`, `node scripts/check-env.js`, `tsc --noEmit`, `git diff --check`가 통과했다.
+
 ## 2026-07-01 20대 여성 유저 추가 재리뷰
 - 소스코드 수정 없이 `/ko`, `/ko/reading` 화면을 다시 확인했다.
 - 종합 평가는 `9.3/10`이다.

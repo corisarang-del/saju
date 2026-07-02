@@ -52,7 +52,7 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
                 alt="월간사주"
                 width={28}
                 height={28}
-                className="rounded-full ring-1 ring-teal-900/10"
+                className="rounded-full ring-1 ring-purple-900/10"
               />
               <span className="text-lg font-extrabold text-slate-950">월간사주</span>
             </Link>
@@ -62,7 +62,7 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
               <form action={async () => { await loginWithGoogle('/'); }}>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 bg-teal-900 hover:bg-teal-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -76,8 +76,8 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
               <>
                 {isAdmin && (
                   <Link
-                    href="/admin/analytics/overview"
-                    className="flex items-center gap-1 text-[11px] font-medium text-teal-800 bg-teal-50 hover:bg-teal-100 transition-colors px-2 py-1.5 rounded-lg"
+                    href="/admin"
+                    className="flex items-center gap-1 text-[11px] font-medium text-purple-800 bg-purple-50 hover:bg-purple-100 transition-colors px-2 py-1.5 rounded-lg"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />

@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { CONCERN_LABELS, type ConcernType } from "@/types/saju";
 
 const CONCERNS = [
-  { id: "love", label: "연애/결혼" },
-  { id: "career", label: "직업/진로" },
-  { id: "wealth", label: "재물/금전" },
-  { id: "health", label: "건강" },
-  { id: "relationship", label: "대인관계" },
+  { id: "love", label: CONCERN_LABELS.love },
+  { id: "career", label: CONCERN_LABELS.career },
+  { id: "wealth", label: CONCERN_LABELS.wealth },
+  { id: "health", label: CONCERN_LABELS.health },
+  { id: "relationship", label: CONCERN_LABELS.relationship },
 ] as const;
 
-type ConcernId = (typeof CONCERNS)[number]["id"];
+type ConcernId = Extract<ConcernType, (typeof CONCERNS)[number]["id"]>;
 
 interface ConcernSelectorProps {
   onSubmit: (concerns: ConcernId[]) => void;
@@ -62,7 +63,7 @@ export default function ConcernSelector({
               onClick={() => toggle(concern.id)}
               className={`px-5 py-3 rounded-full text-base font-medium transition-colors ${
                 isSelected
-                  ? "bg-[#3182F6] text-white"
+                  ? "bg-[#7c3aed] text-white"
                   : "bg-gray-100 text-[#191F28] hover:bg-gray-200"
               }`}
             >
@@ -80,7 +81,7 @@ export default function ConcernSelector({
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
+          className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
         >
           분석 시작하기
         </button>

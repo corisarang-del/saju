@@ -29,7 +29,6 @@ export default async function Image() {
           background: "#0a0a0f",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={bgBase64}
           alt=""

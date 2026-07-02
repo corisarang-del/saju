@@ -40,7 +40,7 @@ export default function PdfDownloadButton({
     <Button
       onClick={handleDownload}
       disabled={loading}
-      className="w-full h-14 bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-2xl text-base font-semibold"
+      className="w-full h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl text-base font-semibold"
     >
       {loading ? "PDF 생성 중..." : "PDF 리포트 다운로드"}
     </Button>

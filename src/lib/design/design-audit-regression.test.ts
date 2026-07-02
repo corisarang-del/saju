@@ -1,0 +1,171 @@
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const readProjectFile = (path: string) =>
+  readFileSync(join(process.cwd(), path), "utf8");
+
+describe("design_audit_regression", () => {
+  it("keeps_cookie_banner_from_covering_mobile_bottom_actions", () => {
+    const content = readProjectFile("src/components/ui/cookie-consent.tsx");
+
+    expect(content).toContain("role=\"region\"");
+    expect(content).toContain("mx-auto max-w-5xl");
+    expect(content).toContain('localStorage.setItem("cookie_consent", "dismissed")');
+    expect(content).toContain("로그인과 서비스 이용에 필요한 쿠키만 사용해");
+    expect(content).not.toContain("fixed");
+    expect(content).not.toContain("top-[calc(env(safe-area-inset-top)+0.75rem)]");
+    expect(content).not.toContain("fixed bottom-4 left-4 right-4");
+    expect(content).not.toContain("bottom-[calc(env(safe-area-inset-bottom)+5.75rem)]");
+  });
+
+  it("keeps_cookie_privacy_link_locale_aware", () => {
+    const content = readProjectFile("src/components/ui/cookie-consent.tsx");
+
+    expect(content).toContain('import { Link } from "@/i18n/routing";');
+    expect(content).toContain('href="/privacy-policy"');
+    expect(content).not.toContain('import Link from "next/link";');
+  });
+
+  it("prioritizes_only_the_first_landing_character_image_for_lcp", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("<CharacterCard char={char} index={index} isLoggedIn={isLoggedIn} />");
+    expect(content).toContain("index: number;");
+    expect(content).toContain("priority={index === 0}");
+    expect(content).toContain('loading={index === 0 ? "eager" : "lazy"}');
+    expect(content).toContain('fetchPriority={index === 0 ? "high" : "auto"}');
+    expect(content).not.toContain("priority={true}");
+  });
+
+  it("uses_brand_primary_tokens_instead_of_toss_blue_for_core_ctas", () => {
+    const files = [
+      "src/components/saju/input/BirthDateForm.tsx",
+      "src/components/saju/input/ConcernSelector.tsx",
+      "src/components/saju/preview/PaywallOverlay.tsx",
+      "src/components/saju/result/PdfDownloadButton.tsx",
+      "src/components/saju/upsell/CompatibilityUpsell.tsx",
+      "src/components/saju/payment/PaddleCheckout.tsx",
+      "src/components/saju/payment/PaymentSuccess.tsx",
+      "src/app/[locale]/reading/page.tsx",
+      "src/app/[locale]/my-readings/page.tsx",
+    ].filter((file) => existsSync(join(process.cwd(), file)));
+
+    for (const file of files) {
+      const content = readProjectFile(file);
+      expect(content, `${file} still uses Toss blue`).not.toMatch(
+        /#3182F6|#1B64DA|#E8F3FF|#F2F7FF|#1E40AF/,
+      );
+    }
+  });
+
+  it("names_character_carousel_controls_and_stops_auto_motion_after_user_intent", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("aria-label={`${i + 1}번째 상담사 보기`}");
+    expect(content).toContain("aria-current={i === activeIndex ? \"true\" : undefined}");
+    expect(content).toContain("prefers-reduced-motion: reduce");
+    expect(content).toContain("stopAutoScroll");
+    expect(content).not.toContain("onTouchEnd={() => { isHoveredRef.current = false; }}");
+  });
+
+  it("keeps_chat_birth_info_inputs_accessible_and_aligned_with_reading_form", () => {
+    const content = readProjectFile("src/components/saju/chat/BirthInfoCard.tsx");
+
+    expect(content).toContain('aria-label="이름"');
+    expect(content).toContain('aria-label="태어난 연도"');
+    expect(content).toContain('aria-label="태어난 월"');
+    expect(content).toContain('aria-label="태어난 일"');
+    expect(content).not.toContain("lastName");
+    expect(content).not.toContain("firstName");
+    expect(content).not.toMatch(/👤|💕/);
+  });
+
+  it("explains_gender_use_next_to_saju_gender_inputs", () => {
+    const files = [
+      "src/components/saju/input/BirthDateForm.tsx",
+      "src/components/saju/chat/BirthInfoCard.tsx",
+      "src/components/saju/landing/LoginSidebar.tsx",
+    ];
+
+    for (const file of files) {
+      const content = readProjectFile(file);
+      expect(content, `${file} should explain gender usage`).toContain(
+        "성별은 사주 계산 기준에 필요해서만 사용해",
+      );
+    }
+  });
+
+  it("keeps_star_pack_badges_separate_for_screen_readers", () => {
+    const coinShop = readProjectFile("src/components/saju/coin-shop/CoinShopClient.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(coinShop).toContain('aria-label={getStarPackAriaLabel(pack)}');
+    expect(coinShop).toContain('aria-hidden="true"');
+    expect(landing).toContain('aria-label={`별 ${pack.stars}개');
+    expect(landing).toContain('aria-hidden="true"');
+  });
+
+  it("keeps_landing_free_trial_copy_as_three_free_sessions", () => {
+    const files = [
+      "src/components/saju/landing/CharacterCards.tsx",
+      "src/components/saju/landing/SajuFAQ.tsx",
+      "src/app/[locale]/page.tsx",
+      "src/app/[locale]/layout.tsx",
+    ];
+
+    for (const file of files) {
+      const content = readProjectFile(file);
+      expect(content, `${file} should explain free benefit as sessions`).toContain(
+        "3회 무료",
+      );
+      expect(content, `${file} still says three free stars`).not.toMatch(
+        /3별|별\s*3개[^\\n]*(무료|드려요|제공)/,
+      );
+    }
+  });
+
+  it("explains_unknown_birth_time_is_allowed_near_all_entry_forms", () => {
+    const files = [
+      "src/components/saju/input/BirthDateForm.tsx",
+      "src/components/saju/chat/BirthInfoCard.tsx",
+      "src/components/saju/landing/LoginSidebar.tsx",
+      "src/components/saju/report/SajuReportClient.tsx",
+    ];
+
+    for (const file of files) {
+      const content = readProjectFile(file);
+      expect(content, `${file} should reduce birth-time pressure`).toContain(
+        "태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.",
+      );
+    }
+  });
+
+  it("keeps_star_pack_badges_visually_separated_from_star_counts", () => {
+    const coinShop = readProjectFile("src/components/saju/coin-shop/CoinShopClient.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(coinShop).toContain("flex flex-wrap items-center gap-x-3 gap-y-1");
+    expect(coinShop).toContain("rounded-full border border-white/10 bg-stone-200/10");
+    expect(landing).toContain("flex flex-wrap items-center gap-x-3 gap-y-1");
+    expect(landing).toContain("rounded-full border border-white/15 bg-white/10");
+  });
+
+  it("uses_warm_neutral_support_surfaces_for_long_reading_comfort", () => {
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+    const faq = readProjectFile("src/components/saju/landing/SajuFAQ.tsx");
+
+    expect(landing).toContain("bg-[#3a332b]");
+    expect(landing).not.toContain("bg-purple-950 p-5 text-white");
+    expect(faq).toContain("bg-[#f6f1e8]");
+    expect(faq).not.toContain("bg-[#0e0e15]");
+  });
+
+  it("keeps_login_sidebar_secondary_to_free_trial_value", () => {
+    const content = readProjectFile("src/components/saju/landing/LoginSidebar.tsx");
+
+    expect(content).toContain("무료 3회로 먼저 확인하기");
+    expect(content).toContain("대화 기록은 로그인 후 자동으로 저장돼");
+    expect(content).not.toContain("대화 기록을 저장하세요");
+  });
+});

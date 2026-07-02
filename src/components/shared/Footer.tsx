@@ -1,9 +1,6 @@
-import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 
 export function Footer() {
-  const t = useTranslations("Footer");
-
   return (
     <footer className="footer footer-center p-10 bg-base-200 text-base-content rounded">
       <nav className="grid grid-flow-col gap-4">

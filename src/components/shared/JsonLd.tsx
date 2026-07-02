@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
 
 interface JsonLdProps {
   type: "WebSite" | "Organization" | "SoftwareApplication" | "Article";
@@ -13,7 +14,7 @@ const defaultOrganization = {
   logo: `${process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.com"}/logo.png`,
   contactPoint: {
     "@type": "ContactPoint",
-    email: "your-email@example.com",
+    email: SUPPORT_CONTACT.email,
     contactType: "customer service",
   },
 };

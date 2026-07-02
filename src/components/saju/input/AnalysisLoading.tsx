@@ -39,7 +39,7 @@ export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 rounded-full border-4 border-gray-200 border-t-[#3182F6]"
+            className="w-16 h-16 rounded-full border-4 border-gray-200 border-t-[#7c3aed]"
           />
         </div>
 
@@ -64,7 +64,7 @@ export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
                       <motion.svg
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-6 h-6 text-[#3182F6]"
+                        className="w-6 h-6 text-[#7c3aed]"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -84,7 +84,7 @@ export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
                           repeat: Infinity,
                           ease: "linear",
                         }}
-                        className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-[#3182F6]"
+                        className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-[#7c3aed]"
                       />
                     ) : (
                       <div className="w-5 h-5 rounded-full border-2 border-gray-200" />
@@ -94,7 +94,7 @@ export default function AnalysisLoading({ onComplete }: AnalysisLoadingProps) {
                   <span
                     className={`text-base ${
                       isCompleted
-                        ? "text-[#3182F6] font-medium"
+                        ? "text-[#7c3aed] font-medium"
                         : isActive
                           ? "text-[#191F28] font-medium"
                           : "text-[#8B95A1]"

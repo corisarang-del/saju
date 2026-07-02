@@ -1,8 +1,8 @@
 import { streamText, generateText, type ModelMessage } from "ai";
-import { google } from "@ai-sdk/google";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { getCharacter } from "@/lib/saju/characters";
+import { getChatModel } from "@/lib/ai/model";
 import { getChatMaxOutputTokens } from "@/lib/saju/chat-generation";
 import {
   getFirstConsultationInstructions,
@@ -256,7 +256,7 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
 
   // 4. 스트리밍 응답
   const result = streamText({
-    model: google("gemini-2.5-flash-lite"),
+    model: getChatModel(),
     system: systemPrompt + "\n\n" + sajuContext,
     messages: toModelMessages(rawMessages),
     maxOutputTokens: getChatMaxOutputTokens({ isFree }),
@@ -342,7 +342,7 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
       if (reading.chat_used === 0 && userMessage) {
         try {
           const { text: title } = await generateText({
-            model: google("gemini-2.5-flash-lite"),
+            model: getChatModel(),
             system: "사용자의 사주 상담 질문을 보고, 짧은 대화 제목(15자 이내)을 만들어. 제목만 출력해. 따옴표나 부호 없이.",
             prompt: userText,
             maxOutputTokens: 30,

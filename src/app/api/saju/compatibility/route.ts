@@ -22,11 +22,17 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // 궁합 레코드 조회
     const { data: compat, error: compatError } = await supabase
       .from('saju_compatibilities')
       .select('*')
       .eq('id', compatibilityId)
+      .eq("user_id", user.id)
       .single();
 
     if (compatError || !compat) {
@@ -49,6 +55,7 @@ export async function POST(req: NextRequest) {
       .from('saju_readings')
       .select('*')
       .eq('id', compat.reading_id)
+      .eq("user_id", user.id)
       .single();
 
     if (readError || !reading) {
@@ -62,7 +69,8 @@ export async function POST(req: NextRequest) {
     await supabase
       .from('saju_compatibilities')
       .update({ status: 'generating', updated_at: new Date().toISOString() })
-      .eq('id', compatibilityId);
+      .eq('id', compatibilityId)
+      .eq("user_id", user.id);
 
     // 상대방 사주 계산
     const partnerSaju = analyzeSaju({
@@ -109,13 +117,15 @@ export async function POST(req: NextRequest) {
         status: 'completed',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', compatibilityId);
+      .eq('id', compatibilityId)
+      .eq("user_id", user.id);
 
     if (updateError) {
       await supabase
         .from('saju_compatibilities')
         .update({ status: 'failed', updated_at: new Date().toISOString() })
-        .eq('id', compatibilityId);
+        .eq('id', compatibilityId)
+        .eq("user_id", user.id);
 
       return NextResponse.json(
         { error: 'Failed to save compatibility analysis' },
@@ -132,10 +142,14 @@ export async function POST(req: NextRequest) {
       const body = await req.clone().json();
       if (body.compatibilityId) {
         const supabase = await createClient();
-        await supabase
-          .from('saju_compatibilities')
-          .update({ status: 'failed', updated_at: new Date().toISOString() })
-          .eq('id', body.compatibilityId);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('saju_compatibilities')
+            .update({ status: 'failed', updated_at: new Date().toISOString() })
+            .eq('id', body.compatibilityId)
+            .eq("user_id", user.id);
+        }
       }
     } catch {
       // ignore cleanup error

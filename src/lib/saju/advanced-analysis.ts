@@ -14,9 +14,7 @@ import {
 } from '@/lib/saju/saju-engine';
 import type {
   SajuResult,
-  PillarDetail,
   DaewoonItem,
-  Gender,
   ZiweiChart,
   NatalChart,
   PlanetId,

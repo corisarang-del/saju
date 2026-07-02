@@ -32,11 +32,13 @@ export default function MetaPixel() {
 
     const n = (function (...args: unknown[]) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (n as any).callMethod
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (n as any).callMethod.apply(n, args)
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (n as any).queue.push(args);
+      if ((n as any).callMethod) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (n as any).callMethod.apply(n, args);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (n as any).queue.push(args);
+      }
     }) as Window["fbq"] & { queue: unknown[][]; loaded: boolean; version: string };
     n.queue = [];
     n.loaded = true;

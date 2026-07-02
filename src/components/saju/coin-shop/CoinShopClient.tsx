@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { openCheckout } from '@/lib/paddle/client';
 import type { ProductType } from '@/lib/paddle/config';
+import { formatWon, STAR_PACKS } from '@/lib/monthly-saju/pricing';
 
 interface CoinShopClientProps {
   totalCoins: number;
@@ -11,35 +12,29 @@ interface CoinShopClientProps {
   userEmail?: string;
 }
 
-const STAR_PACKS: {
-  type: ProductType;
-  stars: number;
-  price: number;
-  badge?: string;
-  description?: string;
-}[] = [
-  { type: 'stars30', stars: 30, price: 9900 },
-  { type: 'stars70', stars: 70, price: 19900, badge: '인기' },
-  { type: 'starsPremium', stars: 250, price: 39900, badge: '최고 가성비' },
-];
+function getStarPackAriaLabel(pack: (typeof STAR_PACKS)[number]) {
+  const badge = pack.badge ? `, ${pack.badge} 상품` : '';
+  const description = pack.description ? `, ${pack.description}` : '';
+  return `별 ${pack.stars}개${badge}, ${formatWon(pack.price)}${description}`;
+}
 
 export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinShopClientProps) {
   const searchParams = useSearchParams();
+  const isPaidRedirect = searchParams.get('paid') === 'true';
   const [selected, setSelected] = useState<ProductType>('stars70');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(isPaidRedirect);
 
   useEffect(() => {
-    if (searchParams.get('paid') === 'true') {
-      setShowSuccess(true);
-      // URL에서 paid 파라미터 제거
-      window.history.replaceState({}, '', window.location.pathname);
-      // 5초 후 자동 닫기
-      const timer = setTimeout(() => setShowSuccess(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
+    if (!isPaidRedirect) return;
+
+    // URL에서 paid 파라미터 제거
+    window.history.replaceState({}, '', window.location.pathname);
+    // 5초 후 자동 닫기
+    const timer = setTimeout(() => setShowSuccess(false), 5000);
+    return () => clearTimeout(timer);
+  }, [isPaidRedirect]);
 
   const handlePurchase = async () => {
     setLoading(true);
@@ -93,20 +88,21 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
         {STAR_PACKS.map((pack) => (
           <button
             key={pack.type}
-            onClick={() => setSelected(pack.type)}
+            onClick={() => setSelected(pack.type as ProductType)}
+            aria-label={getStarPackAriaLabel(pack)}
             className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border text-sm transition-all ${
               selected === pack.type
                 ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/10'
                 : 'border-[#2a2a3a] bg-[#13131a] hover:border-[#3a3a4a]'
             }`}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-yellow-400 text-xl">&#9733;</span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-200 text-base">{pack.stars}개</span>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="shrink-0 text-yellow-400 text-xl">&#9733;</span>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="shrink-0 font-semibold text-gray-200 text-base">별 {pack.stars}개</span>
                   {pack.badge && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-medium">
+                    <span aria-hidden="true" className="shrink-0 text-[10px] px-2.5 py-0.5 rounded-full border border-white/10 bg-stone-200/10 text-stone-200 font-medium">
                       {pack.badge}
                     </span>
                   )}
@@ -118,7 +114,7 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
             </div>
             <div className="text-right">
               <span className="font-bold text-gray-200 text-base">
-                {pack.price.toLocaleString()}원
+                {formatWon(pack.price)}
               </span>
             </div>
           </button>

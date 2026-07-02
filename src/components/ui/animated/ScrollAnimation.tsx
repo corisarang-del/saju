@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 interface ScrollAnimationProps {
   children: React.ReactNode;
   className?: string;
-  animation?: any; // Keep props to avoid breaking consumers
+  animation?: Record<string, unknown>; // Keep props to avoid breaking consumers
   duration?: number;
   delay?: number;
-  viewport?: any;
+  viewport?: Record<string, unknown>;
 }
 
 // 🚨 EMERGENCY FIX: ANIMATION DISABLED 🚨

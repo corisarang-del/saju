@@ -12,7 +12,6 @@ import type {
   NatalChart,
   PlanetPosition,
   NatalHouse,
-  NatalAngles,
   NatalAspect,
   ZodiacSign,
   PlanetId,
@@ -265,7 +264,7 @@ function isRetrograde(planetId: string, T: number): boolean {
  */
 function greenwichSiderealTime(jd: number): number {
   const T = julianCentury(jd);
-  let gmst = 280.46061837 +
+  const gmst = 280.46061837 +
     360.98564736629 * (jd - 2451545.0) +
     0.000387933 * T * T -
     T * T * T / 38710000;

@@ -23,8 +23,7 @@ export async function loginWithGoogle(next?: string) {
 
   if (error) {
     console.error("Google Login Error:", error);
-    // In a real app, you might return an error state
-    return { error: error.message };
+    redirect("/ko/login?error=supabase-env-missing");
   }
 
   if (data.url) {
@@ -49,7 +48,7 @@ export async function loginWithKakao(next?: string) {
 
   if (error) {
     console.error("Kakao Login Error:", error);
-    return { error: error.message };
+    redirect("/ko/login?error=supabase-env-missing");
   }
 
   if (data.url) {

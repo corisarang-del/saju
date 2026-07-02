@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "@/i18n/routing";
@@ -31,37 +31,45 @@ const SIJI_TO_HOUR: Record<string, number | null> = {
 
 type Step = 1 | 2 | 3;
 
+function getInitialFormData(
+  searchParams: ReturnType<typeof useSearchParams>,
+): BirthDateFormData | null {
+  const name = searchParams.get("name");
+  const year = searchParams.get("year");
+  const month = searchParams.get("month");
+  const day = searchParams.get("day");
+  const hour = searchParams.get("hour");
+  const gender = searchParams.get("gender");
+  const calendar = searchParams.get("calendar");
+
+  if (!name || !year || !month || !day || !gender) {
+    return null;
+  }
+
+  return {
+    name,
+    year,
+    month,
+    day,
+    time: hour || "unknown",
+    gender: gender as "male" | "female",
+    calendar: (calendar as "solar" | "lunar") || "solar",
+  };
+}
+
 export default function ReadingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [step, setStep] = useState<Step>(1);
-  const [formData, setFormData] = useState<BirthDateFormData | null>(null);
+  const initialFormData = useMemo(
+    () => getInitialFormData(searchParams),
+    [searchParams],
+  );
+  const [step, setStep] = useState<Step>(() => (initialFormData ? 2 : 1));
+  const [formData, setFormData] = useState<BirthDateFormData | null>(
+    () => initialFormData,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // URL search params에서 히어로 폼 데이터 읽기
-  useEffect(() => {
-    const name = searchParams.get("name");
-    const year = searchParams.get("year");
-    const month = searchParams.get("month");
-    const day = searchParams.get("day");
-    const hour = searchParams.get("hour");
-    const gender = searchParams.get("gender");
-    const calendar = searchParams.get("calendar");
-
-    if (name && year && month && day && gender) {
-      setFormData({
-        name,
-        year,
-        month,
-        day,
-        time: hour || "unknown",
-        gender: gender as "male" | "female",
-        calendar: (calendar as "solar" | "lunar") || "solar",
-      });
-      setStep(2);
-    }
-  }, [searchParams]);
 
   const handleBirthDateSubmit = (data: BirthDateFormData) => {
     setFormData(data);
@@ -142,7 +150,7 @@ export default function ReadingPage() {
             </div>
             <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-[#3182F6] rounded-full"
+                className="h-full bg-[#7c3aed] rounded-full"
                 initial={{ width: 0 }}
                 animate={{
                   width: `${(currentProgress / totalSteps) * 100}%`,

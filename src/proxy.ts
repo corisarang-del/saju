@@ -12,7 +12,7 @@ const intlMiddleware = createMiddleware(routing);
 // - /reading/[id]/result: 결제 완료 후 전체 결과
 const PROTECTED_PATTERN = /^\/(ko\/)?(my-readings|reading\/[^/]+\/result)/;
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 1. Run next-intl middleware to handle locale redirects and get the base response
   const response = intlMiddleware(request);
 

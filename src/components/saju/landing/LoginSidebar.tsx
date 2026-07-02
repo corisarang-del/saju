@@ -83,11 +83,7 @@ const HOUR_TO_SIJI: Record<number, string> = {
 export default function LoginSidebar({ user, chatHistory = [], currentReading, totalCoins, isMobile = false }: LoginSidebarProps) {
   const [showCharacterPicker, setShowCharacterPicker] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const initEditLast = currentReading?.name ? (currentReading.name.length >= 2 ? currentReading.name.slice(0, 1) : '') : '';
-  const initEditFirst = currentReading?.name ? (currentReading.name.length >= 2 ? currentReading.name.slice(1) : currentReading.name) : '';
-  const [editLastName, setEditLastName] = useState(initEditLast);
-  const [editFirstName, setEditFirstName] = useState(initEditFirst);
-  const editName = `${editLastName}${editFirstName}`.trim();
+  const [editName, setEditName] = useState(currentReading?.name ?? '');
   const [editYear, setEditYear] = useState(currentReading?.birthYear?.toString() ?? '');
   const [editMonth, setEditMonth] = useState(currentReading?.birthMonth?.toString() ?? '');
   const [editDay, setEditDay] = useState(currentReading?.birthDay?.toString() ?? '');
@@ -134,10 +130,10 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
         /* ── 비로그인 ── */
         <div className="flex flex-col items-center px-5 pt-10">
           <p className="text-sm font-semibold text-gray-200 text-center">
-            로그인하고
+            무료 3회로 먼저 확인하기
           </p>
           <p className="text-xs text-gray-500 text-center mt-1 mb-6">
-            대화 기록을 저장하세요
+            대화 기록은 로그인 후 자동으로 저장돼
           </p>
 
           <form action={async () => { await loginWithGoogle('/'); }} className="w-full">
@@ -358,22 +354,14 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
 
                   <div>
                     <label className="text-[11px] font-semibold text-gray-400 mb-1 block">이름</label>
-                    <div className="flex gap-1">
-                      <input
-                        type="text"
-                        placeholder="성"
-                        value={editLastName}
-                        onChange={(e) => setEditLastName(e.target.value)}
-                        className="flex-[2] border border-[#2a2a3a] bg-[#0a0a0f] rounded-lg px-2 py-2 text-center text-xs text-gray-200 focus:border-purple-500/50 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="이름"
-                        value={editFirstName}
-                        onChange={(e) => setEditFirstName(e.target.value)}
-                        className="flex-[3] border border-[#2a2a3a] bg-[#0a0a0f] rounded-lg px-2 py-2 text-xs text-gray-200 focus:border-purple-500/50 outline-none"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      aria-label="이름"
+                      placeholder="이름을 입력하세요"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full border border-[#2a2a3a] bg-[#0a0a0f] rounded-lg px-2 py-2 text-xs text-gray-200 focus:border-purple-500/50 outline-none"
+                    />
                   </div>
 
                   <div>
@@ -404,10 +392,16 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">
+                      태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
+                    </p>
                   </div>
 
                   <div>
                     <label className="text-[11px] font-semibold text-gray-400 mb-1 block">성별</label>
+                    <p className="mb-2 text-[11px] leading-relaxed text-gray-500">
+                      성별은 사주 계산 기준에 필요해서만 사용해.
+                    </p>
                     <div className="grid grid-cols-2 gap-1.5">
                       {(['male', 'female'] as const).map((g) => (
                         <button key={g} type="button" onClick={() => setEditGender(g)}

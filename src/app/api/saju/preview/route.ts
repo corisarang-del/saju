@@ -18,11 +18,17 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // reading 조회
     const { data: reading, error: readError } = await supabase
       .from('saju_readings')
       .select('*')
       .eq('id', readingId)
+      .eq("user_id", user.id)
       .single();
 
     if (readError || !reading) {
@@ -60,7 +66,8 @@ export async function POST(req: NextRequest) {
         status: 'preview',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', readingId);
+      .eq('id', readingId)
+      .eq("user_id", user.id);
 
     if (updateError) {
       return NextResponse.json(

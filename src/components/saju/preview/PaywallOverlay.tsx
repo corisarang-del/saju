@@ -27,7 +27,7 @@ export default function PaywallOverlay({ onPayClick }: PaywallOverlayProps) {
         </p>
         <button
           onClick={onPayClick}
-          className="w-full bg-[#3182F6] hover:bg-[#1B64DA] active:scale-[0.98] text-white font-semibold text-base py-4 rounded-xl transition-all"
+          className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] active:scale-[0.98] text-white font-semibold text-base py-4 rounded-xl transition-all"
         >
           19,900원에 전체 분석 보기
         </button>

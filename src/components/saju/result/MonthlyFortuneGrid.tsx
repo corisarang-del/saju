@@ -18,14 +18,14 @@ export default function MonthlyFortuneGrid({
           key={item.month}
           className={`rounded-xl p-4 border ${
             item.month === currentMonth
-              ? "border-[#3182F6] bg-[#F2F7FF]"
+              ? "border-[#7c3aed] bg-[#faf5ff]"
               : "border-gray-100 bg-gray-50"
           }`}
         >
           <span
             className={`text-sm font-semibold ${
               item.month === currentMonth
-                ? "text-[#3182F6]"
+                ? "text-[#7c3aed]"
                 : "text-[#8B95A1]"
             }`}
           >

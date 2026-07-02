@@ -315,6 +315,9 @@ export default function SajuReportClient({
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
+            <p className="mt-1.5 text-xs leading-relaxed text-gray-500">
+              태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
+            </p>
           </div>
 
           {/* 성별 */}

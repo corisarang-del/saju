@@ -7,7 +7,7 @@
  * Copyright (c) 2024-2026 두얼간이
  */
 
-import type { ZiweiChart, ZiweiPalace, ZiweiStar, LiuNianInfo, DaxianItem } from './saju-engine';
+import type { ZiweiChart, ZiweiPalace, LiuNianInfo, DaxianItem } from './saju-engine';
 import { solarToLunar } from 'manseryeok';
 
 // ──────────────────────────────────────────────
@@ -166,9 +166,6 @@ const SIHUA_TABLE: Record<string, [string, string, string, string]> = {
   '癸': ['파군', '거문', '태음', '탐랑'],
 };
 
-// ── 보조성(輔星) ──
-const MINOR_STARS = ['문창', '문곡', '좌보', '우필', '천괴', '천월', '화성', '영성', '천공', '지겁'];
-
 // ──────────────────────────────────────────────
 // 유틸리티
 // ──────────────────────────────────────────────
@@ -241,6 +238,13 @@ export function createChart(
   year: number, month: number, day: number,
   hour: number, minute: number, isMale: boolean
 ): ZiweiChart {
+  if (minute < 0 || minute > 59) {
+    throw new RangeError("minute must be between 0 and 59");
+  }
+  if (typeof isMale !== "boolean") {
+    throw new TypeError("isMale must be a boolean");
+  }
+
   // 1. 음력 변환
   const lunar = solarToLunar(year, month, day);
   const lunarYear = lunar.year ?? year;
@@ -317,7 +321,7 @@ export function createChart(
   }
 
   // 9. 보조성 배치 (간소화)
-  placeMinorStars(palaces, yearGanIdx, yearZhiIdx, lunarMonth, hourBranchIdx, lunarDay);
+  placeMinorStars(palaces, yearGanIdx, yearZhiIdx, lunarMonth, hourBranchIdx);
 
   // 10. 사화(四化) 적용 — 년간 기준
   const yearGan = GAN[yearGanIdx];
@@ -352,8 +356,7 @@ function placeMinorStars(
   yearGanIdx: number,
   yearZhiIdx: number,
   lunarMonth: number,
-  hourBranchIdx: number,
-  lunarDay: number
+  hourBranchIdx: number
 ): void {
   // 문창(文昌): 시지에서 역행으로 배치
   // 공식: (10 - 시진인덱스 + 12) % 12
@@ -443,7 +446,6 @@ export function calculateLiunian(chart: ZiweiChart, targetYear: number): LiuNian
 
   // 현재 대한(대운) 찾기
   const daxianList = getDaxianList(chart);
-  const birthYear = targetYear; // 근사값 (실제로는 차트에서 추출해야 함)
   // 대한은 오행국수에 기반하여 시작
   const currentDaxian = daxianList[0]; // 기본값
 

@@ -24,7 +24,7 @@ export default async function ReportsPage() {
       <main className="min-h-[calc(100dvh-48px)] bg-[#fbf7ef] px-4 py-6">
         <div className="mx-auto max-w-5xl space-y-6">
           <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-semibold text-teal-800">월간 전략 리포트</p>
+            <p className="text-sm font-semibold text-purple-800">월간 전략 리포트</p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">이번 달은 감으로 버티지 말고 흐름표를 들고 가자</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
               월간사주는 사주 원국, 최근 대화 요약, 반복 고민을 묶어서 커리어, 돈, 관계, 건강의 우선순위를 정리해.
@@ -45,10 +45,10 @@ export default async function ReportsPage() {
             ))}
           </section>
 
-          <section className="rounded-[28px] border border-teal-900/15 bg-teal-950 p-6 text-white">
-            <p className="text-sm font-semibold text-teal-100">유료 종합 사주 백서</p>
+          <section className="rounded-[28px] border border-purple-900/15 bg-purple-950 p-6 text-white">
+            <p className="text-sm font-semibold text-purple-100">유료 종합 사주 백서</p>
             <h2 className="mt-3 text-2xl font-bold tracking-tight">대운, 세운, 관계 패턴까지 깊게 읽는 확장 리포트</h2>
-            <p className="mt-4 text-sm leading-6 text-teal-50/80">
+            <p className="mt-4 text-sm leading-6 text-purple-50/80">
               기본 월간 리포트는 무료 흐름을 제공하고, 종합 백서는 단품 구매나 멤버십으로 열 수 있어.
             </p>
             {paymentState.shouldPrompt && (
@@ -56,12 +56,12 @@ export default async function ReportsPage() {
                 {paymentState.options.map((option) => (
                   <div key={option.kind} className="rounded-2xl bg-white/10 p-4">
                     <p className="font-bold">{option.label}</p>
-                    <p className="mt-2 text-sm leading-5 text-teal-50/75">{option.description}</p>
+                    <p className="mt-2 text-sm leading-5 text-purple-50/75">{option.description}</p>
                   </div>
                 ))}
               </div>
             )}
-            <Link href="/coin-shop" className="mt-5 inline-flex rounded-2xl bg-white px-5 py-3 text-sm font-bold text-teal-950 transition-transform active:scale-[0.98]">
+            <Link href="/coin-shop" className="mt-5 inline-flex rounded-2xl bg-white px-5 py-3 text-sm font-bold text-purple-950 transition-transform active:scale-[0.98]">
               결제 옵션 보기
             </Link>
           </section>

@@ -6,7 +6,7 @@ import LuckyElements from "./LuckyElements";
 
 interface FullAnalysisProps {
   analysis: SajuAnalysis;
-  reading: SajuReading;
+  reading?: SajuReading;
 }
 
 interface SectionCardProps {
@@ -32,7 +32,7 @@ const SECTIONS = [
   { key: "yearlyFortune" as const, title: "2026년 총운" },
 ];
 
-export default function FullAnalysis({ analysis, reading }: FullAnalysisProps) {
+export default function FullAnalysis({ analysis }: FullAnalysisProps) {
   return (
     <div className="flex flex-col gap-4">
       {SECTIONS.map(({ key, title }) => (

@@ -13,6 +13,12 @@ interface CharacterCardsProps {
 export default function CharacterCards({ isLoggedIn = false }: CharacterCardsProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const autoScrollStoppedRef = useRef(false);
+  const autoScrollPausedRef = useRef(false);
+
+  const stopAutoScroll = useCallback(() => {
+    autoScrollStoppedRef.current = true;
+  }, []);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -45,11 +51,15 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
     el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: "smooth" });
   }, []);
 
-  // 5초마다 자동 스크롤 (무한루프)
-  const isHoveredRef = useRef(false);
   useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) {
+      stopAutoScroll();
+      return;
+    }
+
     const timer = setInterval(() => {
-      if (isHoveredRef.current) return;
+      if (autoScrollStoppedRef.current || autoScrollPausedRef.current) return;
       setActiveIndex((prev) => {
         const next = (prev + 1) % CHARACTER_LIST.length;
         scrollTo(next);
@@ -57,21 +67,26 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
       });
     }, 5000);
     return () => clearInterval(timer);
-  }, [scrollTo]);
+  }, [scrollTo, stopAutoScroll]);
 
   return (
-    <div className="pt-5 md:pt-8 pb-3 md:pb-6">
+    <div className="pt-4 md:pt-8 pb-3 md:pb-6">
       <div
         ref={scrollRef}
-        onMouseEnter={() => { isHoveredRef.current = true; }}
-        onMouseLeave={() => { isHoveredRef.current = false; }}
-        onTouchStart={() => { isHoveredRef.current = true; }}
-        onTouchEnd={() => { isHoveredRef.current = false; }}
+        onMouseEnter={() => {
+          autoScrollPausedRef.current = true;
+        }}
+        onMouseLeave={() => {
+          autoScrollPausedRef.current = false;
+        }}
+        onPointerDown={stopAutoScroll}
+        onTouchStart={stopAutoScroll}
+        onFocusCapture={stopAutoScroll}
         className="grid grid-flow-col auto-cols-[72vw] md:auto-cols-[280px] gap-3 md:gap-4 overflow-x-auto snap-x snap-mandatory px-4 md:px-8 scrollbar-hide"
       >
-        {CHARACTER_LIST.map((char) => (
+        {CHARACTER_LIST.map((char, index) => (
           <div key={char.id} className="snap-center">
-            <CharacterCard char={char} isLoggedIn={isLoggedIn} />
+            <CharacterCard char={char} index={index} isLoggedIn={isLoggedIn} />
           </div>
         ))}
       </div>
@@ -79,9 +94,15 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
         {CHARACTER_LIST.map((_, i) => (
           <button
             key={i}
-            onClick={() => scrollTo(i)}
+            type="button"
+            onClick={() => {
+              stopAutoScroll();
+              scrollTo(i);
+            }}
+            aria-label={`${i + 1}번째 상담사 보기`}
+            aria-current={i === activeIndex ? "true" : undefined}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === activeIndex ? "w-6 bg-teal-800" : "w-1.5 bg-stone-300"
+              i === activeIndex ? "w-6 bg-purple-700" : "w-1.5 bg-stone-300"
             }`}
           />
         ))}
@@ -90,8 +111,85 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
   );
 }
 
-function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_LIST)[number]; isLoggedIn?: boolean }) {
+function CharacterCard({
+  char,
+  index,
+  isLoggedIn = false,
+}: {
+  char: (typeof CHARACTER_LIST)[number];
+  index: number;
+  isLoggedIn?: boolean;
+}) {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const closeLoginPrompt = useCallback(() => {
+    setShowLoginPrompt(false);
+  }, []);
+
+  useEffect(() => {
+    if (!showLoginPrompt) return;
+
+    const dialog = dialogRef.current;
+    const trigger = triggerRef.current;
+    if (!dialog) return;
+
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'textarea:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const getFocusableElements = () =>
+      Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelectors))
+        .filter((element) => !element.hasAttribute('disabled') && element.tabIndex !== -1);
+    const firstFocusable = getFocusableElements()[0];
+    firstFocusable?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeLoginPrompt();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const focusableElements = getFocusableElements();
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+        if (!first || !last) {
+          event.preventDefault();
+          return;
+        }
+
+        if (!dialog.contains(document.activeElement)) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+          return;
+        }
+
+        if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
+    };
+  }, [closeLoginPrompt, showLoginPrompt]);
 
   const cardContent = (
     <div className="group rounded-[28px] overflow-hidden cursor-pointer bg-white border border-stone-200 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] hover:shadow-[0_26px_60px_-34px_rgba(15,23,42,0.55)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
@@ -103,6 +201,9 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
           fill
           className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
           sizes="(min-width: 768px) 25vw, 75vw"
+          priority={index === 0}
+          loading={index === 0 ? "eager" : "lazy"}
+          fetchPriority={index === 0 ? "high" : "auto"}
         />
         <div className="absolute top-3 left-3 z-[1]">
           <span
@@ -141,11 +242,14 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
 
         <div className="flex items-center justify-between pt-3 border-t border-stone-100 mt-auto">
           {!isLoggedIn && (
-            <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-              <span className="text-amber-600">&#9733;</span> 가입시 3별 무료 지급
+            <span className="text-xs font-medium text-slate-500 flex flex-col gap-0.5">
+              <span className="flex items-center gap-1">
+                <span className="text-amber-600">&#9733;</span> 가입하면 3회 무료
+              </span>
+              <span>1별 = 메시지 1회</span>
             </span>
           )}
-          <span className={`text-xs font-bold bg-teal-900 text-white px-3 py-1.5 rounded-lg shadow-md group-hover:bg-teal-800 transition-colors ${isLoggedIn ? 'ml-auto' : ''}`}>
+          <span className={`text-xs font-bold bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-md transition-colors group-hover:bg-purple-600 ${isLoggedIn ? 'ml-auto' : ''}`}>
             대화하기
           </span>
         </div>
@@ -159,31 +263,45 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
 
   return (
     <>
-      <div className="h-full" onClick={() => setShowLoginPrompt(true)}>{cardContent}</div>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="block h-full w-full text-left"
+        onClick={() => setShowLoginPrompt(true)}
+      >
+        {cardContent}
+      </button>
 
       {showLoginPrompt && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-          onClick={() => setShowLoginPrompt(false)}
+          onClick={closeLoginPrompt}
         >
           <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="character-login-title"
+            aria-describedby="character-login-description"
+            tabIndex={-1}
             className="bg-white border border-stone-200 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <span className="text-2xl">&#9733;</span>
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center">
+                <span className="text-2xl text-amber-500">&#9733;</span>
               </div>
-                <h3 className="text-lg font-bold text-slate-950 mb-1">가입하고 바로 시작하세요</h3>
-                <p className="text-sm text-slate-500 mb-5">
-                가입하면 <span className="text-amber-600 font-semibold">★ 3개</span>를 무료로 드려요!
+                <h3 id="character-login-title" className="text-lg font-bold text-slate-950 mb-1">가입하고 바로 시작하세요</h3>
+                <p id="character-login-description" className="text-sm text-slate-500 mb-5">
+                가입하면 <span className="text-amber-600 font-semibold">3회 무료 상담</span>을 드려요
                 <br />
-                바로 대화를 시작할 수 있어요
+                1별 = 메시지 1회, 가입 후에도 가격을 확인할 수 있어요
               </p>
 
               <form action={async () => { await loginWithGoogle(`/chat/${char.id}`); }}>
                 <button
                   type="submit"
+                  aria-label="Google로 로그인하고 상담 시작하기"
                   className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl transition-colors cursor-pointer"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -197,7 +315,8 @@ function CharacterCard({ char, isLoggedIn = false }: { char: (typeof CHARACTER_L
               </form>
 
               <button
-                onClick={() => setShowLoginPrompt(false)}
+                onClick={closeLoginPrompt}
+                aria-label="로그인 안내 닫기"
                 className="mt-3 text-sm text-slate-500 hover:text-slate-800 transition-colors"
               >
                 나중에 할게요

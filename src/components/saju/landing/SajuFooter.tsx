@@ -1,41 +1,44 @@
+import { Link } from "@/i18n/routing";
+import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+
 export default function SajuFooter() {
   return (
     <footer className="bg-[#0a0a0f] border-t border-[#2a2a3a] py-5 px-5">
       <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         {/* 왼쪽: 사업자 정보 */}
         <div className="text-[11px] text-gray-600 leading-relaxed space-y-0.5">
-          <p>Your Company Name | 대표 Your Name | 사업자등록번호 000-00-00000</p>
-          <p>통신판매업 제 0000-지역-0000 호</p>
-          <p>Your Address</p>
+          <p>월간사주</p>
+          <p>고객지원 및 환불 문의: {SUPPORT_CONTACT.email}</p>
+          <p>결제는 Paddle의 안전한 결제 시스템을 통해 처리됩니다.</p>
         </div>
 
         {/* 오른쪽: 링크 + 카피라이트 */}
         <div className="flex flex-col items-start sm:items-end gap-1.5 shrink-0">
           <div className="flex items-center gap-3">
             <a
-              href="mailto:your-email@example.com"
+              href={SUPPORT_CONTACT.mailto}
               className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
             >
               문의
             </a>
-            <a
+            <Link
               href="/terms"
               className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
             >
               이용약관
-            </a>
-            <a
+            </Link>
+            <Link
               href="/privacy-policy"
               className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
             >
               개인정보처리방침
-            </a>
-            <a
+            </Link>
+            <Link
               href="/refund-policy"
               className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
             >
               환불정책
-            </a>
+            </Link>
           </div>
           <p className="text-[11px] text-gray-700">
             &copy; 2026 월간사주

@@ -71,4 +71,18 @@ describe("chat_completion_guard", () => {
     expect(getChatCompletionFailureMessage(result)).toBeNull();
     expect(shouldPersistAssistantAnswer(result)).toBe(true);
   });
+
+  it("preserves_provider_quota_message_when_error_stream_contains_user_facing_text", () => {
+    const result = {
+      assistantText: "지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.",
+      finishReason: "error",
+      isError: true,
+      isInitialAnalysis: true,
+    } as const;
+
+    expect(getChatCompletionFailureMessage(result)).toBe(
+      "지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.",
+    );
+    expect(shouldPersistAssistantAnswer(result)).toBe(false);
+  });
 });

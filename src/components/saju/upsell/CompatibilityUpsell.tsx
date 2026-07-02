@@ -29,7 +29,7 @@ export default function CompatibilityUpsell({
 
         <button
           onClick={() => router.push(`/reading/${readingId}/compatibility`)}
-          className="w-full bg-[#3182F6] hover:bg-[#1B64DA] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
+          className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
         >
           궁합 분석 시작하기
         </button>

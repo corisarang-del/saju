@@ -45,12 +45,12 @@ export type ConcernType =
 
 /** 고민 카테고리 한국어 라벨 */
 export const CONCERN_LABELS: Record<ConcernType, string> = {
-  love: '연애/결혼',
-  career: '직업/진로',
-  wealth: '재물/금전',
-  health: '건강',
-  relationship: '대인관계',
-  other: '기타',
+  love: '썸/재회',
+  career: '이직/퇴사',
+  wealth: '돈 모으기',
+  health: '번아웃',
+  relationship: '친구/가족관계',
+  other: '그 외 고민',
 };
 
 /** 성별 */

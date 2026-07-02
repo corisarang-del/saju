@@ -8,7 +8,7 @@ const engine = await import('../src/lib/saju/saju-engine.ts');
 const ziwei = await import('../src/lib/saju/ziwei.ts');
 const natal = await import('../src/lib/saju/natal.ts');
 
-const { calculateSaju, getFourPillars, toHangul, ZODIAC_KO, PLANET_KO } = engine;
+const { calculateSaju, getFourPillars } = engine;
 const { createChart } = ziwei;
 const { calculateNatal } = natal;
 

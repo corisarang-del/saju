@@ -15,10 +15,33 @@ export function getChatMessagePlainText(message: ChatMessageLike): string {
   }
 
   return (message.parts ?? [])
-    .filter((part): part is { type: "text"; text: string } =>
-      part.type === "text" && typeof part.text === "string",
-    )
-    .map((part) => part.text)
+    .map((part) => {
+      if (part.type === "text" && typeof part.text === "string") {
+        return part.text;
+      }
+
+      if (
+        (part.type === "error" || part.type === "tool-input-error" || part.type === "tool-output-error")
+        && typeof part.errorText === "string"
+      ) {
+        return part.errorText;
+      }
+
+      if (typeof part.type === "string" && part.type.startsWith("data-")) {
+        const data = part.data;
+        if (typeof data === "object" && data !== null) {
+          const message = (data as Record<string, unknown>).message;
+          const errorText = (data as Record<string, unknown>).errorText;
+          return typeof message === "string"
+            ? message
+            : typeof errorText === "string"
+              ? errorText
+              : "";
+        }
+      }
+
+      return "";
+    })
     .join("");
 }
 

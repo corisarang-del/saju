@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/card";
 import { loginWithGoogle } from "@/services/auth/actions";
 
-export function AuthForm() {
+interface AuthFormProps {
+  errorMessage?: string;
+}
+
+export function AuthForm({ errorMessage }: AuthFormProps) {
   const handleGoogleLogin = async () => {
     await loginWithGoogle();
   };
@@ -20,9 +24,18 @@ export function AuthForm() {
     <Card className="w-full max-w-[380px]">
       <CardHeader>
         <CardTitle>월간사주 로그인</CardTitle>
-        <CardDescription>Google 계정으로 로그인하세요.</CardDescription>
+        <CardDescription>
+          Google 계정으로 로그인하세요. 처음 가입하면 3회 무료 상담을 받을 수 있고,
+          1별 = 메시지 1회 기준으로 이용해요.
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {errorMessage && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm leading-relaxed text-red-700">
+            {errorMessage}
+          </div>
+        )}
+
         <Button
           variant="outline"
           onClick={handleGoogleLogin}

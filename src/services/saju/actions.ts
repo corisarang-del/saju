@@ -9,8 +9,6 @@ import type {
   SajuCompatibility,
   CompatibilityInputForm,
   ReadingStatus,
-  Gender,
-  ConcernType,
 } from "@/types/saju";
 
 // --- Zod Schemas ---
@@ -202,10 +200,19 @@ export async function getReading(
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "로그인이 필요합니다." };
+  }
+
   const { data, error } = await supabase
     .from("saju_readings")
     .select("*")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   return {
@@ -238,6 +245,14 @@ export async function updateReadingStatus(
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "로그인이 필요합니다." };
+  }
+
   const { data: updated, error } = await supabase
     .from("saju_readings")
     .update({
@@ -246,6 +261,7 @@ export async function updateReadingStatus(
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
+    .eq("user_id", user.id)
     .select("*")
     .single();
 
@@ -270,6 +286,14 @@ export async function linkReadingToUser(
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || user.id !== userId) {
+    return { data: null, error: "권한이 없습니다." };
+  }
+
   const { data, error } = await supabase
     .from("saju_readings")
     .update({
@@ -277,6 +301,7 @@ export async function linkReadingToUser(
       updated_at: new Date().toISOString(),
     })
     .eq("id", readingId)
+    .eq("user_id", user.id)
     .select("*")
     .single();
 
@@ -312,9 +337,29 @@ export async function createCompatibility(
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "로그인이 필요합니다." };
+  }
+
+  const { data: ownerReading } = await supabase
+    .from("saju_readings")
+    .select("id")
+    .eq("id", form.readingId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!ownerReading) {
+    return { data: null, error: "권한이 없습니다." };
+  }
+
   const { data, error } = await supabase
     .from("saju_compatibility")
     .insert({
+      user_id: user.id,
       reading_id: form.readingId,
       partner_name: form.partnerName,
       partner_gender: form.partnerGender,
@@ -351,10 +396,19 @@ export async function getCompatibility(
 
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: null, error: "로그인이 필요합니다." };
+  }
+
   const { data, error } = await supabase
     .from("saju_compatibility")
     .select("*")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   return {
@@ -375,6 +429,14 @@ export async function getUserReadings(
   }
 
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || user.id !== userId) {
+    return { data: [], error: "권한이 없습니다." };
+  }
 
   const { data, error } = await supabase
     .from("saju_readings")
