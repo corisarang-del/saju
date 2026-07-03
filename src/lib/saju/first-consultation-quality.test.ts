@@ -18,6 +18,25 @@ describe("first_consultation_quality", () => {
     expect(instructions).toContain("질문");
   });
 
+  it("keeps_first_answer_mobile_sized_and_ends_with_one_clear_question", () => {
+    const instructions = getFirstConsultationInstructions({
+      isFirstAssistantTurn: true,
+      birthHourKnown: true,
+    });
+
+    expect(instructions).toContain("빈 줄 기준 최대 3문단");
+    expect(instructions).toContain("정확히 2문단");
+    expect(instructions).toContain("마지막 문장은 반드시 물음표로 끝");
+    expect(instructions).toContain("마지막 문장은 반드시 실제 질문 1문장");
+    expect(instructions).toContain("설명문이나 조언문으로 끝내지 마");
+    expect(instructions).toContain("알려드릴 수 있습니다");
+    expect(instructions).toContain("질문은 1개만");
+    expect(instructions).toContain("이모지");
+    expect(instructions).toContain("가벼운 외래어");
+    expect(instructions).toContain('"체크"는 "확인"');
+    expect(instructions).toContain("괄호로 외래어를 병기");
+  });
+
   it("reassures_users_when_birth_hour_is_unknown", () => {
     const instructions = getFirstConsultationInstructions({
       isFirstAssistantTurn: true,

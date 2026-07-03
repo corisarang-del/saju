@@ -327,7 +327,7 @@ export default function ChatRoom({
                   ) : characterId === 'seojun' ? (
                     <>반가워. 나 <strong>{character.name}</strong>인데, 네 커리어 흐름을 현실적으로 봐줄게. 아래 정보부터 알려줘.</>
                   ) : characterId === 'doyun' ? (
-                    <>반가워. 나 <strong>{character.name}</strong>인데, 사업과 창업 타이밍을 같이 봐줄게. 아래 정보부터 알려줘.</>
+                    <>반가워. 나 <strong>{character.name}</strong>인데, 사업과 창업 시기를 같이 봐줄게. 아래 정보부터 알려줘.</>
                   ) : (
                     <>보이네요.. <strong>{character.name}</strong>이에요. 2026년 운세를 펼쳐볼게요. 먼저 아래 정보를 알려주세요.</>
                   )}

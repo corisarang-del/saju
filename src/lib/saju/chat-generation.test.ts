@@ -9,4 +9,11 @@ describe("chat_generation", () => {
   it("keeps_paid_answers_with_a_larger_generation_budget", () => {
     expect(getChatMaxOutputTokens({ isFree: false })).toBeGreaterThanOrEqual(8000);
   });
+
+  it("caps_first_consultation_lower_than_follow_up_answers", () => {
+    expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeLessThan(
+      getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: false }),
+    );
+    expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeLessThanOrEqual(900);
+  });
 });

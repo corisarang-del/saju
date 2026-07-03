@@ -65,6 +65,36 @@ describe("CHARACTER_LIST", () => {
     }
   });
 
+  it("keeps_character_copy_aligned_with_first_consultation_foreign_word_rules", () => {
+    const rawPrompts = Object.values(CHARACTERS)
+      .map((character) =>
+        [
+          character.description,
+          character.quote,
+          character.tags.join("\n"),
+          character.service,
+          character.freePrompt,
+          character.paidPrompt,
+        ].join("\n"),
+      )
+      .join("\n");
+    const finalPrompts = CHARACTER_LIST.map((character) =>
+      [
+        character.description,
+        character.quote,
+        character.tags.join("\n"),
+        character.service,
+        character.freePrompt,
+        character.paidPrompt,
+      ].join("\n"),
+    ).join("\n");
+
+    expect(rawPrompts).not.toContain("타이밍");
+    expect(finalPrompts).not.toContain("타이밍");
+    expect(finalPrompts).not.toMatch(/시기이야|시기을|체크/);
+    expect(finalPrompts).toContain("시기");
+  });
+
   it("keeps_character_copy_free_from_korean_replacement_artifacts", () => {
     const content = Object.values(CHARACTERS)
       .map((character) =>

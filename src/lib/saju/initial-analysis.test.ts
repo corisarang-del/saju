@@ -62,4 +62,9 @@ describe("initial_analysis", () => {
     expect(getInitialAnalysisPrompt("seojun")).toContain("커리어");
     expect(getInitialAnalysisPrompt("doyun")).toContain("사업");
   });
+
+  it("keeps_initial_prompts_aligned_with_first_consultation_foreign_word_rules", () => {
+    expect(getInitialAnalysisPrompt("doyun")).toContain("창업 시기");
+    expect(getInitialAnalysisPrompt("doyun")).not.toContain("타이밍");
+  });
 });

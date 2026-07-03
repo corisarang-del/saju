@@ -47,7 +47,7 @@ export const LANDING_CHAT_REVIEW_MESSAGES = [
   {
     side: "left" as const,
     texts: [
-      "이직 고민 중이었는데 무조건 옮기라는 말이 아니라 지금 체크할 조건을 정리해줘서 편했어.",
+      "이직 고민 중이었는데 무조건 옮기라는 말이 아니라 지금 확인할 조건을 정리해줘서 편했어.",
       "괜히 겁주는 느낌도 없고",
     ],
   },

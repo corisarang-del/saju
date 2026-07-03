@@ -23,8 +23,9 @@ describe("trust_copy", () => {
     expect(reviewText).not.toContain("부동산");
     expect(reviewText).not.toContain("금에 투자");
     expect(reviewText).not.toContain("합격했습니다");
+    expect(reviewText).not.toContain("체크할 조건");
     expect(reviewText).toContain(
-      "이직 고민 중이었는데 무조건 옮기라는 말이 아니라 지금 체크할 조건을 정리해줘서 편했어.",
+      "이직 고민 중이었는데 무조건 옮기라는 말이 아니라 지금 확인할 조건을 정리해줘서 편했어.",
     );
   });
 });
