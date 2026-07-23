@@ -182,6 +182,7 @@ describe("chat_completion_guard", () => {
       hasEmoji: false,
       hasEnglish: false,
       hasBlockedPattern: false,
+      hasDenseHanjaTerms: false,
       isValid: false,
     });
   });
@@ -245,6 +246,29 @@ describe("chat_completion_guard", () => {
     ];
 
     for (const assistantText of cases) {
+      expect(shouldPersistAssistantAnswer({
+        assistantText,
+        finishReason: "stop",
+        isError: false,
+        isInitialAnalysis: true,
+      })).toBe(false);
+    }
+  });
+
+  it("rejects_initial_analysis_with_mixed_astrology_or_dense_hanja_terms", () => {
+    const cases = [
+      "하늘 씨, 사주와 별자리 데이터를 보니 지금 관계에서 신중하게 살펴볼 부분이 보여요. 사주 흐름으로 보면 마음을 빨리 정하기보다 상대의 반응을 확인해야 하는 시기예요.\n\n오늘은 최근 대화에서 마음이 흔들린 문장을 기록하고 정리해보세요. 먼저 확인하고 싶은 건 상대 마음이에요, 내 선택이에요?",
+      "하늘 씨, 자미두수로 보면 관계 흐름이 섬세하게 움직이고 있어요. 사주 흐름으로 보면 지금은 감정의 속도를 낮추고 내 기준을 먼저 세워야 하는 시기예요.\n\n오늘은 상대에게 바라는 조건을 세 가지로 기록하고 정리해보세요. 먼저 확인하고 싶은 건 연락 흐름이에요, 마음 정리예요?",
+      "하늘 씨, 2026년 丙午에는 화(火) 기운과 정관(正官)이 같이 들어와 관계 판단이 예민해질 수 있어요. 사주 흐름으로 보면 지금은 결론보다 기준을 먼저 세워야 하는 시기예요.\n\n오늘은 상대에게 기대하는 말과 내가 실제로 받은 말을 나누어 기록해보세요. 먼저 확인하고 싶은 건 상대 마음이에요, 내 기준이에요?",
+    ];
+
+    for (const assistantText of cases) {
+      expect(getChatCompletionFailureMessage({
+        assistantText,
+        finishReason: "stop",
+        isError: false,
+        isInitialAnalysis: true,
+      })).toBe("첫 상담 응답 형식이 맞지 않아 다시 분석해줘. 별은 차감하지 않았어.");
       expect(shouldPersistAssistantAnswer({
         assistantText,
         finishReason: "stop",

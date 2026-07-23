@@ -126,4 +126,12 @@ describe("gemini_first_consultation_qa_runner", () => {
     expect(script).toContain("품질 기준 미달 항목");
     expect(script).toContain("attempt < MAX_QA_ATTEMPTS");
   });
+
+  it("records_attempt_durations_for_operational_latency_tracking", () => {
+    const script = readProjectFile("scripts/qa-gemini-first-consultation.mjs");
+
+    expect(script).toContain("attemptDurationsMs");
+    expect(script).toContain("totalDurationMs");
+    expect(script).toContain("시도별 소요");
+  });
 });

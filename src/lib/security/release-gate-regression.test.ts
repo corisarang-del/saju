@@ -40,19 +40,29 @@ describe("release_gate_regression", () => {
 
   it("rate_limits_and_locks_chat_generation_before_calling_ai_provider", () => {
     const route = readProjectFile("src/app/api/saju/chat/route.ts");
+    const migration = readProjectFile(
+      "supabase/migrations/202607240030_chat_generation_persistent_lock.sql",
+    );
 
     const rateLimitIndex = route.indexOf("await checkRateLimit");
-    const lockIndex = route.indexOf("if (!acquireChatGenerationLock");
+    const localLockIndex = route.indexOf("if (!acquireChatGenerationLock");
+    const persistentLockIndex = route.indexOf("await acquirePersistentChatGenerationLock");
     const streamTextIndex = route.indexOf("streamText({");
 
     expect(route).toContain("getClientIp");
     expect(route).toContain("CHAT_DAILY_LIMIT");
+    expect(route).toContain("acquirePersistentChatGenerationLock");
+    expect(route).toContain("releasePersistentChatGenerationLock");
     expect(route).toContain("releaseChatGenerationLock");
     expect(route).toContain("status: 409");
     expect(route).toContain("status: 429");
+    expect(migration).toContain("create table if not exists public.chat_generation_locks");
+    expect(migration).toContain("create or replace function public.acquire_chat_generation_lock");
+    expect(migration).toContain("create or replace function public.release_chat_generation_lock");
     expect(rateLimitIndex).toBeGreaterThan(-1);
-    expect(lockIndex).toBeGreaterThan(rateLimitIndex);
-    expect(streamTextIndex).toBeGreaterThan(lockIndex);
+    expect(localLockIndex).toBeGreaterThan(rateLimitIndex);
+    expect(persistentLockIndex).toBeGreaterThan(localLockIndex);
+    expect(streamTextIndex).toBeGreaterThan(persistentLockIndex);
   });
 
   it("reserves_chat_star_before_ai_and_refunds_on_generation_or_persistence_failure", () => {

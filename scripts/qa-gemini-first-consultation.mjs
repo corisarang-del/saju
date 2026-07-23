@@ -292,12 +292,14 @@ function renderReport(results) {
     "",
   ];
 
-  for (const { testCase, text, evaluation, attempts } of results) {
+  for (const { testCase, text, evaluation, attempts, attemptDurationsMs, totalDurationMs } of results) {
     lines.push(`## ${testCase.label}`);
     lines.push("");
     lines.push(`- 캐릭터: ${testCase.character}`);
     lines.push(`- 고민: ${testCase.concern}`);
     lines.push(`- 시도 횟수: ${attempts}`);
+    lines.push(`- 시도별 소요: ${attemptDurationsMs.map((duration) => `${duration}ms`).join(", ")}`);
+    lines.push(`- 전체 소요: ${totalDurationMs}ms`);
     lines.push(`- 평가: ${JSON.stringify(evaluation)}`);
     lines.push("");
     lines.push("### 답변 전문");
@@ -383,15 +385,19 @@ async function main() {
     let feedback = [];
     let text = "";
     let evaluation;
+    const startedAt = Date.now();
+    const attemptDurationsMs = [];
 
     while (attempt < MAX_QA_ATTEMPTS) {
       attempt += 1;
+      const attemptStartedAt = Date.now();
       const result = await generateText({
         model: getModel(),
         system,
         prompt: buildPrompt(testCase, feedback),
         maxOutputTokens: 500,
       });
+      attemptDurationsMs.push(Date.now() - attemptStartedAt);
       text = result.text;
       evaluation = evaluateAnswer(text, testCase);
 
@@ -407,6 +413,8 @@ async function main() {
       text,
       evaluation,
       attempts: attempt,
+      attemptDurationsMs,
+      totalDurationMs: Date.now() - startedAt,
     });
   }
 

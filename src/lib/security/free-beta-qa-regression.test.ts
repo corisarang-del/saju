@@ -15,6 +15,16 @@ describe("free_beta_qa_regression", () => {
     expect(route).not.toContain('new Response("Unauthorized"');
   });
 
+  it("shows_google_login_cta_when_anonymous_reading_start_requires_login", () => {
+    const page = readProjectFile("src/app/[locale]/reading/page.tsx");
+
+    expect(page).toContain("loginRequired");
+    expect(page).toContain("Google로 로그인하고 분석 계속하기");
+    expect(page).toContain("/api/auth/google?next=");
+    expect(page).toContain("입력한 정보는 로그인 후 이어서 쓸 수 있게 주소에 담아둘게.");
+    expect(page).toContain("buildReadingResumePath");
+  });
+
   it("keeps_free_beta_public_copy_from_implying_payment_is_open", () => {
     const layout = readProjectFile("src/app/[locale]/layout.tsx");
     const footer = readProjectFile("src/components/saju/landing/SajuFooter.tsx");

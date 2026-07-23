@@ -689,3 +689,97 @@
 - 이후 Vercel env 업로드/검증/푸시 요청 문서와 메모리를 별도 후속 커밋으로 남긴다.
 - `.env.local`, `.vercel`, `supabase/.temp`는 커밋 대상에서 제외한다.
 - 다음 배포 확인은 production 배포 후 smoke QA, 특히 Vertex 인증/첫 상담 응답/별 거래 로그를 중심으로 진행한다.
+
+## 2026-07-24 수정후 실사용 QA Supabase live API 통과
+- 개발자 수정 후 실제 QA를 재실행했다.
+- Supabase host `sfpwgywcmhgilrqearsz.supabase.co`는 더 이상 `ENOTFOUND`가 아니고 gateway 응답이 확인된다.
+- 전체 vitest 직접 실행은 53개 파일 / 218개 테스트 통과했다.
+- eslint 직접 실행, `node scripts/check-env.js`, `./node_modules/.bin/next build`, `git diff --check`는 통과했다.
+- `pnpm test`, `pnpm lint`, `pnpm test:env`는 이번에도 pnpm 래퍼에서 `fetch failed`로 실패했다. 같은 검증을 직접 실행하면 통과하므로 코드 실패로 보지는 않는다.
+- Gemini 첫 상담 live QA는 6케이스 모두 통과했다. 리포트 파일명은 UTC 기준 `docs/qa/gemini-first-consultation-qa-2026-07-23.md`이며 KST 2026-07-24 실행분이다.
+- 무료 live API QA는 통과했고 실제 거래 로그 `chat_message:-1:2`, 최종 별 2를 확인했다.
+- 전체 live API QA는 통과했고 실제 거래 로그 `report:-5:10`, `monthly_report:-3:7`, `chat_message:-1:6`, `chat_message:-1:2`, 최종 별 2를 확인했다.
+- `/ko`, `/ko/coin-shop`, `/ko/reading`은 HTTP 200, OAuth 시작은 307 redirect다.
+- 무인증 `/api/saju/chat`은 JSON 401로 응답해 이전 plain text 오류 문제는 해결됐다.
+- Playwright 스냅샷에서 랜딩 렌더링, 콘솔 무에러, 사이드바 띄어쓰기 수정이 확인됐다.
+- 남은 관찰 포인트는 pnpm 래퍼 `fetch failed`, Gemini 재시도/응답 지연이다.
+- 상세 문서: `docs/개발일지/수정후-실사용-QA-Supabase-live-api-통과-20260724.md`.
+
+## 2026-07-24 production 상담 QA 문제점 개발자전달
+- 사용자가 `https://monthlysaju.vercel.app/` 배포 완료 후 실제 상담 QA를 요청했고, 코드 수정 없이 배포 사이트를 점검했다.
+- production에서 `/` -> `/ko` 307, `/ko`, `/ko/reading`, `/ko/coin-shop` 200, OAuth 시작 307, 무인증 채팅 401 JSON은 정상이다.
+- 무료 live API QA는 통과했다. `chat_message:-1:2`, 최종 별 2를 확인했다.
+- 전체 live API QA는 첫 실행에서 paid 동시 상담이 기대한 `200 + 409`가 아니라 `200 + 503 chat_generation_failed`로 실패했다. 재실행은 통과했으므로 간헐 이슈로 기록한다.
+- Playwright console에서 `/api/analytics/track` 404가 확인됐다.
+- 상담 응답은 자동 품질 기준을 통과하지만 `사주와 별자리 데이터`, 한자/전문용어 과다가 보여 20대 일반 사용자 말투로는 무겁다.
+- `/ko/reading` 비로그인 분석 시작 후 `로그인이 필요합니다.`만 보여 로그인 CTA가 약하다.
+- 개발자 전달 문서: `docs/pm/production-상담QA-문제점-개발자전달-20260724.md`.
+
+## 2026-07-24 pnpm wrapper/Gemini 지연 관찰 보강
+- Codex sandbox에서는 `pnpm test`, `pnpm lint`, `pnpm test:env`가 `fetch failed`로 실패하거나 멈출 수 있다.
+- 같은 검증을 직접 실행하면 통과하고, 권한 있는 실제 실행 환경에서도 `pnpm test`, `pnpm lint`, `pnpm test:env`가 통과한다.
+- 앱 코드 실패로 보지 말고 sandbox의 pnpm fetch 경로 제한으로 분리해서 해석한다.
+- live API QA 스크립트는 `durationMs`, `freeChatDurationMs`, `paidChatDurationMs`, `paidConflictDurationMs`를 출력한다.
+- Gemini 첫 상담 QA 리포트는 케이스별 `attemptDurationsMs`, `totalDurationMs`, `시도별 소요`, `전체 소요`를 기록한다.
+- 상세 문서: `docs/개발일지/pnpm-wrapper-fetch-failed와-Gemini-지연-관찰보강-20260724.md`.
+
+## 2026-07-24 Vercel production 첫 배포
+- `monthlysaju.vercel.app`가 `404 DEPLOYMENT_NOT_FOUND`를 반환한 원인은 Vercel `todocori/monthlysaju`에 deployment가 하나도 없었기 때문이다.
+- production env 15개는 등록되어 있었고, `pnpm build`는 통과했다.
+- `pnpm dlx vercel --prod --yes`로 첫 production deployment를 생성했다.
+- deployment id는 `dpl_2J9XPVLtPK4DucMCAc6fFxybCQJr`다.
+- production deployment는 `https://monthlysaju-et2xuqhl4-todocori.vercel.app`, alias는 `https://monthlysaju.vercel.app`다.
+- `https://monthlysaju.vercel.app`는 `/ko`로 307 redirect, `/ko`는 200을 반환한다.
+- 다음 확인은 production URL 기준 `/ko` 렌더링, Google OAuth, 첫 상담 API, Vertex 인증 smoke QA다.
+
+## 2026-07-24 Google OAuth production origin 수정
+- 사용자가 Google 로그인 중 만료된 `equally-brochures-ratio-palestinian.trycloudflare.com`로 이동하는 문제를 제보했다.
+- production `/api/auth/google` 확인 결과 실제 서버가 만들던 `redirect_to`는 `http://localhost:3000/auth/callback`이었다.
+- Vercel production env의 `APP_ORIGIN`, `NEXT_PUBLIC_APP_URL`을 삭제 후 `https://monthlysaju.vercel.app`로 재등록했다.
+- production 재배포 후 `redirect_to=https://monthlysaju.vercel.app/auth/callback?...`로 수정됐다.
+- Supabase authorize는 production redirect를 받아 Google accounts URL로 302 redirect한다.
+- 새 deployment id는 `dpl_2RQtu5AdMpL9VTBXBnREHUztucb1`다.
+
+## 2026-07-24 Vercel Vertex WIF production 상담복구
+- production 상담 6회 연속 실패의 근본 원인은 `AI_PROVIDER=vertex`인데 Vercel Function 런타임에 Vertex 인증이 없던 것이다.
+- 로컬 ADC는 Vercel에서 사용할 수 없고, Google API key provider도 403으로 실패했다.
+- 서비스 계정 키 생성은 조직 정책 `constraints/iam.disableServiceAccountKeyCreation` 때문에 불가했다.
+- 해결은 Vercel OIDC `x-vercel-oidc-token` + Google Workload Identity Federation으로 진행했다.
+- Google Cloud에 `vercel` workload identity pool/provider를 만들고 issuer `https://oidc.vercel.com/todocori`, subject `owner:todocori:project:monthlysaju:environment:production`으로 제한했다.
+- 서비스 계정 `monthlysaju-vertex@project-3473cfe3-7869-4a96-855.iam.gserviceaccount.com`에 `roles/aiplatform.user`, `roles/iam.workloadIdentityUser`를 부여했다.
+- Vercel production에는 `GOOGLE_VERTEX_WORKLOAD_IDENTITY_AUDIENCE`, `GOOGLE_VERTEX_SERVICE_ACCOUNT_EMAIL`을 추가했다. 비밀키는 저장하지 않는다.
+- deployment `dpl_3pQhZyoQg5fRF3EUBT4nUUmCuK9x` 이후 production 무료/전체 live API QA가 모두 통과했다.
+
+## 2026-07-24 production 상담 실사용 정상확인
+- 사용자가 Google 로그인 후 production 사주상담이 실제로 잘 된다고 확인했다.
+- 현재 운영 상태는 Google 로그인 정상, Vertex WIF 인증 정상, 무료/유료 채팅 live API QA 정상, 사용자 실사용 상담 정상이다.
+- `docs/개발일지/사주상담-production-실사용-정상확인-20260724.md`에 최종 확인 기록을 남겼다.
+
+## 2026-07-24 배포 후 PC/폰 디자인 리뷰 Findings
+- `https://monthlysaju.vercel.app/` production 화면 기준 릴리즈 차단급 디자인 깨짐은 없다.
+- P1: PC 랜딩에서 캐릭터 캐러셀 첫 카드가 왼쪽 사이드바에 걸려 잘려 보인다. 첫 활성 카드 정렬 또는 edge fade/gutter 보강이 필요하다.
+- P1: 모바일 390x844 첫 진입에서 쿠키 안내, H1, 큰 카드, 하단 탭 때문에 `대화하기` CTA가 첫 viewport 밖으로 밀린다.
+- P2: PC H1 마지막 `줄게`가 외톨이 줄처럼 떨어져 타이포그래피 마감이 약해 보인다.
+- P2: 모바일 `/ko/reading`의 placeholder/helper text 대비가 약해 실제 폰에서 흐릿하게 보인다.
+- P2: production console에 `/api/analytics/track` 404가 남아 운영 완성도와 이벤트 수집 신뢰를 떨어뜨린다.
+- 개발자 전달 문서: `docs/pm/배포후-PC-폰-디자인개선-개발자전달-20260724.md`.
+
+## 2026-07-24 배포 후 디자인 개선 수정후 재리뷰 Findings
+- 개발자 수정 후 production URL을 다시 봤지만 이전 디자인 개선점 중 일부가 계속 재현된다.
+- PC 1280x720 `/ko`: 캐릭터 캐러셀 첫 카드가 사이드바 옆에서 잘려 보이고, H1 마지막 글자/단어가 외톨이 줄로 떨어진다.
+- 모바일 390x844 `/ko`: 쿠키 미동의 첫 진입에서 `대화하기` CTA가 첫 viewport에 보이지 않는다.
+- 모바일 390x844 `/ko/reading`: 입력폼 신뢰 문구는 좋지만 생년월일/시간 placeholder와 helper text 대비가 여전히 약하다.
+- production console: `/api/analytics/track` 404가 `/ko`, `/ko/reading`에서 계속 보인다.
+- 릴리즈 차단급 디자인 깨짐은 아니지만, production 배포 반영 여부와 남은 P1/P2 개선을 다시 확인해야 한다.
+- 개발자 전달 문서: `docs/pm/배포후-PC-폰-디자인개선-수정후재리뷰-20260724.md`.
+
+## 2026-07-24 운영 사이트 보안점검
+- `https://monthlysaju.vercel.app/` production 배포 후 `codex-security` 없이 `security-review`, OWASP, MDN HTTP Observatory 기준으로 비파괴 외부 보안점검을 수행했다.
+- 개발자 전달 문서: `docs/pm/운영사이트-보안점검-authenticated-QA-개발자전달-20260724.md`.
+- MDN HTTP Observatory 결과는 `B`, 점수 `75`, 10개 중 8개 통과/2개 실패다.
+- HTTPS redirect, HSTS, CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy는 확인됐다.
+- `.env`, `.git/config`, `package.json`은 공개되지 않았고, 공개 HTML에서 service role, Paddle secret, Google AI key, AWS key, DB URL 패턴은 발견하지 못했다.
+- `/api/saju/chat`, `/api/saju/suggestions`, `/api/webhooks/paddle` 비인증 요청은 401로 막힌다.
+- OAuth redirect는 악성 `origin`/`x-forwarded-host`를 넣어도 `https://monthlysaju.vercel.app/auth/callback`로 유지됐다.
+- 남은 P1은 OAuth PKCE code verifier cookie의 `Secure`/`HttpOnly`/TTL 하드닝과 CSP의 `unsafe-inline`/`unsafe-eval`/넓은 `frame-ancestors` 축소다.
+- 별도 authenticated QA 범위로 계정 데이터 IDOR, 운영 Supabase RLS/RPC 적용, Paddle 결제 성공/실패 webhook 정합성을 문서화했다.

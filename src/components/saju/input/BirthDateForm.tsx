@@ -108,7 +108,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         <h2 className="text-2xl font-bold text-[#191F28]">
           생년월일을 알려주세요
         </h2>
-        <p className="mt-2 text-[#8B95A1] text-sm">
+        <p className="mt-2 text-[#6B7280] text-sm">
           정확한 사주 분석을 위해 정보를 입력해주세요
         </p>
       </div>
@@ -117,7 +117,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         <p className="text-[13px] font-semibold text-[#191F28]">
           {BIRTH_DATE_PRIVACY_NOTICE.title}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-[#6B7684]">
+        <p className="mt-1 text-xs leading-relaxed text-[#4E5968]">
           {BIRTH_DATE_PRIVACY_NOTICE.body}
         </p>
       </div>
@@ -135,7 +135,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
           placeholder="이름을 입력하세요"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="h-12 rounded-xl border-gray-200 text-base"
+          className="h-12 rounded-xl border-gray-200 text-base placeholder:text-[#667085]"
         />
         {errors.name && (
           <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -149,7 +149,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         </Label>
         <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-2">
           <div className="space-y-1.5">
-            <Label htmlFor="birth-year" className="text-xs text-[#6B7684]">
+            <Label htmlFor="birth-year" className="text-xs text-[#4E5968]">
               태어난 연도
             </Label>
             <div className="relative">
@@ -163,15 +163,15 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={2010}
                 value={year}
                 onChange={(e) => handleYearChange(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-8 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-8 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 년
               </span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="birth-month" className="text-xs text-[#6B7684]">
+            <Label htmlFor="birth-month" className="text-xs text-[#4E5968]">
               월
             </Label>
             <div className="relative">
@@ -185,15 +185,15 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={12}
                 value={month}
                 onChange={(e) => handleMonthChange(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 월
               </span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="birth-day" className="text-xs text-[#6B7684]">
+            <Label htmlFor="birth-day" className="text-xs text-[#4E5968]">
               일
             </Label>
             <div className="relative">
@@ -207,15 +207,15 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={maxDay}
                 value={day}
                 onChange={(e) => setDay(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
               />
-              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8B95A1]">
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 일
               </span>
             </div>
           </div>
         </div>
-        <p className="mt-1.5 text-xs text-[#8B95A1]">예: 1998 / 03 / 21</p>
+        <p className="mt-1.5 text-xs text-[#6B7280]">예: 1998 / 03 / 21</p>
         {(errors.year || errors.month || errors.day) && (
           <p className="text-red-500 text-xs mt-1">생년월일을 입력해주세요</p>
         )}
@@ -238,7 +238,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             ))}
           </SelectContent>
         </Select>
-        <p className="mt-1.5 text-xs leading-relaxed text-[#6B7684]">
+        <p className="mt-1.5 text-xs leading-relaxed text-[#4E5968]">
           태어난 시간을 몰라도 분석 가능해. 알면 더 정밀하게 볼 수 있어.
         </p>
       </div>
@@ -248,7 +248,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
         <Label className="text-sm font-medium text-[#191F28] mb-1.5 block">
           성별
         </Label>
-        <p className="mb-2 text-xs leading-relaxed text-[#6B7684]">
+        <p className="mb-2 text-xs leading-relaxed text-[#4E5968]">
           성별은 사주 계산 기준에 필요해서만 사용해.
         </p>
         <div className="grid grid-cols-2 gap-2">

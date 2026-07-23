@@ -22,4 +22,13 @@ describe("live_api_qa_runner", () => {
     expect(script).toContain("Supabase DNS lookup failed");
     expect(script).toContain("curl -I https://${host}/auth/v1/health");
   });
+
+  it("reports_chat_request_durations_for_operational_latency_tracking", () => {
+    const script = readProjectFile("scripts/qa-live-api-check.mjs");
+
+    expect(script).toContain("durationMs");
+    expect(script).toContain("freeChatDurationMs");
+    expect(script).toContain("paidChatDurationMs");
+    expect(script).toContain("paidConflictDurationMs");
+  });
 });

@@ -168,4 +168,52 @@ describe("design_audit_regression", () => {
     expect(content).toContain("대화 기록은 로그인 후 자동으로 저장돼");
     expect(content).not.toContain("대화 기록을 저장하세요");
   });
+
+  it("keeps_pc_landing_character_carousel_clear_of_the_sidebar_with_intentional_edge_fade", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("max-w-5xl");
+    expect(content).toContain("md:px-0");
+    expect(content).toContain("md:[mask-image:linear-gradient");
+    expect(content).toContain("scroll-ps-4 md:scroll-ps-0");
+    expect(content).toContain("snap-start md:snap-center");
+  });
+
+  it("keeps_mobile_first_character_cta_reachable_above_the_fold", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("auto-cols-[66vw]");
+    expect(content).toContain("max-w-[250px]");
+    expect(content).toContain("aspect-[4/5]");
+    expect(content).toContain("p-3 md:p-4");
+    expect(content).toContain("pt-3 md:pt-8 pb-2 md:pb-6");
+  });
+
+  it("prevents_pc_landing_h1_widow_line_breaks_with_a_wider_measure_and_balanced_wrap", () => {
+    const content = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(content).toContain("max-w-[760px]");
+    expect(content).toContain("text-balance");
+    expect(content).toContain("md:text-[2.65rem]");
+    expect(content).toContain('<span className="inline-block">오늘의 흐름부터</span>');
+    expect(content).toContain('<span className="inline-block">먼저 정리해줄게</span>');
+  });
+
+  it("raises_mobile_reading_form_placeholder_and_helper_text_contrast", () => {
+    const content = readProjectFile("src/components/saju/input/BirthDateForm.tsx");
+
+    expect(content).toContain("placeholder:text-[#667085]");
+    expect(content).toContain("text-[#4E5968]");
+    expect(content).toContain("text-[#6B7280]");
+    expect(content).not.toContain("text-[#8B95A1]\">예:");
+  });
+
+  it("provides_an_analytics_track_route_so_production_page_views_do_not_404", () => {
+    const routePath = "src/app/api/analytics/track/route.ts";
+    const content = readProjectFile(routePath);
+
+    expect(content).toContain("export async function POST");
+    expect(content).toContain("trackEvent");
+    expect(content).toContain("Response.json({ ok: true })");
+  });
 });

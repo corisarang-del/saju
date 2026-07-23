@@ -57,6 +57,20 @@ function getInitialFormData(
   };
 }
 
+function buildReadingResumePath(formData: BirthDateFormData): string {
+  const params = new URLSearchParams({
+    name: formData.name,
+    year: formData.year,
+    month: formData.month,
+    day: formData.day,
+    hour: formData.time,
+    gender: formData.gender,
+    calendar: formData.calendar,
+  });
+
+  return `/ko/reading?${params.toString()}`;
+}
+
 export default function ReadingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,9 +84,11 @@ export default function ReadingPage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginRequired, setLoginRequired] = useState(false);
 
   const handleBirthDateSubmit = (data: BirthDateFormData) => {
     setFormData(data);
+    setLoginRequired(false);
     setStep(2);
   };
 
@@ -80,6 +96,7 @@ export default function ReadingPage() {
     if (!formData || isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
+    setLoginRequired(false);
     setStep(3);
 
     try {
@@ -99,7 +116,9 @@ export default function ReadingPage() {
       });
 
       if (createError || !data) {
-        setError(createError || "분석 생성에 실패했습니다.");
+        const requiresLogin = Boolean(createError?.includes("로그인이 필요"));
+        setError(requiresLogin ? "로그인이 필요해." : createError || "분석 생성에 실패했습니다.");
+        setLoginRequired(requiresLogin);
         setStep(2);
         setIsSubmitting(false);
         return;
@@ -136,6 +155,7 @@ export default function ReadingPage() {
 
   const totalSteps = 2;
   const currentProgress = step <= 2 ? step : 2;
+  const loginNextPath = formData ? buildReadingResumePath(formData) : "/ko/reading";
 
   return (
     <div className="min-h-screen bg-white">
@@ -164,9 +184,31 @@ export default function ReadingPage() {
 
       {/* 콘텐츠 */}
       <div className="max-w-md mx-auto px-5 py-8">
-        {error && (
+        {error && !loginRequired && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm text-center">
             {error}
+          </div>
+        )}
+        {loginRequired && (
+          <div
+            role="alert"
+            className="mb-5 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(88,28,135,0.45)]"
+          >
+            <p className="text-sm font-semibold text-[#191F28]">
+              로그인이 필요해.
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#4E5968]">
+              입력한 정보는 로그인 후 이어서 쓸 수 있게 주소에 담아둘게.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = `/api/auth/google?next=${encodeURIComponent(loginNextPath)}`;
+              }}
+              className="mt-3 w-full rounded-xl bg-[#7c3aed] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#6d28d9]"
+            >
+              Google로 로그인하고 분석 계속하기
+            </button>
           </div>
         )}
 

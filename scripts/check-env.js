@@ -13,6 +13,7 @@ const REQUIRED_ENV_KEYS = [
 
 const GOOGLE_AI_ENV_KEYS = ["GOOGLE_GENERATIVE_AI_API_KEY"];
 const GOOGLE_VERTEX_ENV_KEYS = ["GOOGLE_VERTEX_PROJECT", "GOOGLE_VERTEX_LOCATION"];
+const GOOGLE_VERTEX_RUNTIME_AUTH_KEY = "GOOGLE_VERTEX_RUNTIME_AUTH";
 
 const PADDLE_ENV_KEYS = [
   "PADDLE_API_KEY",
@@ -42,6 +43,13 @@ const FORBIDDEN_PUBLIC_SECRET_KEYS = [
   "NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY",
   "NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT",
   "NEXT_PUBLIC_GOOGLE_VERTEX_LOCATION",
+  "NEXT_PUBLIC_GOOGLE_CLIENT_EMAIL",
+  "NEXT_PUBLIC_GOOGLE_PRIVATE_KEY",
+  "NEXT_PUBLIC_GOOGLE_PRIVATE_KEY_ID",
+  "NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS",
+  "NEXT_PUBLIC_GOOGLE_VERTEX_CREDENTIALS_JSON",
+  "NEXT_PUBLIC_GOOGLE_VERTEX_WORKLOAD_IDENTITY_AUDIENCE",
+  "NEXT_PUBLIC_GOOGLE_VERTEX_SERVICE_ACCOUNT_EMAIL",
 ];
 
 function isPlaceholderValue(value) {
@@ -72,6 +80,37 @@ function isTrueValue(value) {
   return String(value ?? "").trim().toLowerCase() === "true";
 }
 
+function hasVertexServiceAccountPair(env) {
+  return !isPlaceholderValue(env.GOOGLE_CLIENT_EMAIL)
+    && !isPlaceholderValue(env.GOOGLE_PRIVATE_KEY);
+}
+
+function hasVertexCredentialsJson(env) {
+  if (isPlaceholderValue(env.GOOGLE_VERTEX_CREDENTIALS_JSON)) {
+    return false;
+  }
+
+  try {
+    const parsed = JSON.parse(env.GOOGLE_VERTEX_CREDENTIALS_JSON);
+    return !isPlaceholderValue(parsed?.client_email)
+      && !isPlaceholderValue(parsed?.private_key);
+  } catch {
+    return false;
+  }
+}
+
+function hasVertexWorkloadIdentity(env) {
+  return !isPlaceholderValue(env.GOOGLE_VERTEX_WORKLOAD_IDENTITY_AUDIENCE)
+    && !isPlaceholderValue(env.GOOGLE_VERTEX_SERVICE_ACCOUNT_EMAIL);
+}
+
+function hasVertexRuntimeAuth(env) {
+  return !isPlaceholderValue(env.GOOGLE_APPLICATION_CREDENTIALS)
+    || hasVertexServiceAccountPair(env)
+    || hasVertexCredentialsJson(env)
+    || hasVertexWorkloadIdentity(env);
+}
+
 function validateEnv(env) {
   const aiProvider = getAiProvider(env);
   const aiKeys = aiProvider === "vertex" ? GOOGLE_VERTEX_ENV_KEYS : GOOGLE_AI_ENV_KEYS;
@@ -98,6 +137,14 @@ function validateEnv(env) {
     && String(env.RATE_LIMIT_BACKEND ?? "").trim().toLowerCase() !== "supabase"
   ) {
     missing.push(RATE_LIMIT_BACKEND_ENV_KEY);
+  }
+
+  if (
+    isTrueValue(env.REQUIRE_PRODUCTION_ENV)
+    && aiProvider === "vertex"
+    && !hasVertexRuntimeAuth(env)
+  ) {
+    missing.push(GOOGLE_VERTEX_RUNTIME_AUTH_KEY);
   }
 
   if (
@@ -154,12 +201,14 @@ module.exports = {
   REQUIRED_ENV_KEYS,
   GOOGLE_AI_ENV_KEYS,
   GOOGLE_VERTEX_ENV_KEYS,
+  GOOGLE_VERTEX_RUNTIME_AUTH_KEY,
   PADDLE_ENV_KEYS,
   APP_ORIGIN_ENV_KEY,
   RATE_LIMIT_BACKEND_ENV_KEY,
   PAYMENTS_DISABLED_FREE_BETA_KEY,
   FORBIDDEN_PUBLIC_SECRET_KEYS,
   getAiProvider,
+  hasVertexRuntimeAuth,
   isPlaceholderValue,
   validateEnv,
 };

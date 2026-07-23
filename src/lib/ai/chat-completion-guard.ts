@@ -15,6 +15,7 @@ interface InitialAnalysisQualityReport {
   hasEmoji: boolean;
   hasEnglish: boolean;
   hasBlockedPattern: boolean;
+  hasDenseHanjaTerms: boolean;
   isValid: boolean;
 }
 
@@ -59,6 +60,10 @@ const BLOCKED_INITIAL_ANALYSIS_PHRASES = [
   "[사주]",
   "[자미두수]",
   "[점성술]",
+  "별자리 데이터",
+  "자미두수",
+  "서양 점성술",
+  "Western Astrology",
   "다음 질문에 답해주시면",
   "더 깊이 이야기 나눌 수 있습니다",
   "더 깊이 이야기 나눌 수 있어요",
@@ -91,6 +96,7 @@ const BLOCKED_INITIAL_ANALYSIS_PATTERNS = [
   ...LIGHT_FOREIGN_WORDS.map((word) => new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")),
   /물이?\s*.{0,8}새는\s+주머니/,
   /\[(?:사주|자미두수|점성술)\]/,
+  /[\u3400-\u9FFF].{0,80}[\u3400-\u9FFF]/,
   /(^|[\s"'“])님의\s+사주/,
   /\*\*/,
 ];
@@ -130,6 +136,7 @@ export function getInitialAnalysisQualityReport(text: string): InitialAnalysisQu
   const hasEmoji = /\p{Extended_Pictographic}/u.test(text);
   const hasEnglish = /[A-Za-z]/.test(text);
   const hasBlockedPattern = BLOCKED_INITIAL_ANALYSIS_PATTERNS.some((pattern) => pattern.test(text));
+  const hasDenseHanjaTerms = /[\u3400-\u9FFF].{0,80}[\u3400-\u9FFF]/.test(text.slice(0, 200));
 
   return {
     paragraphCount,
@@ -139,10 +146,12 @@ export function getInitialAnalysisQualityReport(text: string): InitialAnalysisQu
     hasEmoji,
     hasEnglish,
     hasBlockedPattern,
+    hasDenseHanjaTerms,
     isValid: paragraphCount === 2
       && !hasEmoji
       && !hasEnglish
       && !hasBlockedPattern
+      && !hasDenseHanjaTerms
       && endsWithQuestion
       && hasSajuGrounding
       && concreteTodayAction,

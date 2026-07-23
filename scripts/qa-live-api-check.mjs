@@ -154,6 +154,8 @@ function evaluateFirstConsultation(text, expectedWords) {
   const hasEmoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text);
   const hasLightForeign = /(타이밍|루틴|패턴|플랜|체크|밸런스|리스크|포인트)/.test(text);
   const hasEnglish = /[A-Za-z]/.test(text);
+  const hasMixedAstrology = /(별자리 데이터|자미두수)/.test(text);
+  const hasDenseHanjaTerms = /[\u3400-\u9FFF].{0,80}[\u3400-\u9FFF]/.test(text.slice(0, 200));
   const mentionsConcern = expectedWords.some((word) => text.includes(word));
   const actionParagraph = paragraphs[1] ?? "";
   const hasConcreteAction = /(오늘|오늘은|오늘부터|오늘 당장|오늘 할 일|오늘 해볼 일|오늘 바로).{0,90}(기록|정리|비교|확인|나누|말하기|적어|점검)/.test(actionParagraph);
@@ -166,6 +168,8 @@ function evaluateFirstConsultation(text, expectedWords) {
     hasEmoji,
     hasLightForeign,
     hasEnglish,
+    hasMixedAstrology,
+    hasDenseHanjaTerms,
     mentionsConcern,
     preview: text.slice(0, 180),
   };
@@ -180,6 +184,8 @@ function assertFirstConsultation(label, text, expectedWords) {
   assert(!result.hasEmoji, `${label}: 이모지/이모티콘 포함`, result);
   assert(!result.hasLightForeign, `${label}: 가벼운 외래어 포함`, result);
   assert(!result.hasEnglish, `${label}: 영어/영문 약어 포함`, result);
+  assert(!result.hasMixedAstrology, `${label}: 혼합 점술 체계 표현 포함`, result);
+  assert(!result.hasDenseHanjaTerms, `${label}: 첫 200자 안 한자/전문용어 과다`, result);
   assert(result.mentionsConcern, `${label}: 사용자 고민과 연결되지 않음`, result);
   return result;
 }
@@ -211,6 +217,7 @@ async function createAuthenticatedCookie() {
 }
 
 async function postJson(path, body, cookie) {
+  const startedAt = Date.now();
   const response = await fetch(`${baseUrl}${path}`, {
     method: "POST",
     headers: {
@@ -227,7 +234,7 @@ async function postJson(path, body, cookie) {
   } catch {
     // streaming responses are not JSON.
   }
-  return { response, raw, json };
+  return { response, raw, json, durationMs: Date.now() - startedAt };
 }
 
 async function createReading({ characterId, concerns, status = "pending", chatUsed = 0 }) {
@@ -359,6 +366,7 @@ async function run() {
       freeReadingId,
       freeEval,
       freeStreamExtracted: Boolean(freeStream),
+      freeChatDurationMs: freeChat.durationMs,
       finalBalance: starState.balance,
       transactionTypes: starState.transactions.map((tx) => `${tx.type}:${tx.amount}:${tx.balance_after}`),
     };
@@ -473,6 +481,9 @@ async function run() {
     freeEval,
     paidStreamExtracted: Boolean(paidStream),
     freeStreamExtracted: Boolean(freeStream),
+    paidChatDurationMs: paidResponses[0].durationMs,
+    paidConflictDurationMs: paidResponses[1].durationMs,
+    freeChatDurationMs: freeChat.durationMs,
     finalBalance: starState.balance,
     transactionTypes: starState.transactions.map((tx) => `${tx.type}:${tx.amount}:${tx.balance_after}`),
   };
