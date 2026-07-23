@@ -1165,3 +1165,15 @@ Supabase unpause 후 DNS와 gateway는 살아났지만 첫 무료 live QA는 `Co
 - Vercel production env 업로드는 service role/AI 자격증명 egress라 명시 승인이 필요하다.
 - 무료 베타 production env와 결제 재오픈 env를 섞지 않는다.
 - `AI_PROVIDER=vertex`를 Vercel에 올렸다면 배포 후 Vertex 인증이 실제 런타임에서 되는지 별도 QA가 필요하다.
+
+---
+
+## 2026-07-24: release gate 통과와 Vercel env 등록은 푸시 전에 문서/메모리로 닫는다
+
+**확인 내용**:
+운영 Supabase unpause, 마이그레이션 적용, live API QA, `pnpm release:gate`, Vercel production env 업로드까지 이어진 긴 배포 준비 흐름을 커밋 전후 문서와 `.codex/memory/`에 남겼다.
+
+**교훈**:
+- 실제 env 값은 문서나 메모리에 남기지 않고 등록 범위와 검증 결과만 기록한다.
+- Supabase CLI가 만드는 `supabase/.temp/`는 운영 상태 확인에 필요할 수 있지만 커밋 대상은 아니다.
+- push 전에는 `.env.local`, `.vercel`, `supabase/.temp` 같은 민감/임시 파일이 staged 상태가 아닌지 확인한다.

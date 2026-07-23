@@ -683,3 +683,9 @@
 - Paddle 결제 env는 무료 베타 배포 범위가 아니라 업로드하지 않았다.
 - `pnpm dlx vercel env ls production`에서 15개 env가 `Encrypted`, `Production`으로 등록된 것을 확인했다.
 - 현재 production env의 `AI_PROVIDER=vertex`는 Vercel 런타임에서 별도 인증 확인이 필요할 수 있다.
+
+## 2026-07-24 release gate 통과본 커밋/푸시 상태
+- release gate 통과본은 `ef1d371 chore: harden free beta release gate and production env` 커밋으로 정리됐다.
+- 이후 Vercel env 업로드/검증/푸시 요청 문서와 메모리를 별도 후속 커밋으로 남긴다.
+- `.env.local`, `.vercel`, `supabase/.temp`는 커밋 대상에서 제외한다.
+- 다음 배포 확인은 production 배포 후 smoke QA, 특히 Vertex 인증/첫 상담 응답/별 거래 로그를 중심으로 진행한다.

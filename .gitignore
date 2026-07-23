@@ -79,6 +79,7 @@ yarn-error.log*
 /tmp/
 /rescource/
 /productsimage/
+supabase/.temp/
 
 # ============================================
 # TypeScript
