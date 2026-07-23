@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { buildAuthCallbackUrl, getSiteUrl } from "@/lib/auth/oauth";
+import { buildAuthCallbackUrl, getSiteUrlFromRequestHeaders } from "@/lib/auth/oauth";
 
 /**
  * Initiates the Google OAuth flow.
@@ -11,7 +11,7 @@ import { buildAuthCallbackUrl, getSiteUrl } from "@/lib/auth/oauth";
  */
 export async function loginWithGoogle(next?: string) {
   const supabase = await createClient();
-  const siteUrl = getSiteUrl((await headers()).get("origin"));
+  const siteUrl = getSiteUrlFromRequestHeaders(await headers());
   const redirectTo = buildAuthCallbackUrl({ siteUrl, next });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -36,7 +36,7 @@ export async function loginWithGoogle(next?: string) {
  */
 export async function loginWithKakao(next?: string) {
   const supabase = await createClient();
-  const siteUrl = getSiteUrl((await headers()).get("origin"));
+  const siteUrl = getSiteUrlFromRequestHeaders(await headers());
   const redirectTo = buildAuthCallbackUrl({ siteUrl, next });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -61,7 +61,7 @@ export async function loginWithKakao(next?: string) {
  */
 export async function loginWithMagicLink(email: string) {
   const supabase = await createClient();
-  const siteUrl = getSiteUrl((await headers()).get("origin"));
+  const siteUrl = getSiteUrlFromRequestHeaders(await headers());
 
   const { error } = await supabase.auth.signInWithOtp({
     email,

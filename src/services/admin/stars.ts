@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { calculateStarBalance, getAdjustmentLabel, parseStarAdjustmentMode, parseStarAmount, toTransactionAmount } from "@/lib/admin/star-adjustment";
+import { parseStarAdjustmentMode, parseStarAdjustmentReason, parseStarAmount } from "@/lib/admin/star-adjustment";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { requireAdmin } from "@/utils/auth/adminGuard";
 
@@ -21,6 +22,11 @@ export interface AdminStarUserProfile {
   createdAt: string;
   lastSignInAt: string | null;
   balance: number;
+  membershipStatus: string | null;
+  membershipCurrentPeriodEnd: string | null;
+  membershipCanceledAt: string | null;
+  latestDeductionType: string | null;
+  latestSnapshotCreatedAt: string | null;
   transactions: AdminStarTransaction[];
 }
 
@@ -42,6 +48,29 @@ interface StarTransactionRow {
   type: string;
   product_type: string | null;
   created_at: string;
+}
+
+interface MembershipRow {
+  status: string;
+  current_period_end: string | null;
+  canceled_at: string | null;
+}
+
+interface SnapshotRow {
+  created_at: string;
+}
+
+interface AdminAdjustStarsResult {
+  balance_after: number;
+}
+
+function getRequestIp(requestHeaders: Headers): string | null {
+  const forwardedFor = requestHeaders.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() || null;
+  }
+
+  return requestHeaders.get("x-real-ip")?.trim() || null;
 }
 
 async function findUserByEmail(email: string): Promise<AuthUserSummary | null> {
@@ -107,12 +136,54 @@ export async function getAdminStarUserProfile(email: string): Promise<AdminStarU
     throw new Error(transactionError.message);
   }
 
+  const { data: membership, error: membershipError } = await supabase
+    .from("user_memberships")
+    .select("status, current_period_end, canceled_at")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<MembershipRow>();
+
+  if (membershipError) {
+    throw new Error(membershipError.message);
+  }
+
+  const { data: latestDeduction, error: deductionError } = await supabase
+    .from("star_transactions")
+    .select("type, product_type")
+    .eq("user_id", user.id)
+    .lt("amount", 0)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<Pick<StarTransactionRow, "type" | "product_type">>();
+
+  if (deductionError) {
+    throw new Error(deductionError.message);
+  }
+
+  const { data: latestSnapshot, error: snapshotError } = await supabase
+    .from("coaching_snapshots")
+    .select("created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<SnapshotRow>();
+
+  if (snapshotError) {
+    throw new Error(snapshotError.message);
+  }
+
   return {
     id: user.id,
     email: user.email,
     createdAt: user.created_at,
     lastSignInAt: user.last_sign_in_at ?? null,
     balance: Number(stars?.balance ?? 0),
+    membershipStatus: membership?.status ?? null,
+    membershipCurrentPeriodEnd: membership?.current_period_end ?? null,
+    membershipCanceledAt: membership?.canceled_at ?? null,
+    latestDeductionType: latestDeduction?.product_type ?? latestDeduction?.type ?? null,
+    latestSnapshotCreatedAt: latestSnapshot?.created_at ?? null,
     transactions: (transactions ?? []).map((transaction) => ({
       id: transaction.id,
       amount: transaction.amount,
@@ -125,12 +196,24 @@ export async function getAdminStarUserProfile(email: string): Promise<AdminStarU
 }
 
 export async function adjustUserStars(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const locale = String(formData.get("locale") ?? "ko");
-  const mode = parseStarAdjustmentMode(formData.get("mode"));
-  const amount = parseStarAmount(formData.get("amount"));
+  let mode: ReturnType<typeof parseStarAdjustmentMode>;
+  let amount: number;
+  let reason: string;
+
+  try {
+    mode = parseStarAdjustmentMode(formData.get("mode"));
+    amount = parseStarAmount(formData.get("amount"));
+    reason = parseStarAdjustmentReason(formData.get("reason"));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "별 조정 입력값이 올바르지 않아";
+    redirect(
+      `/${locale}/admin?email=${encodeURIComponent(email)}&status=error&message=${encodeURIComponent(message)}`,
+    );
+  }
 
   if (!email) {
     redirect(`/${locale}/admin?status=missing-email`);
@@ -142,58 +225,28 @@ export async function adjustUserStars(formData: FormData) {
   }
 
   const supabase = createAdminClient();
-  const { data: existing, error: selectError } = await supabase
-    .from("user_stars")
-    .select("balance")
-    .eq("user_id", user.id)
-    .maybeSingle<StarBalanceRow>();
+  const requestHeaders = await headers();
+  const { data, error } = await supabase
+    .rpc("admin_adjust_user_stars", {
+      p_target_user_id: user.id,
+      p_actor_user_id: admin.id,
+      p_actor_email: admin.email,
+      p_amount: amount,
+      p_mode: mode,
+      p_reason: reason,
+      p_ip_address: getRequestIp(requestHeaders),
+      p_user_agent: requestHeaders.get("user-agent") ?? null,
+    });
 
-  if (selectError) {
-    throw new Error(selectError.message);
-  }
-
-  const currentBalance = Number(existing?.balance ?? 0);
-  let nextBalance: number;
-
-  try {
-    nextBalance = calculateStarBalance({ currentBalance, amount, mode });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "별 조정에 실패했어";
+  if (error) {
     redirect(
-      `/${locale}/admin?email=${encodeURIComponent(email)}&status=error&message=${encodeURIComponent(message)}`,
+      `/${locale}/admin?email=${encodeURIComponent(email)}&status=error&message=${encodeURIComponent(error.message)}`,
     );
   }
 
-  if (existing) {
-    const { error } = await supabase
-      .from("user_stars")
-      .update({ balance: nextBalance })
-      .eq("user_id", user.id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  } else {
-    const { error } = await supabase
-      .from("user_stars")
-      .insert({ user_id: user.id, balance: nextBalance });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  const { error: transactionError } = await supabase.from("star_transactions").insert({
-    user_id: user.id,
-    amount: toTransactionAmount({ mode, amount }),
-    balance_after: nextBalance,
-    type: `admin_${mode}`,
-    product_type: `admin_${getAdjustmentLabel(mode)}`,
-  });
-
-  if (transactionError) {
-    throw new Error(transactionError.message);
-  }
+  const rows = data as AdminAdjustStarsResult[] | AdminAdjustStarsResult | null;
+  const result = Array.isArray(rows) ? rows[0] : rows;
+  const nextBalance = Number(result?.balance_after ?? 0);
 
   revalidatePath(`/${locale}/admin`);
   redirect(

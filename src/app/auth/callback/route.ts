@@ -6,7 +6,11 @@ import { sendWelcomeEmail } from "@/services/email/actions";
 import { trackEvent } from "@/lib/analytics/track";
 import { processReferral } from "@/services/referral/actions";
 import { getReferralCodeFromHeaders } from "@/services/referral/cookie";
-import { buildLocalizedRedirectPath, sanitizeAuthNext } from "@/lib/auth/oauth";
+import {
+  buildAuthRedirectUrl,
+  buildLocalizedRedirectPath,
+  sanitizeAuthNext,
+} from "@/lib/auth/oauth";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -119,16 +123,13 @@ export async function GET(request: Request) {
         trackEvent({ userId: user.id, eventType: "login" }).catch(() => {});
       }
 
-      const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
-
-      const baseUrl = isLocalEnv
-        ? origin
-        : forwardedHost
-          ? `https://${forwardedHost}`
-          : origin;
-
-      return NextResponse.redirect(`${baseUrl}${localizedNext}`);
+      return NextResponse.redirect(
+        buildAuthRedirectUrl({
+          requestUrl: request.url,
+          headers: request.headers,
+          path: localizedNext,
+        }),
+      );
     }
   } else {
     console.error(

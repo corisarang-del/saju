@@ -1,6 +1,7 @@
 'use client';
 
 import { PADDLE_CONFIG, type ProductType } from './config';
+import { areClientPaymentsEnabled, assertPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 /** Paddle.js 타입 (필요한 부분만) */
 interface PaddleInstance {
@@ -44,6 +45,8 @@ let paddleInitialized = false;
  */
 export async function initializePaddle(): Promise<PaddleInstance | null> {
   if (typeof window === 'undefined') return null;
+
+  if (!areClientPaymentsEnabled()) return null;
 
   if (!PADDLE_CONFIG.clientToken) {
     console.error('[Paddle] NEXT_PUBLIC_PADDLE_CLIENT_TOKEN이 설정되지 않았습니다.');
@@ -109,6 +112,8 @@ export async function openCheckout(options: {
   userEmail?: string;
   successUrl?: string;
 }): Promise<void> {
+  assertPaymentsEnabled();
+
   const paddle = await initializePaddle();
   if (!paddle) {
     throw new Error('Paddle 초기화 실패');

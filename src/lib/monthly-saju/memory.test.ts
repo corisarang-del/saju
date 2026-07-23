@@ -25,9 +25,34 @@ describe("summarizeConversationMemory", () => {
       displayName: "민수",
       recurringConcerns: ["career", "love"],
       recentSummary: expect.stringContaining("이직"),
+      assistantSummary: expect.stringContaining("준비와 탐색"),
+      followUpSeed: expect.stringContaining("이직"),
       messageCount: 4,
       toneLevel: "warm",
     });
+  });
+
+  it("summarizes_recent_eight_user_messages_and_assistant_answers", () => {
+    const messages = Array.from({ length: 12 }, (_, index) => ({
+      role: index % 2 === 0 ? "user" as const : "assistant" as const,
+      content: index % 2 === 0
+        ? `사용자 고민 ${index}`
+        : `상담 답변 ${index}`,
+    }));
+
+    const memory = summarizeConversationMemory({
+      sajuProfile: {
+        name: "민수",
+        concerns: ["career"],
+      },
+      messages,
+    });
+
+    expect(memory.recentSummary).toContain("사용자 고민 0");
+    expect(memory.recentSummary).toContain("사용자 고민 10");
+    expect(memory.assistantSummary).toContain("상담 답변 1");
+    expect(memory.assistantSummary).toContain("상담 답변 11");
+    expect(memory.followUpSeed).toContain("사용자 고민 10");
   });
 
   it("returns_closer_tone_when_message_count_is_high", () => {
@@ -42,4 +67,3 @@ describe("summarizeConversationMemory", () => {
     expect(memory.toneLevel).toBe("close");
   });
 });
-

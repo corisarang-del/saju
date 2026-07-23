@@ -10,10 +10,11 @@ describe("chat_generation", () => {
     expect(getChatMaxOutputTokens({ isFree: false })).toBeGreaterThanOrEqual(8000);
   });
 
-  it("caps_first_consultation_lower_than_follow_up_answers", () => {
+  it("keeps_first_consultation_mobile_sized_without_forcing_mid_sentence_cutoffs", () => {
     expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeLessThan(
       getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: false }),
     );
-    expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeLessThanOrEqual(900);
+    expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeGreaterThanOrEqual(1000);
+    expect(getChatMaxOutputTokens({ isFree: true, isFirstAssistantTurn: true })).toBeLessThanOrEqual(1600);
   });
 });

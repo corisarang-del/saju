@@ -29,6 +29,10 @@ class MissingSupabaseQuery {
     return this;
   }
 
+  gte(): this {
+    return this;
+  }
+
   order(): this {
     return this;
   }

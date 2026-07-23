@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateStarBalance,
+  parseStarAdjustmentReason,
   parseStarAmount,
   toTransactionAmount,
 } from "./star-adjustment";
@@ -29,5 +30,11 @@ describe("admin_star_adjustment", () => {
   it("stores_negative_transaction_amount_for_debits", () => {
     expect(toTransactionAmount({ mode: "credit", amount: 7 })).toBe(7);
     expect(toTransactionAmount({ mode: "debit", amount: 7 })).toBe(-7);
+  });
+
+  it("requires_a_clear_reason_for_manual_admin_adjustments", () => {
+    expect(parseStarAdjustmentReason(" 테스트 계정 충전 ")).toBe("테스트 계정 충전");
+    expect(() => parseStarAdjustmentReason("")).toThrow("조정 사유를 4자 이상 입력해줘");
+    expect(() => parseStarAdjustmentReason("abc")).toThrow("조정 사유를 4자 이상 입력해줘");
   });
 });

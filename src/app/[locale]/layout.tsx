@@ -6,7 +6,12 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import type { Metadata } from "next";
 import "../globals.css";
-import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+import {
+  SUPPORT_CONTACT,
+  buildPricingFaqAnswer,
+  buildProductJsonLd,
+} from "@/lib/monthly-saju/pricing";
+import { arePaymentsEnabled } from "@/lib/payments/feature-flag";
 
 import { ClientWidgets } from "@/components/shared/ClientWidgets";
 
@@ -108,6 +113,7 @@ export default async function LocaleLayout({
   }
 
   const messages = await getMessages({ locale });
+  const paymentsEnabled = arePaymentsEnabled();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -148,21 +154,7 @@ export default async function LocaleLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Product",
-              name: "월간사주 상담권",
-              description:
-                "오늘피드, 캐릭터 상담, 월간 리포트를 위한 월간사주 상담권과 멤버십.",
-              offers: {
-                "@type": "AggregateOffer",
-                lowPrice: "9900",
-                highPrice: "39900",
-                priceCurrency: "KRW",
-                offerCount: 3,
-                availability: "https://schema.org/InStock",
-              },
-            }),
+            __html: JSON.stringify(buildProductJsonLd()),
           }}
         />
         {/* JSON-LD: FAQPage */}
@@ -186,15 +178,21 @@ export default async function LocaleLayout({
                   name: "무료로 이용할 수 있나요?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "네, 처음 가입하면 3회 무료 상담을 체험할 수 있습니다. 이후에는 별을 충전하여 계속 상담할 수 있습니다.",
+                    text: paymentsEnabled
+                      ? "네, 처음 가입하면 3회 무료 상담을 체험할 수 있습니다. 결제 기능이 켜진 뒤에는 상담권으로 상담을 이어갈 수 있습니다."
+                      : "네, 처음 가입하면 3회 무료 상담을 체험할 수 있습니다. 유료 충전과 멤버십은 정식 결제 기능 안정화 후 열릴 예정입니다.",
                   },
                 },
                 {
                   "@type": "Question",
-                  name: "별 충전 가격은 얼마인가요?",
+                  name: paymentsEnabled
+                    ? "상담권 가격은 얼마인가요?"
+                    : "유료 충전과 멤버십은 언제 열리나요?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "별 30개 9,900원, 별 70개 19,900원, 별 250개 39,900원 세 가지 패키지가 있습니다. 많이 충전할수록 개당 가격이 저렴합니다.",
+                    text: paymentsEnabled
+                      ? buildPricingFaqAnswer()
+                      : "유료 충전과 멤버십은 정식 결제 기능 안정화 후 열릴 예정입니다.",
                   },
                 },
               ],

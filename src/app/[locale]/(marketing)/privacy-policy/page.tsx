@@ -63,8 +63,8 @@ export default function PrivacyPolicyPage() {
                 분석, 상담 이력 관리
               </li>
               <li>
-                <strong className="text-gray-100">결제 처리:</strong> 유료
-                서비스(별 충전) 이용에 따른 결제 처리 및 환불
+                <strong className="text-gray-100">결제 기능이 열리는 경우:</strong>{" "}
+                유료 서비스 이용에 따른 결제 처리 및 환불
               </li>
               <li>
                 <strong className="text-gray-100">서비스 개선:</strong> 서비스

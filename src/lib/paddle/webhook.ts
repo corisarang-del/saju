@@ -83,9 +83,14 @@ export interface PaddleWebhookPayload {
   event_id: string;
   occurred_at: string;
   data: {
-    id: string;                          // 트랜잭션 ID
+    id: string;                          // 트랜잭션 또는 구독 ID
     status: string;
     customer_id?: string;
+    canceled_at?: string | null;
+    current_billing_period?: {
+      starts_at?: string | null;
+      ends_at?: string | null;
+    } | null;
     custom_data?: {
       userId?: string;
       productType?: string;

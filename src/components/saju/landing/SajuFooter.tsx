@@ -1,7 +1,10 @@
 import { Link } from "@/i18n/routing";
 import { SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
 
 export default function SajuFooter() {
+  const paymentsEnabled = areClientPaymentsEnabled();
+
   return (
     <footer className="bg-[#0a0a0f] border-t border-[#2a2a3a] py-5 px-5">
       <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -9,7 +12,11 @@ export default function SajuFooter() {
         <div className="text-[11px] text-gray-600 leading-relaxed space-y-0.5">
           <p>월간사주</p>
           <p>고객지원 및 환불 문의: {SUPPORT_CONTACT.email}</p>
-          <p>결제는 Paddle의 안전한 결제 시스템을 통해 처리됩니다.</p>
+          <p>
+            {paymentsEnabled
+              ? "정식 결제는 Paddle 시스템을 통해 처리됩니다."
+              : "지금은 무료 상담 베타로 운영 중입니다."}
+          </p>
         </div>
 
         {/* 오른쪽: 링크 + 카피라이트 */}

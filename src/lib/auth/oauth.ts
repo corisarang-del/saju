@@ -1,9 +1,72 @@
 const DEFAULT_SITE_URL = "http://localhost:3000";
 const DEFAULT_NEXT_PATH = "/";
 
+function cleanSiteUrl(value: string | null | undefined): string | null {
+  if (!value || value === "undefined" || value === "null") {
+    return null;
+  }
+
+  return value.replace(/\/+$/, "");
+}
+
+function getConfiguredSiteUrl(): string | null {
+  return cleanSiteUrl(process.env.APP_ORIGIN)
+    || cleanSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
+}
+
+function isProduction(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
+function requireConfiguredSiteUrlInProduction(
+  configuredSiteUrl: string | null,
+): string | null {
+  if (isProduction() && !configuredSiteUrl) {
+    throw new Error("PRODUCTION_APP_ORIGIN_REQUIRED");
+  }
+
+  return configuredSiteUrl;
+}
+
 export function getSiteUrl(origin: string | null | undefined): string {
-  const siteUrl = origin || process.env.NEXT_PUBLIC_APP_URL || DEFAULT_SITE_URL;
-  return siteUrl.replace(/\/+$/, "");
+  const configuredSiteUrl = getConfiguredSiteUrl();
+  requireConfiguredSiteUrlInProduction(configuredSiteUrl);
+
+  if (isProduction() && configuredSiteUrl) {
+    return configuredSiteUrl;
+  }
+
+  return cleanSiteUrl(origin)
+    || configuredSiteUrl
+    || DEFAULT_SITE_URL;
+}
+
+export function getSiteUrlFromRequestHeaders(headers: {
+  get(name: string): string | null;
+}): string {
+  const configuredSiteUrl = getConfiguredSiteUrl();
+  requireConfiguredSiteUrlInProduction(configuredSiteUrl);
+
+  if (isProduction() && configuredSiteUrl) {
+    return configuredSiteUrl;
+  }
+
+  const origin = headers.get("origin");
+  const forwardedHost =
+    headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+    headers.get("host");
+  const forwardedProto =
+    headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  const forwardedUrl = forwardedHost
+    ? `${forwardedProto}://${forwardedHost}`
+    : null;
+  const siteUrl =
+    cleanSiteUrl(origin)
+    || cleanSiteUrl(forwardedUrl)
+    || configuredSiteUrl
+    || DEFAULT_SITE_URL;
+
+  return siteUrl;
 }
 
 export function sanitizeAuthNext(
@@ -50,3 +113,18 @@ export function buildLocalizedRedirectPath(next: string, locale: string): string
   return `${localePrefix}${safeNext === DEFAULT_NEXT_PATH ? "" : safeNext}`;
 }
 
+export function buildAuthRedirectUrl({
+  requestUrl,
+  headers,
+  path,
+}: {
+  requestUrl: string;
+  headers: { get(name: string): string | null };
+  path: string;
+}): string {
+  const siteUrl = getSiteUrlFromRequestHeaders(headers);
+  const fallbackOrigin = new URL(requestUrl).origin;
+  const baseUrl = siteUrl || fallbackOrigin;
+
+  return `${baseUrl}${sanitizeAuthNext(path)}`;
+}

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { getCharacter, type CharacterType } from '@/lib/saju/characters';
 import { Link } from '@/i18n/routing';
 import CharacterAvatar from './CharacterAvatar';
+import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 interface ChatPaywallProps {
   characterId: CharacterType;
@@ -15,6 +16,7 @@ export default function ChatPaywall({
   characterId,
 }: ChatPaywallProps) {
   const character = getCharacter(characterId);
+  const paymentsEnabled = areClientPaymentsEnabled();
 
   return (
     <motion.div
@@ -34,16 +36,20 @@ export default function ChatPaywall({
             별이 모두 소진되었어요.
           </p>
           <p className="text-xs text-gray-500 mb-4">
-            코인샵에서 별을 충전하면 계속 대화할 수 있어요.
+            {paymentsEnabled
+              ? '코인샵에서 별을 받아 계속 대화할 수 있어요.'
+              : '지금은 무료 상담 베타라 추가 충전은 잠시 닫아뒀어.'}
           </p>
 
-          <Link
-            href="/coin-shop"
-            className="block w-full py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center
-              hover:bg-purple-500 transition-colors active:scale-[0.98]"
-          >
-            별 충전하러 가기
-          </Link>
+          {paymentsEnabled && (
+            <Link
+              href="/coin-shop"
+              className="block w-full py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold text-center
+                hover:bg-purple-500 transition-colors active:scale-[0.98]"
+            >
+              별 받으러 가기
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

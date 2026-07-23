@@ -4,9 +4,11 @@ import { resolvePaddleCreditGrant } from "./credit-grant";
 import type { PaddleWebhookPayload } from "./webhook";
 
 const products = {
+  stars10: { priceId: "pri_10", chatCredits: 10 },
   stars30: { priceId: "pri_30", chatCredits: 30 },
   stars70: { priceId: "pri_70", chatCredits: 70 },
   starsPremium: { priceId: "pri_250", chatCredits: 250 },
+  monthlyMembership: { priceId: "pri_monthly", chatCredits: 40 },
 } as Record<ProductType, { priceId: string; chatCredits: number }>;
 
 function makeEvent(priceId: string, customProductType = "starsPremium"): PaddleWebhookPayload {
@@ -36,12 +38,22 @@ function makeEvent(priceId: string, customProductType = "starsPremium"): PaddleW
 
 describe("paddle_credit_grant", () => {
   it("uses_actual_paid_price_id_even_when_custom_data_is_tampered", () => {
-    expect(resolvePaddleCreditGrant(makeEvent("pri_30"), products)).toEqual({
+    expect(resolvePaddleCreditGrant(makeEvent("pri_10"), products)).toEqual({
       userId: "user_123",
       transactionId: "txn_123",
-      productType: "stars30",
-      priceId: "pri_30",
-      credits: 30,
+      productType: "stars10",
+      priceId: "pri_10",
+      credits: 10,
+    });
+  });
+
+  it("grants_forty_stars_when_monthly_membership_price_is_paid", () => {
+    expect(resolvePaddleCreditGrant(makeEvent("pri_monthly"), products)).toEqual({
+      userId: "user_123",
+      transactionId: "txn_123",
+      productType: "monthlyMembership",
+      priceId: "pri_monthly",
+      credits: 40,
     });
   });
 

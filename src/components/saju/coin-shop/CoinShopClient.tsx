@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { openCheckout } from '@/lib/paddle/client';
 import type { ProductType } from '@/lib/paddle/config';
-import { formatWon, STAR_PACKS } from '@/lib/monthly-saju/pricing';
+import { formatWon, MONTHLY_MEMBERSHIP, STAR_PACKS } from '@/lib/monthly-saju/pricing';
+import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 interface CoinShopClientProps {
   totalCoins: number;
@@ -21,6 +22,7 @@ function getStarPackAriaLabel(pack: (typeof STAR_PACKS)[number]) {
 export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinShopClientProps) {
   const searchParams = useSearchParams();
   const isPaidRedirect = searchParams.get('paid') === 'true';
+  const paymentsEnabled = areClientPaymentsEnabled();
   const [selected, setSelected] = useState<ProductType>('stars70');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,11 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
   }, [isPaidRedirect]);
 
   const handlePurchase = async () => {
+    if (!paymentsEnabled) {
+      setError('지금은 무료 상담 베타로 운영 중이야. 정식 결제 기능은 안정화 후 열릴 예정이야.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -82,13 +89,22 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
         </div>
       </div>
 
+      {!paymentsEnabled && (
+        <div className="w-full max-w-md rounded-2xl border border-stone-700 bg-[#13131a] p-5 text-center mb-8">
+          <p className="text-sm font-bold text-gray-100">무료 상담 베타로 운영 중이야</p>
+          <p className="mt-2 text-xs leading-5 text-gray-400">
+            추가 상담권과 월간 멤버십은 정식 결제 기능 안정화 후 열릴 예정이야.
+          </p>
+        </div>
+      )}
+
       {/* 충전 패키지 */}
       <div className="w-full max-w-md space-y-3 mb-8">
-        <h2 className="text-lg font-bold text-white mb-4">별 충전</h2>
+        <h2 className="text-lg font-bold text-white mb-4">상담권 선택</h2>
         {STAR_PACKS.map((pack) => (
           <button
             key={pack.type}
-            onClick={() => setSelected(pack.type as ProductType)}
+            onClick={() => paymentsEnabled && setSelected(pack.type as ProductType)}
             aria-label={getStarPackAriaLabel(pack)}
             className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border text-sm transition-all ${
               selected === pack.type
@@ -121,6 +137,37 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
         ))}
       </div>
 
+      <div className="w-full max-w-md space-y-3 mb-8">
+        <h2 className="text-lg font-bold text-white mb-4">월간 멤버십</h2>
+        <button
+            onClick={() => paymentsEnabled && setSelected(MONTHLY_MEMBERSHIP.type)}
+          aria-label={`${MONTHLY_MEMBERSHIP.name}, 매월 별 ${MONTHLY_MEMBERSHIP.stars}개, ${formatWon(MONTHLY_MEMBERSHIP.price)}`}
+          className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border text-sm transition-all ${
+            selected === MONTHLY_MEMBERSHIP.type
+              ? 'border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10'
+              : 'border-[#2a2a3a] bg-[#13131a] hover:border-[#3a3a4a]'
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="shrink-0 text-yellow-400 text-xl">&#9733;</span>
+            <div className="min-w-0 text-left">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="shrink-0 font-semibold text-gray-200 text-base">{MONTHLY_MEMBERSHIP.name}</span>
+                <span aria-hidden="true" className="shrink-0 text-[10px] px-2.5 py-0.5 rounded-full border border-amber-300/20 bg-amber-300/10 text-amber-100 font-medium">
+                  매월 {MONTHLY_MEMBERSHIP.stars}별
+                </span>
+              </div>
+              <span className="text-[11px] text-amber-200/80">{MONTHLY_MEMBERSHIP.description}</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="font-bold text-gray-200 text-base">
+              월 {formatWon(MONTHLY_MEMBERSHIP.price)}
+            </span>
+          </div>
+        </button>
+      </div>
+
       {/* 에러 메시지 */}
       {error && (
         <p className="text-red-400 text-sm mb-4 text-center">{error}</p>
@@ -130,11 +177,11 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
       <div className="w-full max-w-md">
         <button
           onClick={handlePurchase}
-          disabled={loading}
+          disabled={loading || !paymentsEnabled}
           className="w-full py-4 rounded-2xl bg-purple-600 text-white text-base font-semibold
             hover:bg-purple-500 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? '처리 중...' : '충전하기'}
+          {loading ? '처리 중...' : paymentsEnabled ? '충전하기' : '결제 준비 중'}
         </button>
       </div>
     </div>

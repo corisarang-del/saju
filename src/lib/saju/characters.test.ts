@@ -95,6 +95,23 @@ describe("CHARACTER_LIST", () => {
     expect(finalPrompts).toContain("시기");
   });
 
+  it("keeps_sensitive_character_card_quotes_calm_and_natural_for_women_customers", () => {
+    expect(CHARACTERS.jian.quote).not.toContain("근데 문제는");
+    expect(CHARACTERS.jian.quote).toContain("차분히");
+    expect(CHARACTERS.seojun.quote).not.toContain("커리어는 시기야");
+    expect(CHARACTERS.seojun.quote).toContain("커리어 흐름");
+    expect(CHARACTERS.doyun.quote).not.toContain("사업은 시기야");
+    expect(CHARACTERS.doyun.quote).toContain("사업 흐름");
+  });
+
+  it("keeps_character_prompts_free_from_emoji_examples_that_can_leak_into_first_answers", () => {
+    const rawPrompts = Object.values(CHARACTERS)
+      .map((character) => [character.freePrompt, character.paidPrompt].join("\n"))
+      .join("\n");
+
+    expect(rawPrompts).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+
   it("keeps_character_copy_free_from_korean_replacement_artifacts", () => {
     const content = Object.values(CHARACTERS)
       .map((character) =>

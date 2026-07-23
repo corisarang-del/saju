@@ -6,6 +6,16 @@ import { summarizeConversationMemory } from "@/lib/monthly-saju/memory";
 import { createClient } from "@/utils/supabase/server";
 import type { ConcernType, FiveElementDistribution, SajuReading } from "@/types/saju";
 
+interface CoachingSnapshotRow {
+  concern: string;
+  today_do: string;
+  today_avoid: string;
+  relationship_tip: string;
+  follow_up_question: string;
+  weekly_focus: string;
+  monthly_focus: string;
+}
+
 function getElementExtremes(elements: FiveElementDistribution | null | undefined): {
   strongestElement: DailyFeedElement;
   weakestElement: DailyFeedElement;
@@ -28,6 +38,7 @@ export default async function TodayPage() {
   let latestReading: SajuReading | null = null;
   let currentReading;
   let chatMessages: Array<{ role: "user" | "assistant" | "system"; content: string }> = [];
+  let latestSnapshot: CoachingSnapshotRow | null = null;
 
   if (user) {
     const { data } = await supabase
@@ -49,6 +60,17 @@ export default async function TodayPage() {
         .limit(8);
 
       chatMessages = ((messages ?? []) as typeof chatMessages).reverse();
+
+      const { data: snapshot } = await supabase
+        .from("coaching_snapshots")
+        .select("concern, today_do, today_avoid, relationship_tip, follow_up_question, weekly_focus, monthly_focus")
+        .eq("reading_id", latestReading.id)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      latestSnapshot = snapshot as CoachingSnapshotRow | null;
       currentReading = {
         id: latestReading.id,
         characterId: latestReading.character_id as CharacterType,
@@ -83,6 +105,17 @@ export default async function TodayPage() {
     weakestElement: extremes.weakestElement,
     concerns: memory.recurringConcerns,
     recentMemory: memory.recentSummary,
+    coachingSnapshot: latestSnapshot
+      ? {
+          concern: latestSnapshot.concern,
+          todayDo: latestSnapshot.today_do,
+          todayAvoid: latestSnapshot.today_avoid,
+          relationshipTip: latestSnapshot.relationship_tip,
+          followUpQuestion: latestSnapshot.follow_up_question,
+          weeklyFocus: latestSnapshot.weekly_focus,
+          monthlyFocus: latestSnapshot.monthly_focus,
+        }
+      : null,
   });
 
   return (
@@ -123,7 +156,7 @@ export default async function TodayPage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <Link href={`/chat/${characterId}`} className="rounded-2xl bg-purple-700 px-5 py-4 text-center text-sm font-bold text-white transition-transform active:scale-[0.98]">
-              {character.name}에게 더 묻기
+              이 흐름으로 더 물어보기
             </Link>
             <Link href="/reports" className="rounded-2xl border border-purple-900/20 bg-white px-5 py-4 text-center text-sm font-bold text-purple-950 transition-transform active:scale-[0.98]">
               월간 리포트 보기
@@ -134,4 +167,3 @@ export default async function TodayPage() {
     </SajuLayout>
   );
 }
-

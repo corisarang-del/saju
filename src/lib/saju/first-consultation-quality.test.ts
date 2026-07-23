@@ -13,7 +13,7 @@ describe("first_consultation_quality", () => {
 
     expect(instructions).toContain("사용자가 고른 고민");
     expect(instructions).toContain("첫 문장");
-    expect(instructions).toContain("1~3문단");
+    expect(instructions).toContain("정확히 2문단");
     expect(instructions).toContain("다음 대화");
     expect(instructions).toContain("질문");
   });
@@ -24,7 +24,8 @@ describe("first_consultation_quality", () => {
       birthHourKnown: true,
     });
 
-    expect(instructions).toContain("빈 줄 기준 최대 3문단");
+    expect(instructions).not.toContain("빈 줄 기준 최대 3문단");
+    expect(instructions).not.toContain("1~3문단");
     expect(instructions).toContain("정확히 2문단");
     expect(instructions).toContain("마지막 문장은 반드시 물음표로 끝");
     expect(instructions).toContain("마지막 문장은 반드시 실제 질문 1문장");
@@ -32,9 +33,10 @@ describe("first_consultation_quality", () => {
     expect(instructions).toContain("알려드릴 수 있습니다");
     expect(instructions).toContain("질문은 1개만");
     expect(instructions).toContain("이모지");
+    expect(instructions).toContain("영문자");
     expect(instructions).toContain("가벼운 외래어");
-    expect(instructions).toContain('"체크"는 "확인"');
-    expect(instructions).toContain("괄호로 외래어를 병기");
+    expect(instructions).toContain("루틴, 패턴, 플랜, 체크, 밸런스, 리스크, 포인트, 타이밍");
+    expect(instructions).toContain("시기, 확인, 계획, 방법");
   });
 
   it("reassures_users_when_birth_hour_is_unknown", () => {
@@ -60,6 +62,32 @@ describe("first_consultation_quality", () => {
     expect(instructions).toContain("위험해");
     expect(instructions).toContain("무조건");
     expect(instructions).toContain("반드시 후회");
+    expect(instructions).toContain("상투적인 가능성 문장");
+    expect(instructions).toContain("과도한 단정");
+    expect(instructions).not.toContain("나쁘지 않은 흐름");
+    expect(instructions).not.toContain("잠재력은 충분하지만");
+    expect(instructions).not.toContain("물이 새는 주머니");
+    expect(instructions).not.toContain("필수적");
+  });
+
+  it("requires_saju_grounded_flow_and_concrete_today_action", () => {
+    const instructions = getFirstConsultationInstructions({
+      isFirstAssistantTurn: true,
+      birthHourKnown: true,
+    });
+
+    expect(instructions).toContain("사주 근거");
+    expect(instructions).toContain("사주라는 단어");
+    expect(instructions).toContain("오늘 할 일은 추상적인 위로가 아니라");
+    expect(instructions).toContain("기록하기");
+    expect(instructions).toContain("정리하기");
+    expect(instructions).toContain("비교하기");
+    expect(instructions).toContain("나누기");
+    expect(instructions).toContain("흐릿한 활동 추천");
+    expect(instructions).not.toContain("편안해지는 활동");
+    expect(instructions).not.toContain("물이 새는 주머니");
+    expect(instructions).toContain("번아웃");
+    expect(instructions).toContain("몸 상태");
   });
 
   it("keeps_representative_initial_prompts_concern_specific_but_not_overlong", () => {

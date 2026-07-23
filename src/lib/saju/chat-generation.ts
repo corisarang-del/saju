@@ -6,7 +6,7 @@ export function getChatMaxOutputTokens({
   isFree: boolean;
 }): number {
   if (isFirstAssistantTurn) {
-    return 550;
+    return 1200;
   }
 
   return isFree ? 4000 : 10000;

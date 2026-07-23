@@ -7,6 +7,7 @@ const validEnv = {
   SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
   GOOGLE_GENERATIVE_AI_API_KEY: "gemini-key",
   ADMIN_EMAILS: "admin@monthlysaju.local",
+  NEXT_PUBLIC_APP_URL: "https://monthlysaju.kr",
 };
 
 const validVertexEnv = {
@@ -17,6 +18,7 @@ const validVertexEnv = {
   GOOGLE_VERTEX_PROJECT: "project-123",
   GOOGLE_VERTEX_LOCATION: "us-central1",
   ADMIN_EMAILS: "admin@monthlysaju.local",
+  APP_ORIGIN: "https://monthlysaju.kr",
 };
 
 describe("check_env", () => {
@@ -25,6 +27,7 @@ describe("check_env", () => {
       ok: true,
       missing: [],
       optionalMissing: [],
+      forbiddenPublicKeys: [],
     });
   });
 
@@ -33,6 +36,7 @@ describe("check_env", () => {
       ok: true,
       missing: [],
       optionalMissing: [],
+      forbiddenPublicKeys: [],
     });
   });
 
@@ -44,14 +48,19 @@ describe("check_env", () => {
         "PADDLE_WEBHOOK_SECRET",
         "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
         "NEXT_PUBLIC_PADDLE_ENVIRONMENT",
+        "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_10",
+        "NEXT_PUBLIC_PADDLE_PRICE_STAR_10",
         "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_30",
         "NEXT_PUBLIC_PADDLE_PRICE_STAR_30",
         "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_70",
         "NEXT_PUBLIC_PADDLE_PRICE_STAR_70",
         "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_PREMIUM",
         "NEXT_PUBLIC_PADDLE_PRICE_STAR_PREMIUM",
+        "NEXT_PUBLIC_PADDLE_PRODUCT_MONTHLY_MEMBERSHIP",
+        "NEXT_PUBLIC_PADDLE_PRICE_MONTHLY_MEMBERSHIP",
       ],
       optionalMissing: [],
+      forbiddenPublicKeys: [],
     });
   });
 
@@ -66,6 +75,7 @@ describe("check_env", () => {
       ok: false,
       missing: ["ADMIN_EMAILS", "GOOGLE_GENERATIVE_AI_API_KEY"],
       optionalMissing: [],
+      forbiddenPublicKeys: [],
     });
   });
 
@@ -80,6 +90,93 @@ describe("check_env", () => {
       ok: false,
       missing: ["GOOGLE_VERTEX_PROJECT", "GOOGLE_VERTEX_LOCATION"],
       optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("rejects_production_gate_when_app_origin_is_missing", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        NEXT_PUBLIC_APP_URL: "",
+        REQUIRE_PRODUCTION_ENV: "true",
+      }),
+    ).toEqual({
+      ok: false,
+      missing: expect.arrayContaining(["APP_ORIGIN_OR_NEXT_PUBLIC_APP_URL"]),
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("rejects_production_gate_without_shared_rate_limit_backend", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        REQUIRE_PRODUCTION_ENV: "true",
+        RATE_LIMIT_BACKEND: "memory",
+      }),
+    ).toEqual({
+      ok: false,
+      missing: ["RATE_LIMIT_BACKEND=supabase"],
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("rejects_free_beta_production_gate_when_payment_flags_are_enabled", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        REQUIRE_PRODUCTION_ENV: "true",
+        RATE_LIMIT_BACKEND: "supabase",
+        PAYMENTS_ENABLED: "true",
+        NEXT_PUBLIC_PAYMENTS_ENABLED: "true",
+      }),
+    ).toEqual({
+      ok: false,
+      missing: ["PAYMENTS_DISABLED_FOR_FREE_BETA"],
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("accepts_free_beta_production_gate_when_origin_rate_limit_and_payment_flags_are_safe", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        REQUIRE_PRODUCTION_ENV: "true",
+        RATE_LIMIT_BACKEND: "supabase",
+        PAYMENTS_ENABLED: "false",
+        NEXT_PUBLIC_PAYMENTS_ENABLED: "false",
+      }),
+    ).toEqual({
+      ok: true,
+      missing: [],
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("rejects_private_secret_values_exposed_as_next_public_env", () => {
+    expect(
+      validateEnv({
+        ...validEnv,
+        NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY: "leaked-service-role",
+        NEXT_PUBLIC_PADDLE_API_KEY: "leaked-paddle-api",
+        NEXT_PUBLIC_PADDLE_WEBHOOK_SECRET: "leaked-webhook-secret",
+        NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY: "leaked-gemini-key",
+      }),
+    ).toEqual({
+      ok: false,
+      missing: [],
+      optionalMissing: [],
+      forbiddenPublicKeys: [
+        "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY",
+        "NEXT_PUBLIC_PADDLE_API_KEY",
+        "NEXT_PUBLIC_PADDLE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY",
+      ],
     });
   });
 });

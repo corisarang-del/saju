@@ -2,15 +2,22 @@ import { describe, expect, it } from "vitest";
 import { getPaymentPromptState } from "./billing";
 
 describe("getPaymentPromptState", () => {
+  it("offers_no_payment_prompt_by_default_for_free_beta", () => {
+    expect(getPaymentPromptState({ freeQuotaRemaining: 0 })).toEqual({
+      shouldPrompt: false,
+      options: [],
+    });
+  });
+
   it("offers_no_payment_prompt_when_free_quota_remains", () => {
-    expect(getPaymentPromptState({ freeQuotaRemaining: 2 })).toEqual({
+    expect(getPaymentPromptState({ freeQuotaRemaining: 2, paymentsEnabled: true })).toEqual({
       shouldPrompt: false,
       options: [],
     });
   });
 
   it("offers_subscription_and_one_time_options_when_free_quota_is_exhausted", () => {
-    expect(getPaymentPromptState({ freeQuotaRemaining: 0 })).toEqual({
+    expect(getPaymentPromptState({ freeQuotaRemaining: 0, paymentsEnabled: true })).toEqual({
       shouldPrompt: true,
       options: [
         {
@@ -27,4 +34,3 @@ describe("getPaymentPromptState", () => {
     });
   });
 });
-

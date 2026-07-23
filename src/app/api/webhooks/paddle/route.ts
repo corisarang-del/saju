@@ -3,6 +3,7 @@ import {
   type PaddleWebhookPayload,
 } from '@/lib/paddle/webhook';
 import { resolvePaddleCreditGrant } from '@/lib/paddle/credit-grant';
+import { resolvePaddleMembershipUpdate } from '@/lib/paddle/membership';
 import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function POST(request: Request) {
@@ -19,12 +20,48 @@ export async function POST(request: Request) {
   // 2. 이벤트 파싱
   const event: PaddleWebhookPayload = JSON.parse(rawBody);
 
-  // 3. transaction.completed만 처리
+  const supabase = createAdminClient();
+
+  if (
+    event.event_type === 'subscription.activated'
+    || event.event_type === 'subscription.updated'
+    || event.event_type === 'subscription.canceled'
+  ) {
+    const membership = resolvePaddleMembershipUpdate(event);
+
+    if ('error' in membership) {
+      console.error('[Paddle Webhook] 멤버십 기준 검증 실패:', membership);
+      return new Response('Missing required subscription data', { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('user_memberships')
+      .upsert(
+        {
+          user_id: membership.userId,
+          provider: membership.provider,
+          subscription_id: membership.subscriptionId,
+          status: membership.status,
+          current_period_start: membership.currentPeriodStart,
+          current_period_end: membership.currentPeriodEnd,
+          canceled_at: membership.canceledAt,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'provider,subscription_id' },
+      );
+
+    if (error) {
+      console.error('[Paddle Webhook] 멤버십 상태 저장 실패:', error);
+      return new Response('Membership update failed', { status: 500 });
+    }
+
+    return new Response('ok', { status: 200 });
+  }
+
   if (event.event_type !== 'transaction.completed') {
     return new Response('ok', { status: 200 });
   }
 
-  const supabase = createAdminClient();
   const grant = resolvePaddleCreditGrant(event);
 
   if ('error' in grant) {

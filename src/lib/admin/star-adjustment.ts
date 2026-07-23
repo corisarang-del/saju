@@ -27,6 +27,20 @@ export function parseStarAdjustmentMode(rawMode: FormDataEntryValue | string | n
   throw new Error("충전 또는 차감 중 하나를 선택해줘");
 }
 
+export function parseStarAdjustmentReason(rawReason: FormDataEntryValue | string | null): string {
+  const reason = String(rawReason ?? "").trim();
+
+  if (reason.length < 4) {
+    throw new Error("조정 사유를 4자 이상 입력해줘");
+  }
+
+  if (reason.length > 500) {
+    throw new Error("조정 사유는 500자 이하로 입력해줘");
+  }
+
+  return reason;
+}
+
 export function calculateStarBalance({
   currentBalance,
   amount,

@@ -2,6 +2,7 @@ export type PaymentOptionKind = "subscription" | "one_time";
 
 export interface PaymentPromptInput {
   freeQuotaRemaining: number;
+  paymentsEnabled?: boolean;
 }
 
 export interface PaymentOption {
@@ -18,7 +19,7 @@ export interface PaymentPromptState {
 export function getPaymentPromptState(
   input: PaymentPromptInput,
 ): PaymentPromptState {
-  if (input.freeQuotaRemaining > 0) {
+  if (!input.paymentsEnabled || input.freeQuotaRemaining > 0) {
     return {
       shouldPrompt: false,
       options: [],
@@ -41,4 +42,3 @@ export function getPaymentPromptState(
     ],
   };
 }
-

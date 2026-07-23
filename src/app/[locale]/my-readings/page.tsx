@@ -2,6 +2,7 @@ import { redirect } from "@/i18n/routing";
 import { createClient } from "@/utils/supabase/server";
 import { getUserReadings } from "@/services/saju/actions";
 import SajuNavbar from "@/components/saju/landing/SajuNavbar";
+import DeleteReadingButton from "@/components/saju/my-readings/DeleteReadingButton";
 import { Link } from "@/i18n/routing";
 import type { ReadingStatus } from "@/types/saju";
 
@@ -100,37 +101,45 @@ export default async function MyReadingsPage() {
             {readings.map((reading) => {
               const badge = STATUS_BADGE[reading.status];
               return (
-                <Link
+                <div
                   key={reading.id}
-                  href={`/reading/${reading.id}`}
-                  className="block bg-white border border-gray-100 rounded-2xl p-5 hover:border-gray-200 hover:shadow-sm transition-all"
+                  className="flex items-start gap-3 rounded-2xl border border-gray-100 bg-white p-5 transition-all hover:border-gray-200 hover:shadow-sm"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-semibold text-[#191F28] truncate">
-                          {reading.name}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
-                        >
-                          {badge.label}
-                        </span>
+                  <Link
+                    href={`/reading/${reading.id}`}
+                    className="min-w-0 flex-1"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base font-semibold text-[#191F28] truncate">
+                            {reading.name}
+                          </h3>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
+                          >
+                            {badge.label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-[#8B95A1]">
+                          {formatBirthDate(
+                            reading.birth_year,
+                            reading.birth_month,
+                            reading.birth_day,
+                          )}
+                          {reading.is_lunar ? " (음력)" : " (양력)"}
+                        </p>
                       </div>
-                      <p className="text-sm text-[#8B95A1]">
-                        {formatBirthDate(
-                          reading.birth_year,
-                          reading.birth_month,
-                          reading.birth_day,
-                        )}
-                        {reading.is_lunar ? " (음력)" : " (양력)"}
-                      </p>
+                      <span className="text-xs text-[#8B95A1] ml-3 flex-shrink-0">
+                        {formatDate(reading.created_at)}
+                      </span>
                     </div>
-                    <span className="text-xs text-[#8B95A1] ml-3 flex-shrink-0">
-                      {formatDate(reading.created_at)}
-                    </span>
-                  </div>
-                </Link>
+                  </Link>
+                  <DeleteReadingButton
+                    readingId={reading.id}
+                    readingName={reading.name}
+                  />
+                </div>
               );
             })}
           </div>

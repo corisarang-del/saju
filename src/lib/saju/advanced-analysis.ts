@@ -343,16 +343,15 @@ function formatNatal(chart: NatalChart): string {
   const moon = chart.planets.find(p => p.id === 'Moon');
 
   if (sun) {
-    lines.push(`태양 별자리: ${ZODIAC_KO[sun.sign]} (${sun.sign}) — 핵심 자아, 외부에 보이는 성격`);
+    lines.push(`태양 별자리: ${ZODIAC_KO[sun.sign]} — 핵심 자아, 외부에 보이는 성격`);
   }
   if (moon) {
-    lines.push(`달 별자리: ${ZODIAC_KO[moon.sign]} (${moon.sign}) — 내면의 감정, 무의식적 반응`);
+    lines.push(`달 별자리: ${ZODIAC_KO[moon.sign]} — 내면의 감정, 무의식적 반응`);
   }
 
-  // ASC (상승궁)
   if (chart.angles) {
-    lines.push(`상승궁(ASC): ${ZODIAC_KO[chart.angles.asc.sign]} — 첫인상, 외부에 비치는 이미지`);
-    lines.push(`중천(MC): ${ZODIAC_KO[chart.angles.mc.sign]} — 사회적 이미지, 커리어 방향`);
+    lines.push(`상승궁: ${ZODIAC_KO[chart.angles.asc.sign]} — 첫인상, 외부에 비치는 이미지`);
+    lines.push(`중천: ${ZODIAC_KO[chart.angles.mc.sign]} — 사회적 이미지, 직업 방향`);
   }
 
   // 행성 배치
@@ -365,15 +364,14 @@ function formatNatal(chart: NatalChart): string {
     lines.push(`  ${name}: ${sign} ${Math.floor(planet.degreeInSign)}도 (${planet.house}하우스)${retro}`);
   });
 
-  // 주요 애스펙트
   if (chart.aspects && chart.aspects.length > 0) {
     lines.push('');
-    lines.push('주요 애스펙트 (행성 간 각도 관계):');
+    lines.push('주요 행성 각도 관계:');
     const ASPECT_KO: Record<string, string> = {
       conjunction: '합(0°) — 에너지 결합/강화',
       sextile: '육합(60°) — 조화로운 기회',
-      square: '스퀘어(90°) — 긴장과 도전',
-      trine: '트라인(120°) — 행운과 재능',
+      square: '사각(90°) — 긴장과 도전',
+      trine: '삼각(120°) — 행운과 재능',
       opposition: '충(180°) — 대립과 균형',
     };
 

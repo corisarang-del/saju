@@ -501,3 +501,243 @@ AI SDK 내부 구현상 `onFinish`는 `activeResponse.state.message`와 `state.m
 - 운영 Supabase에 민감 RPC 권한 회수 마이그레이션이 적용돼 있다.
 - `REQUIRE_PADDLE_ENV=true pnpm test:env`가 운영 환경 기준으로 통과한다.
 - `pnpm audit --prod`에서 production 취약점을 검토/해소한다.
+
+---
+
+## DEC-032: 가격/코칭 MVP 구현은 개발자 전달 문서 기준으로 진행한다
+
+**날짜**: 2026-07-07
+**상태**: 승인됨
+
+**결정**:
+Codex는 가격/코칭 MVP를 직접 코딩하지 않고, 개발자가 구현할 수 있는 결정 완료 문서만 작성한다.
+
+**확정 가격**:
+- 스타터: `10별 3,900원`
+- 기본: `30별 9,900원`
+- 인기: `70별 19,900원`
+- 최고 가성비: `250별 39,900원`
+- 멤버십: `월 9,900원`, 매월 `40별`
+- 채팅: `1별`
+- 월간 전략 리포트 상세판: `3별`
+- 종합 사주 백서: `5별`
+
+**확정 코칭 구조**:
+첫 상담 성공 후 `CoachingSnapshot`을 만들고 오늘피드, 후속 질문, 월간 전략 리포트, 기억 요약에 재사용한다.
+
+---
+
+## DEC-033: 가격/코칭 MVP는 source of truth와 서버 차감 RPC를 기준으로 구현한다
+
+**날짜**: 2026-07-07
+**상태**: 승인됨
+
+**결정**:
+가격 정책은 `src/lib/monthly-saju/pricing.ts`를 기준으로 하고, 결제/차감은 클라이언트 값이 아니라 Paddle price id와 서버 RPC 고정 비용을 신뢰한다.
+
+**확정 구현**:
+- Paddle 상품 타입은 `stars10`, `stars30`, `stars70`, `starsPremium`, `monthlyMembership`.
+- 채팅은 1별, 월간 전략 리포트 상세판은 3별, 종합 사주 백서는 5별.
+- 첫 상담 코칭 데이터는 assistant 메시지 저장 성공 후 `coaching_snapshots`에 생성한다.
+- 오늘피드는 `coaching_snapshots` 최신 row를 우선 사용하고 없으면 기존 reading/memory fallback을 쓴다.
+
+**운영 조건**:
+새 Supabase 마이그레이션과 Paddle env가 운영에 적용되지 않으면 코드 빌드가 통과해도 실사용 결제/코칭 루프는 완성되지 않는다.
+
+---
+
+## DEC-034: 가격/코칭 MVP 완료 판정은 월간 리포트 개인화까지 포함한다
+
+**날짜**: 2026-07-07
+**상태**: 승인 필요
+
+**결정**:
+가격/코칭 MVP는 가격 상수와 차감 RPC만으로 완료 처리하지 않는다. 월간 전략 리포트가 `CoachingSnapshot`, 최근 대화 기억, 사주 요약을 묶어 개인화되고, 멤버십 상태와 가격 source of truth가 운영 화면까지 닫혀야 완료로 본다.
+
+**근거**:
+현재 구현은 3별 차감 상세판을 열 수 있지만, 리포트 본문은 정적 문구 중심이다. 유저가 돈을 내는 지점이 개인화 코칭 가치와 연결되지 않으면 “유료 전환 가능한 코칭형 사주앱 MVP”라고 보기 어렵다.
+
+**검증 기준**:
+- 월간 리포트가 최신 snapshot, 최근 user 메시지 8개 기반 memory, 사주 요약을 사용한다.
+- 약관, FAQ, 코인샵, JSON-LD, Paddle mapping이 같은 pricing source of truth에서 나온다.
+- 멤버십 활성/해지/갱신 상태가 저장되고 관리자 화면에서 보인다.
+- 관리자 화면에서 별 잔액, 최근 차감 타입, 최근 snapshot 생성 여부를 확인할 수 있다.
+
+---
+
+## DEC-035: 첫 상담은 서버 선검수와 안전 fallback을 운영 기본값으로 둔다
+
+**날짜**: 2026-07-10
+**상태**: 승인됨
+
+**결정**:
+첫 상담은 사용자에게 바로 스트리밍하지 않고, 서버에서 모델 응답을 생성한 뒤 저장 전 품질 게이트를 통과한 답변만 저장/전송한다. 모델 응답이 3회 연속 품질 게이트를 통과하지 못하면 503 반복 대신 캐릭터별 안전 fallback을 같은 게이트로 검수해 저장/전송한다.
+
+**근거**:
+실사용 QA에서 모델 응답이 3회 연속 게이트 실패로 503을 만들거나, 내부 게이트 통과 후 외부 QA에서 `오늘 할 구체 행동 없음`으로 실패하는 문제가 반복됐다. 첫 상담은 유저 신뢰와 과금 시작점이라 빈 응답, 끊긴 응답, 품질 미달 저장, 별 차감 불일치를 허용하면 안 된다.
+
+**품질 기준**:
+- 정확히 2문단.
+- 마지막 문장은 실제 질문이고 물음표로 끝난다.
+- `사주` 근거가 포함된다.
+- 두 번째 문단에 오늘 바로 할 수 있는 구체 행동이 있다.
+- 이모지, 영문자, 가벼운 외래어, 금지 표현을 포함하지 않는다.
+
+**검증 기준**:
+- `pnpm test`, `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm build`가 통과한다.
+- `scripts/qa-gemini-first-consultation.mjs` 6케이스가 통과한다.
+- `scripts/qa-live-api-check.mjs`가 실제 `/api/saju/chat` 무료/유료 첫 상담, 동시성 200/409, 별 차감, `chat_message` 거래 로그까지 확인한다.
+- 원격 Supabase에서 `decrement_star`는 잔액 차감과 `star_transactions` 기록을 같은 RPC 안에서 처리한다.
+
+---
+
+## DEC-036: production 배포는 보안/결제 릴리즈게이트 통과 전 금지한다
+
+**날짜**: 2026-07-21
+**상태**: 승인됨
+
+**결정**:
+Vercel `monthlysaju` production 배포는 환경변수, 결제, Supabase RLS/RPC, AI 비용 제어, rate limit, 의존성 취약점 게이트를 모두 통과하기 전까지 진행하지 않는다.
+
+**필수 게이트**:
+- Vercel production env에 Supabase, service role, AI provider, Paddle, origin, admin env가 모두 등록돼 있다.
+- `REQUIRE_PADDLE_ENV=true` 상태에서 env check와 production build가 Paddle 누락을 막는다.
+- `user_stars`, `star_transactions`는 authenticated 직접 조작이 불가능하고 service role/RPC 전용이다.
+- 채팅 별 차감은 AI 호출 전 예약/차감 또는 DB 트랜잭션형 원자 처리로 설계한다.
+- rate limit은 Upstash Redis, Vercel KV, Supabase RPC 같은 공유 저장소 기반이다.
+- Paddle subscription webhook은 one-time credit과 동일하게 price/product id allowlist를 검증한다.
+- `pnpm audit --prod` high/critical 취약점은 업데이트하거나 완화 사유를 기록한다.
+
+**검증 기준**:
+- `REQUIRE_PADDLE_ENV=true pnpm test:env`
+- `pnpm test`
+- `pnpm exec tsc --noEmit`
+- `pnpm lint`
+- `pnpm build`
+- `pnpm audit --prod`
+
+---
+
+## DEC-037: 수정후에도 배포 승인은 release gate와 운영 env 확인 기준으로만 한다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+개발자가 보안사항을 수정했더라도 production 배포 승인은 코드 테스트 통과만으로 판단하지 않는다. Vercel production 환경변수, Paddle env gate, Supabase 운영 migration 적용, production dependency audit high gate까지 모두 통과해야 승인한다.
+
+**근거**:
+2026-07-23 재검증에서 핵심 보안 회귀 테스트와 전체 테스트, build는 통과했지만 Vercel `todocori/monthlysaju` 환경변수가 하나도 없었고, `REQUIRE_PADDLE_ENV=true pnpm test:env`는 Paddle 필수값 누락으로 실패했으며, `pnpm audit --prod --audit-level high`는 `next@16.2.9` high 취약점 4개로 실패했다.
+
+**검증 기준**:
+- Vercel production env에 Supabase, service role, AI provider, Paddle, canonical origin, rate limit backend가 등록돼 있다.
+- `env REQUIRE_PADDLE_ENV=true pnpm test:env`가 통과한다.
+- `pnpm test`, `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm build`가 통과한다.
+- `pnpm audit --prod --audit-level high`가 통과한다.
+- Supabase production DB에 `202607210010_release_gate_star_reservation_rate_limit.sql`이 적용돼 있고, 별 직접 insert/update 정책이 남아 있지 않다.
+
+---
+
+## DEC-038: production OAuth origin은 canonical env 없으면 fail-closed 한다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+production에서는 `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL` 중 하나가 반드시 설정돼야 한다. 둘 다 없으면 OAuth callback/redirect URL 계산에서 `origin`, `x-forwarded-host`, `host` 같은 요청 헤더를 신뢰하지 않고 `PRODUCTION_APP_ORIGIN_REQUIRED`로 실패한다.
+
+**근거**:
+배포보안 재검증에서 production env가 비어 있을 때 header fallback 경로가 남아 있으면 untrusted forwarded header 기반 redirect/origin 혼선이 생길 수 있다고 확인했다. 운영 배포는 canonical origin env를 명시하는 방식으로만 허용한다.
+
+**검증 기준**:
+- production + canonical origin 없음 + 악성 forwarded header 입력 시 `getSiteUrlFromRequestHeaders`가 `PRODUCTION_APP_ORIGIN_REQUIRED`를 던진다.
+- production + `APP_ORIGIN` 설정 시 forwarded header보다 configured origin을 우선한다.
+- `pnpm exec vitest run src/lib/auth/oauth.test.ts`가 통과한다.
+---
+
+## DEC-039: 결제 재오픈 전까지 결제 진입점은 feature flag로 닫는다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+Paddle 코드는 삭제하지 않고 보존하되, production 초기 배포에서는 `PAYMENTS_ENABLED=false`, `NEXT_PUBLIC_PAYMENTS_ENABLED=false`로 결제 진입점을 닫는다.
+
+**근거**:
+Paddle production env와 실제 결제 QA가 아직 준비되지 않았고, 결제 버튼이 보이는데 실패하는 경험은 신뢰를 크게 해친다.
+
+**구현 기준**:
+- 서버는 `PAYMENTS_ENABLED`를 본다.
+- 브라우저 checkout/UI는 `NEXT_PUBLIC_PAYMENTS_ENABLED`를 본다.
+- `release:gate:code`는 비결제 베타의 코드/빌드/audit 게이트로 Paddle env를 요구하지 않는다.
+- `release:gate`는 production 승인용으로 실제 Supabase API QA까지 요구한다.
+- `release:gate:payments`는 결제 재오픈용으로 `REQUIRE_PADDLE_ENV=true`를 요구한다.
+
+**재오픈 조건**:
+- Paddle product/price/webhook env 등록
+- `PAYMENTS_ENABLED=true`
+- `NEXT_PUBLIC_PAYMENTS_ENABLED=true`
+- `pnpm release:gate:payments` 통과
+- 실제 결제 QA 통과
+
+---
+
+## DEC-040: 실제 Supabase API QA 미완료는 production blocker다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+무료 상담형 베타라도 실제 Supabase DB 기반 API QA가 통과하지 않으면 production 배포 승인으로 보지 않는다.
+
+**근거**:
+Gemini QA, Playwright 렌더링, 코드 게이트가 통과해도 실제 DB에서 무료 첫 상담, 별 예약/차감/환불, 거래 로그, 메시지 저장이 동작하는지는 별도 검증이 필요하다.
+
+**구현 기준**:
+- `release:gate:code`는 코드 게이트다.
+- `qa:live-api:free`는 무료 첫 상담 실제 API QA다.
+- `qa:live-api`는 전체 실제 API QA다.
+- `release:gate`는 위 세 단계를 모두 통과해야 한다.
+- Supabase DNS `ENOTFOUND`는 앱 로직 실패는 아니지만 production blocker로 유지한다.
+
+---
+
+## DEC-041: release gate는 코드/무료 API/결제 게이트를 분리해서 해석한다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+`release:gate:code`, `release:gate`, `release:gate:payments`는 각각 다른 승인 의미를 가진다. `release:gate:code`만 통과한 상태를 production 배포 승인으로 보지 않는다.
+
+**근거**:
+배포 및 서버보안 재피드백에서 `release:gate:code`는 통과했지만 기본 `release:gate`는 Supabase DNS `ENOTFOUND`로 실패했고, `release:gate:payments`는 Paddle 필수 env 누락으로 실패했다. Vercel production env도 `No Environment Variables found` 상태였다.
+
+**해석 기준**:
+- `release:gate:code`: 코드/타입/lint/build/high audit 중심 게이트
+- `release:gate`: 무료 베타 production 승인 게이트. 실제 무료 상담 API QA까지 포함해야 한다.
+- `release:gate:payments`: 결제 포함 production 배포 또는 결제 재오픈 게이트. Paddle 필수 env와 결제 검증을 포함해야 한다.
+
+**배포 기준**:
+- 결제 제외 무료 베타: `release:gate` 통과 필요
+- 결제 포함 배포: `release:gate`와 `release:gate:payments` 모두 통과 필요
+- Vercel production env가 비어 있으면 배포 승인은 보류한다.
+
+---
+
+## DEC-042: production release gate는 origin, shared rate limit, payment-off 상태를 먼저 확인한다
+
+**날짜**: 2026-07-23
+**상태**: 승인됨
+
+**결정**:
+무료 베타 production 승인용 `release:gate`는 코드 게이트 이후 실제 live API QA 전에 `REQUIRE_PRODUCTION_ENV=true pnpm test:env`를 실행한다.
+
+**근거**:
+Supabase live QA가 중요하더라도, production env가 안전하지 않은 상태에서 live QA만 기다리면 `release:gate:code` 통과를 배포 가능으로 오해할 수 있다. 특히 canonical origin, 공유 rate limit backend, 결제 비활성화 flag는 무료 베타 production에도 필수다.
+
+**검증 기준**:
+- `REQUIRE_PRODUCTION_ENV=true`에서 `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL`이 없으면 실패한다.
+- `REQUIRE_PRODUCTION_ENV=true`에서 `RATE_LIMIT_BACKEND=supabase`가 아니면 실패한다.
+- `REQUIRE_PRODUCTION_ENV=true`이면서 `REQUIRE_PADDLE_ENV=true`가 아닐 때 `PAYMENTS_ENABLED` 또는 `NEXT_PUBLIC_PAYMENTS_ENABLED`가 true면 실패한다.
+- `release:gate:payments`는 `REQUIRE_PRODUCTION_ENV=true REQUIRE_PADDLE_ENV=true pnpm test:env`로 시작한다.

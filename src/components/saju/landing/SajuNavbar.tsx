@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { loginWithGoogle } from "@/services/auth/actions";
 import ReferralSection from "@/components/saju/referral/ReferralSection";
+import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
 
 interface SajuNavbarProps {
   isLoggedIn?: boolean;
@@ -15,6 +16,7 @@ interface SajuNavbarProps {
 export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenuToggle }: SajuNavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
+  const paymentsEnabled = areClientPaymentsEnabled();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -92,13 +94,15 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
                   <span>&#9733;</span>
                   친구초대하고 1별 받기
                 </button>
-                <Link
-                  href="/coin-shop"
-                  className="flex items-center gap-1 text-sm text-amber-700 hover:text-amber-800 transition-colors"
-                >
-                  <span>&#9733;</span>
-                  <span className="font-medium">충전</span>
-                </Link>
+                {paymentsEnabled && (
+                  <Link
+                    href="/coin-shop"
+                    className="flex items-center gap-1 text-sm text-amber-700 hover:text-amber-800 transition-colors"
+                  >
+                    <span>&#9733;</span>
+                    <span className="font-medium">충전</span>
+                  </Link>
+                )}
               </>
             )}
           </div>

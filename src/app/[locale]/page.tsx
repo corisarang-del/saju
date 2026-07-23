@@ -8,13 +8,16 @@ import type { CharacterType } from "@/lib/saju/characters";
 import type { SajuReading } from "@/types/saju";
 import {
   formatWon,
+  MONTHLY_MEMBERSHIP,
   STAR_PACKS,
   STAR_USAGE_SUMMARY,
 } from "@/lib/monthly-saju/pricing";
+import { arePaymentsEnabled } from "@/lib/payments/feature-flag";
 
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const paymentsEnabled = arePaymentsEnabled();
 
   // 로그인 유저면 최근 reading에서 사주 정보 가져오기
   let currentReading;
@@ -70,8 +73,20 @@ export default async function HomePage() {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-200">가격과 별 사용 기준</p>
             <h2 className="mt-3 text-xl font-bold tracking-tight">{STAR_USAGE_SUMMARY}</h2>
             <p className="mt-2 text-sm leading-6 text-stone-100/80">
-              가입하면 3회 무료 상담을 먼저 받고, 이후에는 필요한 만큼 별을 충전해서 모든 상담사에게 공통으로 사용할 수 있어.
+              {paymentsEnabled
+                ? "가입하면 3회 무료 상담을 먼저 받고, 이후에는 필요한 만큼 별을 충전해서 모든 상담사에게 공통으로 사용할 수 있어."
+                : "가입하면 3회 무료 상담을 먼저 받을 수 있어. 유료 충전과 멤버십은 준비 중이야."}
             </p>
+            <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 px-3 py-3">
+              <p className="text-xs font-semibold text-stone-100">
+                {paymentsEnabled ? "월간 멤버십" : "월간 멤버십 준비 중"}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-stone-100/85">
+                {paymentsEnabled
+                  ? `월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개를 받아 자주 상담할 때 부담을 줄일 수 있어.`
+                  : `매월 별 ${MONTHLY_MEMBERSHIP.stars}개를 받는 멤버십은 정식 결제 기능 안정화 후 열릴 예정이야.`}
+              </p>
+            </div>
             <dl className="mt-4 space-y-2">
               {STAR_PACKS.map((pack) => (
                 <div

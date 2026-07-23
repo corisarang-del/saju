@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, type KeyboardEvent, type FormEvent } from 'react';
 import { Link } from '@/i18n/routing';
+import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 interface ChatInputProps {
   onSubmit: (value: string) => void;
@@ -13,6 +14,7 @@ export default function ChatInput({
   disabled = false,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const paymentsEnabled = areClientPaymentsEnabled();
 
   const handleResize = useCallback(() => {
     const el = textareaRef.current;
@@ -50,7 +52,13 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder={disabled ? '별을 충전해주세요' : '메시지를 입력하세요...'}
+          placeholder={
+            disabled
+              ? paymentsEnabled
+                ? '별이 부족해요'
+                : '무료 베타 상담 횟수를 모두 사용했어'
+              : '메시지를 입력하세요...'
+          }
           disabled={disabled}
           onInput={handleResize}
           onKeyDown={handleKeyDown}
@@ -82,9 +90,13 @@ export default function ChatInput({
       </form>
       {disabled && (
         <p className="text-xs text-gray-600 mt-1.5 text-center">
-          <Link href="/coin-shop" className="text-purple-400 hover:text-purple-300">
-            코인샵에서 별 충전하기 →
-          </Link>
+          {paymentsEnabled ? (
+            <Link href="/coin-shop" className="text-purple-400 hover:text-purple-300">
+              코인샵에서 별 받기 →
+            </Link>
+          ) : (
+            <span>무료 베타 기간에는 추가 충전을 잠시 닫아뒀어.</span>
+          )}
         </p>
       )}
     </div>

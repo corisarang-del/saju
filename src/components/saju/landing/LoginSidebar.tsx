@@ -7,6 +7,7 @@ import { deleteReading } from '@/services/saju/chat-actions';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { CHARACTER_LIST, type CharacterType } from '@/lib/saju/characters';
+import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 interface ChatHistoryItem {
   id: string;
@@ -93,6 +94,7 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
   const [editCity, setEditCity] = useState(currentReading?.birthCity ?? '서울');
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const paymentsEnabled = areClientPaymentsEnabled();
 
   const handleSaveEdit = async () => {
     if (!currentReading) return;
@@ -152,10 +154,11 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
           </form>
 
           <div className="w-full border-t border-[#2a2a3a] mt-8 pt-5">
-            <p className="text-xs text-gray-500 text-center leading-relaxed">
-              로그인하면 모든 대화 기록을
-              <br />
-              저장하고 다시 볼 수 있어요
+            <p
+              className="text-xs text-gray-500 text-center leading-relaxed"
+              aria-label="로그인하면 모든 대화 기록을 저장하고 다시 볼 수 있어요"
+            >
+              로그인하면 모든 대화 기록을 저장하고 다시 볼 수 있어요
             </p>
           </div>
         </div>
@@ -187,12 +190,19 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
           </div>
 
           {/* 코인 잔여량 */}
-          {user && totalCoins !== undefined && (
+          {user && totalCoins !== undefined && paymentsEnabled && (
             <Link href="/coin-shop" className="flex items-center gap-2 px-4 py-2 border-b border-[#2a2a3a] hover:bg-[#1e1e2a] transition-colors">
               <span className="text-yellow-400">&#9733;</span>
               <span className="text-sm text-gray-300">{totalCoins}개</span>
               <span className="text-xs text-gray-500 ml-auto">충전</span>
             </Link>
+          )}
+          {user && totalCoins !== undefined && !paymentsEnabled && (
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-[#2a2a3a]">
+              <span className="text-yellow-400">&#9733;</span>
+              <span className="text-sm text-gray-300">{totalCoins}개</span>
+              <span className="text-xs text-gray-500 ml-auto">무료 베타</span>
+            </div>
           )}
 
           {/* 종합 사주 리포트 CTA */}

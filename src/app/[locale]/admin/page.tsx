@@ -29,6 +29,10 @@ function formatDate(value: string | null): string {
   }).format(new Date(value));
 }
 
+function formatAdminValue(value: string | null): string {
+  return value?.trim() ? value : "-";
+}
+
 function getStatusMessage({
   status,
   balance,
@@ -140,6 +144,24 @@ export default async function AdminPage({ params, searchParams }: AdminPageProps
                     <p className="text-xs font-semibold text-slate-500">최근 로그인</p>
                     <p className="mt-1 text-sm font-semibold">{formatDate(profile.lastSignInAt)}</p>
                   </div>
+                  <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">멤버십</p>
+                    <p className="mt-1 text-sm font-semibold">{formatAdminValue(profile.membershipStatus)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      종료 {formatDate(profile.membershipCurrentPeriodEnd)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">최근 차감</p>
+                    <p className="mt-1 text-sm font-semibold">{formatAdminValue(profile.latestDeductionType)}</p>
+                  </div>
+                  <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500">최근 스냅샷</p>
+                    <p className="mt-1 text-sm font-semibold">{formatDate(profile.latestSnapshotCreatedAt)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      취소 {formatDate(profile.membershipCanceledAt)}
+                    </p>
+                  </div>
                 </div>
 
                 <section className="grid gap-3">
@@ -198,6 +220,17 @@ export default async function AdminPage({ params, searchParams }: AdminPageProps
                   <div className="grid gap-2">
                     <Label htmlFor="amount">수량</Label>
                     <Input id="amount" name="amount" inputMode="numeric" pattern="[0-9]*" placeholder="10000" />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="reason">조정 사유</Label>
+                    <Input
+                      id="reason"
+                      name="reason"
+                      minLength={4}
+                      maxLength={500}
+                      placeholder="테스트 계정 충전"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">

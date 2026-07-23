@@ -10,9 +10,15 @@ import type {
 } from '@/types/saju';
 
 export async function POST(req: NextRequest) {
+  let readingIdForFailure: string | null = null;
+  let userIdForFailure: string | null = null;
+
   try {
-    const body = await req.json();
-    const { readingId } = body;
+    const body = (await req.json()) as { readingId?: unknown };
+    const readingId = typeof body.readingId === 'string'
+      ? body.readingId.trim()
+      : '';
+    readingIdForFailure = readingId || null;
 
     if (!readingId) {
       return NextResponse.json(
@@ -27,6 +33,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    userIdForFailure = user.id;
 
     // reading 조회
     const { data: reading, error: readError } = await supabase
@@ -51,17 +58,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // status를 generating으로 변경
-    const { error: statusError } = await supabase
+    // paid 상태에서만 generating으로 전환해 중복 생성 요청을 막는다.
+    const { data: generatingReading, error: statusError } = await supabase
       .from('saju_readings')
       .update({ status: 'generating', updated_at: new Date().toISOString() })
       .eq('id', readingId)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .eq('status', 'paid')
+      .select('id')
+      .maybeSingle();
 
     if (statusError) {
       return NextResponse.json(
         { error: 'Failed to update status' },
         { status: 500 },
+      );
+    }
+
+    if (!generatingReading) {
+      return NextResponse.json(
+        { error: 'Analysis is already generating or no longer payable' },
+        { status: 409 },
       );
     }
 
@@ -134,21 +151,18 @@ export async function POST(req: NextRequest) {
     console.error('[saju/analyze] Error:', error);
 
     // AI 생성 실패 시 status를 failed로 복구
-    try {
-      const body = await req.clone().json();
-      if (body.readingId) {
+    if (readingIdForFailure && userIdForFailure) {
+      try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('saju_readings')
-            .update({ status: 'failed', updated_at: new Date().toISOString() })
-            .eq('id', body.readingId)
-            .eq("user_id", user.id);
-        }
+        await supabase
+          .from('saju_readings')
+          .update({ status: 'failed', updated_at: new Date().toISOString() })
+          .eq('id', readingIdForFailure)
+          .eq("user_id", userIdForFailure)
+          .eq('status', 'generating');
+      } catch {
+        // ignore cleanup error
       }
-    } catch {
-      // ignore cleanup error
     }
 
     return NextResponse.json(

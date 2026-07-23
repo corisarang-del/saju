@@ -4,9 +4,9 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { REPORT_STAR_COST } from '@/lib/monthly-saju/star-deduction';
 
 export async function POST(req: NextRequest) {
-  const { userId, readingId } = await req.json();
+  const { readingId } = await req.json();
 
-  if (!userId || !readingId) {
+  if (!readingId) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   // 인증 확인
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.id !== userId) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -37,7 +37,15 @@ export async function POST(req: NextRequest) {
     });
 
   if (error || !data) {
-    return NextResponse.json({ error: 'Insufficient stars' }, { status: 400 });
+    const message = error?.message ?? '';
+    if (message.includes('INSUFFICIENT_STARS')) {
+      return NextResponse.json({ error: 'Insufficient stars' }, { status: 402 });
+    }
+    if (message.includes('REPORT_ALREADY_PAID')) {
+      return NextResponse.json({ error: 'Report already paid' }, { status: 409 });
+    }
+
+    return NextResponse.json({ error: 'Failed to deduct stars' }, { status: 500 });
   }
 
   const result = Array.isArray(data) ? data[0] : data;

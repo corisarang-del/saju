@@ -19,12 +19,29 @@ const PADDLE_ENV_KEYS = [
   "PADDLE_WEBHOOK_SECRET",
   "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
   "NEXT_PUBLIC_PADDLE_ENVIRONMENT",
+  "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_10",
+  "NEXT_PUBLIC_PADDLE_PRICE_STAR_10",
   "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_30",
   "NEXT_PUBLIC_PADDLE_PRICE_STAR_30",
   "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_70",
   "NEXT_PUBLIC_PADDLE_PRICE_STAR_70",
   "NEXT_PUBLIC_PADDLE_PRODUCT_STAR_PREMIUM",
   "NEXT_PUBLIC_PADDLE_PRICE_STAR_PREMIUM",
+  "NEXT_PUBLIC_PADDLE_PRODUCT_MONTHLY_MEMBERSHIP",
+  "NEXT_PUBLIC_PADDLE_PRICE_MONTHLY_MEMBERSHIP",
+];
+
+const APP_ORIGIN_ENV_KEY = "APP_ORIGIN_OR_NEXT_PUBLIC_APP_URL";
+const RATE_LIMIT_BACKEND_ENV_KEY = "RATE_LIMIT_BACKEND=supabase";
+const PAYMENTS_DISABLED_FREE_BETA_KEY = "PAYMENTS_DISABLED_FOR_FREE_BETA";
+
+const FORBIDDEN_PUBLIC_SECRET_KEYS = [
+  "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_PADDLE_API_KEY",
+  "NEXT_PUBLIC_PADDLE_WEBHOOK_SECRET",
+  "NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY",
+  "NEXT_PUBLIC_GOOGLE_VERTEX_PROJECT",
+  "NEXT_PUBLIC_GOOGLE_VERTEX_LOCATION",
 ];
 
 function isPlaceholderValue(value) {
@@ -51,6 +68,10 @@ function getAiProvider(env) {
   return "google";
 }
 
+function isTrueValue(value) {
+  return String(value ?? "").trim().toLowerCase() === "true";
+}
+
 function validateEnv(env) {
   const aiProvider = getAiProvider(env);
   const aiKeys = aiProvider === "vertex" ? GOOGLE_VERTEX_ENV_KEYS : GOOGLE_AI_ENV_KEYS;
@@ -60,11 +81,38 @@ function validateEnv(env) {
   const missing = requiredKeys.filter((key) =>
     isPlaceholderValue(env[key]),
   );
+  const forbiddenPublicKeys = FORBIDDEN_PUBLIC_SECRET_KEYS.filter((key) =>
+    !isPlaceholderValue(env[key]),
+  );
+
+  if (
+    (isTrueValue(env.REQUIRE_PRODUCTION_ENV) || isTrueValue(env.REQUIRE_PADDLE_ENV))
+    && isPlaceholderValue(env.APP_ORIGIN)
+    && isPlaceholderValue(env.NEXT_PUBLIC_APP_URL)
+  ) {
+    missing.unshift(APP_ORIGIN_ENV_KEY);
+  }
+
+  if (
+    isTrueValue(env.REQUIRE_PRODUCTION_ENV)
+    && String(env.RATE_LIMIT_BACKEND ?? "").trim().toLowerCase() !== "supabase"
+  ) {
+    missing.push(RATE_LIMIT_BACKEND_ENV_KEY);
+  }
+
+  if (
+    isTrueValue(env.REQUIRE_PRODUCTION_ENV)
+    && !isTrueValue(env.REQUIRE_PADDLE_ENV)
+    && (isTrueValue(env.PAYMENTS_ENABLED) || isTrueValue(env.NEXT_PUBLIC_PAYMENTS_ENABLED))
+  ) {
+    missing.push(PAYMENTS_DISABLED_FREE_BETA_KEY);
+  }
 
   return {
-    ok: missing.length === 0,
+    ok: missing.length === 0 && forbiddenPublicKeys.length === 0,
     missing,
     optionalMissing: [],
+    forbiddenPublicKeys,
   };
 }
 
@@ -81,6 +129,12 @@ function main() {
     console.error("필수 환경변수가 비어 있거나 placeholder 값이야:");
     for (const key of result.missing) {
       console.error(`- ${key}`);
+    }
+    if (result.forbiddenPublicKeys.length > 0) {
+      console.error("NEXT_PUBLIC_로 노출하면 안 되는 비밀 환경변수가 있어:");
+      for (const key of result.forbiddenPublicKeys) {
+        console.error(`- ${key}`);
+      }
     }
     process.exit(1);
   }
@@ -101,6 +155,10 @@ module.exports = {
   GOOGLE_AI_ENV_KEYS,
   GOOGLE_VERTEX_ENV_KEYS,
   PADDLE_ENV_KEYS,
+  APP_ORIGIN_ENV_KEY,
+  RATE_LIMIT_BACKEND_ENV_KEY,
+  PAYMENTS_DISABLED_FREE_BETA_KEY,
+  FORBIDDEN_PUBLIC_SECRET_KEYS,
   getAiProvider,
   isPlaceholderValue,
   validateEnv,

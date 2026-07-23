@@ -26,6 +26,19 @@
 - 추가 별 충전 후 계속 사용
 - 오늘피드, 리포트, 마이 영역으로 확장
 
+## 2026-07-10 수정후 실사용 QA 결과
+- 최신 단위/회귀 테스트는 `pnpm test` 기준 49개 파일 / 182개 테스트 통과.
+- `pnpm lint`, `pnpm test:env`, 권한 상승 환경의 `pnpm build` 통과.
+- Gemini 첫 상담 라이브 QA는 6케이스 모두 통과했고 보고서는 `docs/qa/gemini-first-consultation-qa-2026-07-10.md`에 있다.
+- 실제 API QA 스크립트 `scripts/qa-live-api-check.mjs`를 추가했다.
+- 실제 API에서 `update-status paid` 클라이언트 전환 차단, 리포트 5별 차감, 월간 리포트 3별 차감과 중복 방지, 유료 첫 상담 동시 요청 200/409 처리는 통과했다.
+- `/ko`는 200 OK, Google OAuth 시작은 Supabase authorize 307 리다이렉트, Playwright 렌더링은 정상이다.
+- 무료 첫 상담 실제 API는 아직 QA 미통과다. 전체 실사용 QA에서는 Vertex/Gemini 429로 503, 무료 단독 재시도에서는 `Initial analysis failed quality gate`로 503이 재현됐다.
+- 다음 개발 우선순위는 무료 첫 상담 `isFree: true` 경로에서 토큰 제한과 품질 게이트가 충돌하지 않게 조정하고, 3회 실패 시 사용자 경험/저장/차감 정책을 명확히 하는 것이다.
+- 후속 수정 후 재검증에서는 테스트 수가 184개로 늘었고 `pnpm test`, `pnpm lint`, `pnpm test:env`, 권한 상승 `pnpm build`는 통과했다.
+- 그러나 실제 첫 상담 API는 여전히 QA 미통과다. 무료 첫 상담은 반복 실행에서 `503`, `채팅 거래 로그 누락`, `오늘 할 구체 행동 없음 답변 저장`이 재현됐고, 유료 첫 상담 동시성 시나리오도 `503/409`로 실패했다.
+- 내부 첫 상담 저장 전 게이트와 외부 Gemini QA 기준을 같은 판정 로직으로 맞추는 것이 다음 우선순위다.
+
 ## 가격 정책
 - 1별 = 메시지 1회
 - 가입 후 3회 무료
@@ -158,8 +171,42 @@
 - 앱 실행 환경은 `AI_PROVIDER=vertex`, `AI_MODEL=gemini-2.5-flash-lite`, `GOOGLE_VERTEX_PROJECT=project-3473cfe3-7869-4a96-855`, `GOOGLE_VERTEX_LOCATION=us-central1` 조합을 기준으로 한다.
 - 기존 `@ai-sdk/google` API key 경로는 유지하되, Vertex/ADC 모드에서는 `@ai-sdk/google-vertex@3.0.146`을 사용한다.
 - 실제 Vertex ADC 호출에서 `gemini-2.5-flash-lite`가 `연결 성공`으로 응답했다.
+
+## 2026-07-10 Gemini 첫 상담 QA 안정화
+- 첫 상담 답변 품질 기준은 `사주 근거`, `오늘 구체 행동`, `1~3문단`, `질문형 마무리`, `금지 표현 없음`, `이모지 없음`, `가벼운 외래어 없음`, `영어 혼합 없음`, `캐릭터명 오호칭 없음`이다.
+- 라이브 QA 스크립트는 6케이스를 검사하고, 품질 미달 항목이 있으면 최대 3회까지 피드백 기반 재생성을 시도한다.
+- 최종 품질 미달이 남으면 QA 스크립트가 종료 코드 1로 실패해야 한다.
+- 운영 첫 상담 프롬프트에는 복사 위험이 큰 금지 문구를 직접 길게 노출하지 않고, 저장 전 게이트와 QA 평가기 내부 목록에서 차단한다.
+- 2026-07-10 최종 QA 리포트는 6케이스 모든 항목 통과 상태다.
+- `/api/saju/chat` 첫 상담은 이제 `streamText`로 바로 노출하지 않는다. 서버에서 `generateText`로 먼저 생성하고 저장 전 품질 게이트를 통과한 답변만 UI 메시지 스트림으로 내려보낸다.
+- 첫 상담 품질 미달 답변은 최대 3회 재작성하고, 끝까지 실패하면 사용자에게 실패 응답을 반환하며 별 차감과 저장을 하지 않는다.
 - 첫 상담 QA 스크립트도 Vertex provider를 사용할 수 있게 바뀌었고, 성공 리포트는 `docs/qa/gemini-first-consultation-qa-2026-07-02.md`에 남았다.
 - 최신 검증 기준 `pnpm test`, `pnpm lint`, `pnpm build`, `node scripts/check-env.js`, `tsc --noEmit`, `git diff --check`가 통과했다.
+
+## 2026-07-23 가격코칭 재리뷰 후속수정
+- 20대 여성 관점 재리뷰에서 남은 가격/문구/접근성 후속 과제를 코드로 반영했다.
+- 랜딩 가격 패널에 `MONTHLY_MEMBERSHIP` 기반 월간 멤버십 안내를 직접 노출했다.
+- 지안의 불안 유도형 재회 티저 문구, 서준/도윤의 `시기야` 단정형 문구를 더 차분하고 자연스러운 `흐름/방향/조건` 표현으로 바꿨다.
+- 비로그인 사이드바 도움말에는 `aria-label`을 붙여 줄바꿈이 보조기술에서 붙어 읽히지 않게 했다.
+- 검증 기준 `pnpm test`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build`, `pnpm test:env`, `pnpm audit --prod --audit-level high`는 통과했다.
+- `REQUIRE_PADDLE_ENV=true pnpm test:env`는 Paddle 운영 환경변수 미등록으로 실패한다. 운영 배포 전 Vercel production env 등록이 필요하다.
+
+## 2026-07-23 실사용 QA Supabase DNS 차단
+- `scripts/qa-live-api-check.mjs` 실제 API QA는 `sfpwgywcmhgilrqearsz.supabase.co` DNS 해석 실패로 막혔다.
+- `supabase.co` 기본 도메인은 응답하지만 프로젝트 호스트는 `ENOTFOUND`라 앱 채팅 로직까지 도달하지 못했다.
+- 무료/유료 첫 상담, 별 차감, 거래 로그, 저장된 assistant 품질은 오늘 실제 DB 기준으로 완료 확인하지 못했다.
+- QA 스크립트에 Supabase DNS preflight를 추가해 auth user 생성 전에 `Supabase DNS lookup failed`로 명확히 실패하게 했다.
+- DNS가 정상인 네트워크에서 `QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs`와 `node scripts/qa-live-api-check.mjs`를 다시 실행해야 한다.
+
+## 2026-07-23 결제모듈 보존형 비활성화 배포
+- Paddle 결제 모듈과 가격/상품/웹훅 정책은 삭제하지 않고 보존한다.
+- production 초기 배포는 무료 상담형 베타로 보고 `PAYMENTS_ENABLED=false`, `NEXT_PUBLIC_PAYMENTS_ENABLED=false`를 기본 정책으로 둔다.
+- 서버 route는 `PAYMENTS_ENABLED`, 브라우저 checkout/UI는 `NEXT_PUBLIC_PAYMENTS_ENABLED`를 본다.
+- `/coin-shop`, Paddle checkout, 상단/사이드바 충전 링크, 채팅 paywall 충전 CTA, 월간 리포트 상세판 unlock, 종합 사주 백서 CTA, reading preview 결제 CTA를 flag off 상태에서 닫았다.
+- `release:gate:code`는 비결제 베타의 코드/빌드/audit 게이트로 Paddle env 없이 통과한다.
+- `release:gate`는 production 승인용으로 `release:gate:code` 이후 `qa:live-api:free`, `qa:live-api`를 실행한다.
+- 현재 `pnpm release:gate:code`는 통과하지만 `pnpm release:gate`는 Supabase DNS `ENOTFOUND`로 실패한다. 따라서 production 배포 승인은 아직 불가다.
+- `release:gate:payments`는 결제 재오픈용으로 `REQUIRE_PADDLE_ENV=true`를 요구하며, Paddle env 미등록 상태에서는 실패하는 것이 정상이다.
 
 ## 2026-07-03 실사용 상담응답 QA
 - `pnpm test` 통과: 36개 파일 / 118개 테스트.
@@ -217,7 +264,44 @@
 - Playwright로 `/ko/reading` 입력 1/2 -> 고민 선택 2/2 전환, 비로그인 `로그인이 필요합니다.` 메시지 확인.
 - 현재 상태는 기능 정상, 실제 API 단건 품질 정상, 대표 5케이스 품질 정상이다.
 
+## 2026-07-07 수정후 실사용 QA
+- `pnpm test` 통과: 41개 파일 / 142개 테스트.
+- `pnpm lint`, `pnpm test:env`, `pnpm build` 통과.
+- Gemini 첫 상담 6케이스 live QA 보고서 `docs/qa/gemini-first-consultation-qa-2026-07-07.md` 생성.
+- 6케이스 모두 고민 반영, 금지 표현 없음, 1~3문단, 질문 종료, 이모지 없음, 가벼운 외래어 없음, 캐릭터명 호칭 없음 기준을 통과했다.
+- `/api/saju/update-status`에 `paid` 직접 승격 요청을 보냈을 때 403으로 막혔고 reading status는 `pending` 유지됐다.
+- `/api/saju/deduct-stars`는 실제 Supabase에서 `deduct_stars_for_report` RPC를 찾지 못해 500을 반환했다. direct RPC도 `PGRST202` schema cache 오류였다.
+- `/api/saju/chat` 중복 요청은 첫 요청 200, 두 번째 요청 409로 막혔고 user/assistant 1쌍만 저장, 별 1개만 차감, `chat_used` 1 증가를 확인했다.
+- 별 3개 무료 첫 상담 실제 API 응답은 2문단, 질문 종료, 이모지 없음, 외래어 없음, 커리어 고민 반영까지 통과했다.
+- 별 5개 보유 상태 첫 상담은 paid prompt 경로에서 4문단 응답이 저장되어 첫 상담 2문단 기준을 실패했다.
+- `/api/auth/google?next=/ko/reading`은 Supabase Google authorize URL로 307 redirect했고 localhost callback next 값을 포함했다.
+- Playwright로 `/ko/reading` 입력 1/2 -> 고민 선택 2/2 전환, 비로그인 `로그인이 필요합니다.` 메시지 확인.
+- 현재 상태는 자동 게이트와 주요 화면/채팅 보호는 통과, 리포트 별 차감 RPC 실제 적용과 paid prompt 첫 상담 분량 제어는 미통과다.
+
+## 2026-07-07 수정후 실사용 QA 2차
+- `pnpm test:env` 통과.
+- Gemini 첫 상담 6케이스 live QA 보고서 `docs/qa/gemini-first-consultation-qa-2026-07-07.md` 생성.
+- 6케이스 모두 고민 반영, 금지 표현 없음, 1~3문단, 질문 종료, 이모지 없음, 가벼운 외래어 없음, 캐릭터명 호칭 없음 기준을 통과했다.
+- 전체 `pnpm test`는 `src/lib/auth/oauth.test.ts > uses_forwarded_host_when_origin_header_is_missing` 타임아웃으로 실패했다. 단독 실행은 통과했다.
+- `pnpm lint`와 `pnpm build`는 장시간 무응답으로 완료 확인하지 못했다.
+- `/api/saju/update-status`에 `paid` 직접 승격 요청을 보냈을 때 403으로 막혔고 reading status는 `pending` 유지됐다.
+- `/api/saju/deduct-stars`는 실제 Supabase에서 status 200, 별 5개 차감, `saju_readings.status = paid`, `star_transactions` 저장까지 확인됐다.
+- `/api/monthly-saju/deduct-monthly-report`는 첫 호출에서 3별 차감, 두 번째 호출에서 `alreadyUnlocked: true`와 amount 0을 반환했다.
+- `/api/saju/chat` 중복 요청은 첫 요청 200, 두 번째 요청 409로 막혔고 user/assistant 1쌍만 저장, 별 1개만 차감, `chat_used` 1 증가를 확인했다.
+- 별 3개 무료 첫 상담 실제 API 응답은 2문단, 질문 종료, 이모지 없음, 외래어 없음, 커리어 고민 반영까지 통과했다.
+- 별 10개 보유 paid prompt 첫 상담은 5문단과 이모지 포함으로 첫 상담 품질 기준을 실패했다.
+- `/api/auth/google?next=/ko/reading`은 Supabase Google authorize URL로 307 redirect했고 localhost callback next 값을 포함했다.
+- `/ko` HTTP 200은 확인했지만 Playwright `/ko/reading` open은 장시간 무응답으로 화면 입력 흐름을 완료 확인하지 못했다.
+- 현재 상태는 리포트 별 차감/월간 리포트/채팅 중복 방지는 통과, paid prompt 첫 상담 품질과 로컬 test/lint/build/Playwright 안정성은 미통과다.
+
 ## 2026-07-03 20대 여성 유저 접근성/첫상담 최종QA 후 재리뷰
+
+## 2026-07-03 배포보안 릴리즈게이트 후속수정
+- 리포트 결제 상태 승격은 더 이상 클라이언트 `/api/saju/update-status` 호출을 믿지 않는다.
+- `/api/saju/deduct-stars`가 세션 사용자 기준으로 별을 차감하고, 새 Supabase migration `202607030010_report_payment_status_hardening.sql`에서 별 차감, 거래 기록, `saju_readings.status = 'paid'` 승격을 한 RPC 안에서 원자적으로 처리한다.
+- `/api/saju/update-status`는 클라이언트가 `paid`, `generating`, `completed` 상태를 직접 만들 수 없게 막았다.
+- `/api/saju/chat`은 AI 호출 전 사용자 단위 in-memory generation lock과 분당/일일 rate limit을 적용한다.
+- 운영 배포 전 새 migration 적용 여부와 다중 인스턴스 환경용 분산 잠금 전환을 확인해야 한다.
 - 소스코드 수정 없이 개발자 수정분을 읽기 전용으로 확인했다.
 - 로컬 `localhost:3000` 서버가 꺼져 있어 이번 라운드에서는 Playwright 실제 화면 스냅샷은 확인하지 못했다.
 - 종합 평가는 `9.7/10`이다.
@@ -314,3 +398,288 @@
 - `pnpm-workspace.yaml`은 `packages: ['.']` 형태로 복구되어 `pnpm dev`가 다시 동작한다.
 - 가격/코칭 MVP 갭 문서와 배포보안 릴리즈게이트 문서가 추가됐다.
 - 결제 포함 공개 배포 전에는 `/api/saju/update-status` 상태 우회, 별 차감 동시성, 운영 Supabase 마이그레이션 적용, Paddle production env 검증을 닫아야 한다.
+
+## 2026-07-07 가격/코칭 MVP 개발자 전달 문서화
+- 사용자는 코드 구현은 개발자가 할 것이므로 Codex는 전달 문서만 작성하고 코딩은 절대 하지 말라고 지시했다.
+- 가격 정책은 스타터 `10별 3,900원`, 기존 `30별 9,900원`, `70별 19,900원`, `250별 39,900원`, `월 9,900원 멤버십/매월 40별`로 정리했다.
+- 사용처별 차감은 채팅 1별, 월간 전략 리포트 상세판 3별, 종합 사주 백서 5별로 확정했다.
+- 코칭 루프는 첫 상담 성공 후 `CoachingSnapshot`을 생성하고 오늘피드, 후속 질문, 월간 리포트, 기억 요약에 재사용하는 구조로 정리했다.
+- 개발자 전달 문서: `docs/pm/가격-코칭-MVP-완성-개발자-전달.md`.
+
+## 2026-07-07 가격/코칭 MVP 구현 반영
+- 최신 요청에서는 개발자 전달 문서를 기준으로 실제 코드 반영을 진행했다.
+- 가격 source of truth는 `src/lib/monthly-saju/pricing.ts`이며, 별 패키지 `10/30/70/250`, 월간 멤버십 `월 9,900원/40별`, 차감 정책 `채팅 1별/월간 리포트 3별/종합 백서 5별`을 담는다.
+- Paddle config와 웹훅 지급은 실제 `items.price.id` 매칭을 유지하며 `stars10`, `monthlyMembership`을 포함한다.
+- 첫 상담 assistant 저장 성공 후 `coaching_snapshots`가 생성되고, 오늘피드는 snapshot을 우선 사용한다.
+- 월간 전략 리포트 상세판은 `deduct_stars_for_monthly_report` RPC로 3별 차감 후 열린다.
+- 운영 적용 전 새 Supabase 마이그레이션 3개와 새 Paddle env 4개를 반드시 적용해야 한다.
+
+## 2026-07-07 운영 Supabase 가격/코칭 마이그레이션 적용
+- 운영 project ref `sfpwgywcmhgilrqearsz`에 새 가격/코칭 SQL 3개를 직접 적용했다.
+- 적용 완료: `coaching_snapshots` 테이블/RLS, 종합 백서 5별 RPC, 월간 리포트 3별 RPC.
+- 검증 완료: 새 테이블과 RPC 존재, 비용 상수 5/3, service_role grant, authenticated revoke.
+- 주의: 원격 migration history는 비어 있다. `supabase db push --dry-run`이 새 3개가 아니라 기존 6개 포함 총 9개를 적용하려 해 직접 SQL 실행으로 범위를 제한했다.
+- 운영 advisors에서 기존 `saju_readings`, `saju_chat_messages`, `saju_compatibilities` RLS disabled P0가 확인됐다. 별도 복구 필요.
+
+## 2026-07-07 운영 Supabase RLS/RPC 보안 복구
+- 운영 project ref `sfpwgywcmhgilrqearsz`에 RLS/RPC 복구 SQL을 직접 적용했다.
+- 복구 완료: `saju_readings`, `saju_chat_messages`, `saju_compatibilities` RLS enable 및 owner 정책.
+- 복구 완료: `decrement_star`, `credit_stars_for_paddle_purchase`, `deduct_stars_for_report`, `deduct_stars_for_monthly_report` service_role 전용 권한.
+- 검증 쿼리에서 RLS/정책/RPC 권한 모두 true.
+- `supabase db advisors --linked`에서 기존 P0 RLS disabled와 decrement_star public executable 경고가 사라졌다.
+- 남은 경고는 Auth leaked password protection disabled와 일부 기존 RLS initplan 성능 WARN이다.
+
+## 2026-07-07 Gemini 첫상담 QA 기준 강화
+- `docs/qa/gemini-first-consultation-qa-2026-07-07.md`는 기존 전부 통과 판정을 재리뷰해 `보완필요`로 정정했다.
+- 이유: 문단 수/질문 종료/이모지 없음 같은 형식은 통과했지만, 사주 근거와 구체 행동이 약하고 일부 표현이 상투적이었다.
+- 첫 상담 지시문에 사주 근거, 구체 행동, 상투/단정 표현 금지 기준을 추가했다.
+- QA 러너에 `hasSajuGroundedFlow`, `hasConcreteTodayAction` 평가와 요약 표 열을 추가했다.
+- 다음 live QA는 강화된 러너로 다시 실행해야 한다.
+
+## 2026-07-07 AI 응답 영어 혼합 방지
+- 실사용 상담에서 자미두수/서양 점성술 설명이 `Children's Palace`, `Emperor Star`, `Western Astrology`, `Ascendant`, `Aries`처럼 영어와 섞이는 문제가 확인됐다.
+- 원인은 고급 분석 컨텍스트의 영어 별자리/약어 병기와 채팅 시스템 지시문의 전역 한국어 전용 규칙 부족이었다.
+- `src/lib/saju/advanced-analysis.ts`에서 영어 별자리 괄호 표기와 `ASC`, `MC` 병기를 제거했다.
+- `src/app/api/saju/chat/route.ts`에는 모든 답변 한국어 전용, 영어 번역/영어 병기 금지, 영어 점성술/자미두수 번역 금지 규칙을 추가했다.
+- 회귀 테스트: `src/lib/saju/advanced-analysis-language.test.ts`, `src/lib/saju/chat-stream-failure-regression.test.ts`.
+- `scripts/qa-gemini-first-consultation.mjs`에도 `hasEnglishMixing`과 `영어 혼합 없음` 리포트 열을 추가해 다음 live QA에서 영어 혼입을 잡도록 했다.
+
+## 2026-07-07 배포보안 OAuth/analyze 후속 처리
+- 배포보안 문서 `docs/pm/배포보안-20260707-개발자-전달.md`의 P1 중 코드로 닫을 수 있는 두 항목을 반영했다.
+- production OAuth redirect origin은 `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL` 고정값을 요청 헤더보다 우선하게 했다.
+- `/api/saju/analyze`는 catch에서 `req.clone().json()`을 다시 읽지 않고, 초기에 보관한 `readingId/userId`로 `generating -> failed` 복구를 수행한다.
+- `paid -> generating` 전이는 `.eq('status', 'paid')` 조건부 update와 `409` 응답으로 중복 생성 요청을 막는다.
+- 남은 배포 블로커: `REQUIRE_PADDLE_ENV=true pnpm test:env`는 Paddle production env 누락으로 실패한다.
+
+## 2026-07-07 첫채팅 응답품질 저장전 게이트
+- QA에서 유료 첫 채팅 5문단 저장, 이모지 포함, 무료 첫 채팅 질문 종료 누락, live QA 사주 근거/구체 행동 미흡이 보고됐다.
+- `src/lib/ai/chat-completion-guard.ts`에 첫 상담 저장 전 품질 게이트를 추가했다.
+- 첫 상담은 1~3문단, 이모지 없음, 마지막 질문 종료, 사주 근거 포함, 오늘 구체 행동 포함, 금지 표현 없음 조건을 통과해야 저장/차감된다.
+- 캐릭터 원본 프롬프트의 한자 예시 이모지를 제거해 모델이 따라 쓰지 않게 했다.
+- Gemini live QA 6케이스는 최신 실행에서 전부 통과했다.
+
+## 2026-07-07 가격/코칭 MVP 구현 리뷰 후속 처리
+- P0 월간 전략 리포트 정적 문구 문제를 보완했다.
+- `createMonthlyStrategyReport` 도메인 빌더가 최신 reading, coaching snapshot, conversation memory, 최근 user 메시지 fallback을 받아 6개 섹션을 만든다.
+- `/[locale]/reports`는 더 이상 정적 `monthlySections`를 쓰지 않고 `saju_readings`, `coaching_snapshots`, `saju_chat_messages`를 조회해 개인화 리포트를 만든다.
+- 가격 source of truth는 `pricing.ts`의 `getPricingListItems`, `buildPricingFaqAnswer`, `buildProductJsonLd`로 확장했고 약관/JSON-LD가 이를 참조한다.
+- 남은 후속 과제는 Paddle subscription 기반 멤버십 상태 저장, 관리자 운영 화면 확장, memory summary 고도화다.
+
+## 2026-07-07 가격/코칭 MVP 구현 리뷰
+- 개발자 구현 리뷰 결과, 가격/결제/차감과 코칭 스냅샷 뼈대는 들어갔지만 MVP 완료로 보긴 어렵다.
+- 구현 확인: `pricing.ts`의 `10/30/70/250별`, 월간 멤버십 `월 9,900원/40별`, 채팅 1별, 월간 리포트 3별, 종합 백서 5별, Paddle price id 기준 지급, `coaching_snapshots`, 오늘피드 snapshot 우선 사용.
+- 핵심 미완성: 월간 전략 리포트가 snapshot, 최근 대화 memory, 사주 요약을 쓰지 않고 정적 문구를 3별 차감 후 보여준다.
+- 추가 미완성: 약관/layout JSON-LD 가격 하드코딩, 멤버십 상태 저장 부재, 관리자 화면의 멤버십/최근 차감/snapshot 표시 부재, memory summary와 후속 질문 연결 부족.
+- 리뷰 문서: `docs/pm/가격-코칭-MVP-구현-리뷰-개발자-전달.md`.
+
+## 2026-07-07 수정후 실사용 QA 3차
+- 자동 게이트는 좋아졌다. `pnpm test` 45 files / 158 tests, `pnpm lint`, `pnpm build`, `pnpm test:env`가 통과했다.
+- `/ko`는 HTTP 200이고 Playwright 실제 브라우저 스냅샷도 성공했다. OAuth 시작도 Supabase Google authorize URL로 307 리다이렉트됐다.
+- 실제 API QA에서 결제 상태 직접 `paid` 전환은 403으로 막혔고, 종합 리포트 5별 차감과 월간 리포트 3별 차감/중복 방지는 통과했다.
+- 채팅 동시 요청은 한 요청 200, 다른 요청 409로 막혔고 별도 1개만 차감됐다.
+- 하지만 라이브 채팅 품질은 아직 실패다. 유료 첫 응답은 5문단과 이모지를 포함했고, 무료 첫 응답은 질문으로 끝나지 않았다.
+- Gemini live QA도 6케이스 중 `썸/재회` 사주 근거, `번아웃` 구체 행동이 확인필요로 남았다.
+- 개발일지: `docs/개발일지/수정후-실사용-QA-20260707-3.md`.
+
+## 2026-07-07 멤버십 상태/Paddle 구독/관리자/memory 고도화
+- Paddle subscription 웹훅은 `subscription.activated`, `subscription.updated`, `subscription.canceled`를 처리해 `user_memberships`에 상태를 저장한다.
+- 멤버십 저장 기준은 `provider, subscription_id` unique upsert이며, `status`, `current_period_start`, `current_period_end`, `canceled_at`을 유지한다.
+- 관리자 화면 `/[locale]/admin`은 별 잔액과 거래 로그 외에 멤버십, 최근 차감, 최근 코칭 스냅샷을 함께 보여준다.
+- 채팅 별 차감 RPC는 `star_transactions`에 `chat_message` 차감 로그를 남겨 관리자 관찰성이 끊기지 않게 한다.
+- 월간 리포트 memory summary는 최근 사용자 메시지 8개, assistant 상담 요약, follow-up seed를 포함한다.
+- 운영 적용 전 새 마이그레이션 `202607070900_user_memberships_and_chat_transaction_log.sql`을 Supabase에 적용해야 한다.
+
+## 2026-07-10 배포보안 관리자 별조정 감사로그 하드닝
+- 배포보안 문서 `docs/pm/배포보안-20260707-개발자-전달.md`를 재점검해 코드로 닫을 수 있는 P2 관리자 하드닝을 반영했다.
+- 새 마이그레이션 `202607100010_admin_star_adjustment_audit.sql`은 `admin_audit_logs`와 `admin_adjust_user_stars` RPC를 추가한다.
+- 관리자 수동 별 충전/차감은 service role 전용 RPC에서 row lock, 잔액 변경, 별 거래 로그, 관리자 감사로그를 한 번에 처리한다.
+- 관리자 화면에는 `조정 사유` 입력이 추가됐고, 서버 검증은 4자 이상 500자 이하로 고정했다.
+- 감사로그는 actor id/email, target user id, action, amount, before/after balance, reason, IP, user-agent를 저장한다.
+- `env REQUIRE_PADDLE_ENV=true pnpm test:env`는 여전히 로컬 Paddle production env 누락으로 실패한다. 운영 env 입력 후 재검증해야 한다.
+
+## 2026-07-10 수정후 실사용 QA
+- 자동 게이트는 통과했다. `pnpm test` 49 files / 178 tests, `pnpm lint`, 권한 올린 `pnpm build`, `pnpm test:env` 모두 통과했다.
+- Gemini live QA 새 리포트 `docs/qa/gemini-first-consultation-qa-2026-07-10.md`는 6케이스 전부 통과했다.
+- `/ko` HTTP 200, OAuth 시작 307, Playwright 브라우저 스냅샷도 성공했다.
+- 실제 API QA에서 결제 상태 직접 `paid` 전환은 403으로 막혔고, 종합 리포트 5별 차감과 월간 리포트 3별 중복 방지는 통과했다.
+- 채팅 동시 요청은 `[200, 409]`로 막혔고 별은 1개만 차감됐다.
+- 무료 첫 채팅은 2문단, 질문 종료, 이모지 없음, 영어 혼합 없음으로 통과했다.
+- 유료 첫 채팅은 아직 실패다. 실제 스트리밍/저장 assistant가 4문단이고, `MC` 영어 약어가 포함됐으며, 그래도 저장/별 차감/`chat_used` 증가가 발생했다.
+- 개발일지: `docs/개발일지/수정후-실사용-QA-20260710.md`.
+
+## 2026-07-10 Gemini QA 금지표현 변형 보강
+- Gemini 첫 상담 QA 리포트 `docs/qa/gemini-first-consultation-qa-2026-07-10.md`는 자동 기준상 6케이스 전부 통과였지만 전문 재리뷰에서 보강점이 나왔다.
+- `물이 조금씩 새는 주머니`는 기존 `물이 새는 주머니` 금지어의 변형이라 정확 일치 검사를 피했다.
+- `[사주]` 대괄호 마커와 `걱정 마세요` 상투적 안심 문구도 첫 상담 신뢰 톤에서 막아야 한다.
+- `chat-completion-guard`, Gemini QA 러너, 첫 상담 프롬프트, 실제 chat route 지시문에 해당 금지 기준을 추가했다.
+- 검증: `pnpm test` 49 files / 179 tests, `pnpm lint`, `pnpm build`, `pnpm exec tsc --noEmit` 통과.
+
+## 2026-07-10 수정후 실사용 QA 2차
+- 자동 게이트는 통과했다. 관련 회귀 테스트 7 files / 40 tests, `pnpm test` 49 files / 179 tests, `pnpm lint`, 권한 올린 `pnpm build`, `pnpm test:env`가 통과했다.
+- Gemini live QA 새 실행에서 6케이스 중 `이직/퇴사`가 질문으로 끝나지 않아 `확인필요`로 떨어졌다.
+- `/ko` HTTP 200, OAuth 시작 307, Playwright 브라우저 스냅샷은 성공했다.
+- 실제 API QA에서 결제 상태 직접 `paid` 전환은 403으로 막혔고, 종합 리포트 5별 차감과 월간 리포트 3별 중복 방지는 통과했다.
+- 채팅 동시 요청은 `[200, 409]`로 막혔고 별은 1개만 차감됐다.
+- 유료 첫 채팅은 2문단, 질문 종료, 이모지 없음, 영어 혼합 없음으로 통과했다.
+- 무료 첫 채팅은 2문단, 이모지 없음, 영어 혼합 없음이지만 질문으로 끝나지 않았고, 그래도 저장/별 차감/`chat_used` 증가가 발생했다.
+- 개발일지: `docs/개발일지/수정후-실사용-QA-20260710-2.md`.
+
+## 2026-07-10 첫상담 품질게이트 정렬과 안전 fallback
+- 실제 API QA에서 첫 상담이 3회 재생성 뒤 503으로 떨어지거나, 내부 게이트 통과 후 외부 QA에서 `오늘 할 구체 행동 없음`으로 실패했다.
+- 첫 상담 저장 전 게이트는 정확히 2문단, 질문 종료, 사주 근거, 두 번째 문단의 오늘 행동, 이모지/영문자/가벼운 외래어 금지 기준으로 고정한다.
+- 첫 상담 모델 응답이 3회 모두 품질 게이트를 통과하지 못하면 503 대신 캐릭터별 안전 fallback을 검수한 뒤 저장/전송한다.
+- `qualityReport` 로그로 문단 수, 질문 종료, 사주 근거, 오늘 행동, 이모지, 영어, 금지 패턴 실패 원인을 구조화해 남긴다.
+- 채팅 거래 로그 누락은 원격 DB의 `decrement_star`가 이전 버전이어서 발생했다. 원격 migration history가 비어 있어 전체 push 대신 `202607070900_user_memberships_and_chat_transaction_log.sql`만 `supabase db query --linked --file`로 적용했다.
+- 적용 후 무료/유료 실사용 API QA에서 `chat_message:-1` 거래 로그가 모두 확인됐고 전체 QA가 통과했다.
+- 최종 인수인계 문서는 `docs/개발일지/첫상담-품질게이트-최종인수인계-20260710.md`에 남겼고, 관련 결정은 `DEC-035`로 저장했다.
+
+## 2026-07-21 배포 전 릴리즈게이트 작업지시
+- Vercel `monthlysaju` production 배포 전 개발자가 닫아야 할 P0/P1 작업을 문서화했다.
+- 문서 위치: `docs/pm/배포전-릴리즈게이트-개발자-작업지시-20260721.md`.
+- P0 항목은 production env 등록, `REQUIRE_PADDLE_ENV=true`, Supabase 별 테이블 직접 조작 차단, 채팅 별 차감 원자성, 공유 저장소 rate limit, Paddle subscription price/product 검증, `pnpm audit --prod` 취약점 정리다.
+- 모든 항목은 TDD로 실패 테스트를 먼저 만들고, 배포 전 `REQUIRE_PADDLE_ENV=true pnpm test:env`, `pnpm test`, `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm build`, `pnpm audit --prod`를 통과해야 한다.
+
+## 2026-07-23 배포보안 수정후 검증
+- 개발자 수정 후 서버/보안 담당자 관점에서 재검증했다.
+- 상세 개발자 전달 문서는 `docs/pm/배포보안-수정후-검증-개발자-전달-20260723.md`에 있다.
+- 타깃 보안 회귀 테스트는 9개 파일 / 45개 테스트 통과.
+- 전체 `pnpm test`는 50개 파일 / 197개 테스트 통과.
+- `pnpm build`는 통과.
+- 수정 확인: 별 직접 조작 RLS 제거 migration, `reserve_chat_star`/`refund_chat_star` 기반 채팅 별 예약/환불, Paddle 멤버십 price/product 검증, production rate limit fail-closed, release gate 강화.
+- 배포 차단: Vercel `todocori/monthlysaju`에 환경변수가 하나도 없고, `REQUIRE_PADDLE_ENV=true pnpm test:env`가 Paddle 필수값 누락으로 실패하며, `pnpm audit --prod --audit-level high`가 `next@16.2.9` high 취약점 4개로 실패한다.
+- production 배포 전 `next >=16.2.11` 업데이트, Vercel env 등록, `RATE_LIMIT_BACKEND=supabase`, `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL`, Paddle product/price/webhook env, Supabase `202607210010_release_gate_star_reservation_rate_limit.sql` 운영 적용 확인이 필요하다.
+
+## 2026-07-23 배포보안 후속수정
+- 개발자 전달 문서의 코드 수정 가능 항목을 반영했다.
+- `next`는 `^16.2.11`, `eslint-config-next`는 `16.2.11`, `sharp`는 `^0.35.0`으로 업데이트했고 `pnpm-lock.yaml`과 로컬 의존성을 갱신했다.
+- production OAuth origin은 `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL`이 없으면 `PRODUCTION_APP_ORIGIN_REQUIRED`로 fail-closed 한다.
+- 새 회귀 테스트: OAuth production origin 누락 방어, Next 패치 버전 릴리즈게이트.
+- 재검증: OAuth/릴리즈게이트 타깃 2개 파일 / 17개 테스트 통과, `pnpm test` 50개 파일 / 199개 테스트 통과, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build` 통과, `pnpm audit --prod --audit-level high` 통과.
+- 남은 배포 차단은 Vercel env 없음, Paddle env gate 실패, Supabase production migration 적용 확인 미완료다.
+
+## 2026-07-23 수정후 실사용 QA 재검증
+- 타깃 회귀 테스트 6개 파일 / 41개 테스트 통과.
+- 전체 `pnpm test`는 50개 파일 / 199개 테스트 통과.
+- `pnpm lint`, `pnpm test:env`, `pnpm build` 통과.
+- Gemini 첫 상담 라이브 QA 리포트 `docs/qa/gemini-first-consultation-qa-2026-07-23.md`는 6케이스 모두 통과했다.
+- `/ko`는 HTTP 200, Google OAuth 시작은 Supabase authorize로 307 redirect, Playwright 렌더링은 정상이다.
+- 실제 Supabase 임시 유저 기반 API QA는 미완료다. `sfpwgywcmhgilrqearsz.supabase.co` DNS가 `ENOTFOUND`로 실패해 auth user 생성 단계에서 차단됐다.
+- 네트워크 정상 환경에서 무료 첫 상담 단독 QA와 전체 API QA를 다시 실행해야 한다.
+- 후속 재검증에서 타깃 회귀 테스트는 6개 파일 / 42개 테스트, 전체 테스트는 50개 파일 / 202개 테스트로 통과했다.
+- `scripts/qa-live-api-check.mjs`는 Supabase DNS 사전검사 실패를 구조화해서 보고하도록 개선됐다.
+- 하지만 2026-07-23 22:17 KST 기준 Supabase DNS는 여전히 `ENOTFOUND`라 실제 API QA는 미완료 상태다.
+- Playwright 스냅샷 기준 지안 카드 문구는 더 차분하게 개선됐다.
+
+## 2026-07-23 20대 여성 유저 배포보안/가격코칭 수정후 재리뷰
+- 소스코드는 수정하지 않고 `/ko`, `/ko/reading` Playwright 확인과 기존 개발일지/QA/메모리/관련 파일 읽기만으로 유저 관점 재리뷰를 진행했다.
+- 배포 안정성까지 포함한 점수는 9.6/10, 로컬 제품 경험만 보면 9.7/10에 가깝다.
+- 긍정 포인트: 랜딩 가치 문구가 실제 고민 상황 중심으로 정리됐고, `1별 = 메시지 1회`, 가입 후 3회 무료, 10별 3,900원 스타터 상품이 가격 진입 장벽을 크게 낮춘다.
+- `/ko/reading`은 개인정보 안내, 태어난 시간 모름 허용, 2단계 입력 구조가 좋아 생년월일/성별 입력 불안을 줄인다.
+- 첫 상담 품질 게이트와 안전 fallback, 오늘피드/월간 리포트의 대화 기억 활용, 별 예약/환불과 Paddle/rate limit 하드닝은 유저 신뢰를 높이는 개선으로 판단했다.
+- 남은 유저 관점 이슈: 랜딩 가격 패널에서 월간 멤버십이 바로 보이지 않음, "커리어는 시기야"/"사업은 시기야" 문구가 살짝 어색함, `지안` 카드의 티저형 관계 문구가 조금 남음, 사이드바 접근성 텍스트가 "대화 기록을저장"처럼 붙어 읽힐 수 있음.
+- 출시 전에는 Vercel production env, Paddle env gate, Supabase production migration 적용 확인이 최우선이다. 유저 관점으로는 실제 운영 결제/로그인/별 차감 신뢰 확인에 해당한다.
+- 상세 문서: `docs/개발일지/20대-여성관점-배포보안-가격코칭-수정후-재리뷰-20260723.md`.
+
+## 2026-07-23 테스터 피드백 실사용 QA DNS 차단 개발자전달
+- 테스터 피드백 기준 redirect, Playwright 렌더링, 콘솔 에러 없음, Gemini QA는 정상이다.
+- 실제 API QA 명령 `env QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs`와 `node scripts/qa-live-api-check.mjs`는 모두 Supabase DNS lookup failed로 중단됐다.
+- 원인은 `sfpwgywcmhgilrqearsz.supabase.co` `ENOTFOUND`라 실제 auth user 생성 단계까지 가지 못한 것이다.
+- 따라서 무료/유료 첫 상담, 별 예약/차감/환불, 거래 로그, 저장된 assistant 품질은 실제 DB 기준으로 아직 미확인이다.
+- QA 스크립트가 DNS 실패를 구조화해서 알려주는 개선은 확인됐다.
+- 결제모듈 보존형 비활성화 배포에서도 Paddle QA는 제외 가능하지만 Supabase 무료 상담 API QA 미완료는 배포 blocker다.
+- 개발자 전달 문서: `docs/pm/테스터피드백-실사용QA-DNS차단-개발자전달-20260723.md`.
+
+## 2026-07-23 수정후 실사용 QA 결제비활성화 회귀 재검증
+- 타깃 테스트는 결제 비활성화 회귀까지 포함해 7개 파일 / 47개 테스트 통과했다.
+- 전체 vitest 직접 실행은 52개 파일 / 212개 테스트 통과했다.
+- eslint 직접 실행, `pnpm test:env`, `pnpm build`, `git diff --check`는 통과했다.
+- `pnpm test`와 `pnpm lint` 래퍼는 한때 `fetch failed`를 반환했지만, 같은 검사 도구를 `node_modules/.bin`에서 직접 실행하면 통과했다.
+- Gemini 첫 상담 라이브 QA는 6케이스 모두 통과했고 리포트는 `docs/qa/gemini-first-consultation-qa-2026-07-23.md`에 갱신됐다.
+- `/ko`는 HTTP 200, Google OAuth 시작은 Supabase authorize로 HTTP 307 redirect, Playwright 렌더링은 정상이고 콘솔 런타임 에러는 없었다.
+- `POST /api/saju/chat` 무인증 요청은 HTTP 401로 막혔지만 본문이 JSON이 아니라 `Unauthorized` 텍스트라 클라이언트 오류 처리 일관성 검토가 필요하다.
+- 무료/전체 실제 API QA는 Supabase DNS `ENOTFOUND`로 계속 실패한다. DNS 정상 환경에서 `env QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs`와 `node scripts/qa-live-api-check.mjs`를 다시 실행해야 한다.
+- 무료 베타 문구와 결제 가능 암시 문구가 일부 충돌한다. 랜딩, JSON-LD FAQ, 푸터, 채팅 disabled placeholder를 정리해야 한다.
+- 상세 문서: `docs/개발일지/수정후-실사용-QA-결제비활성화회귀와-DNS차단-20260723.md`.
+
+## 2026-07-23 테스터 피드백 무료베타 실사용 QA 잔여이슈
+- 실제 무료/전체 API QA는 여전히 Supabase DNS `ENOTFOUND`로 미완료다.
+- `sfpwgywcmhgilrqearsz.supabase.co`가 잡히지 않아 임시 인증 사용자 생성까지 가지 못했고, 무료 첫 상담, 별 지급/차감, 거래 로그, assistant 저장 품질은 실제 DB 기준 미확인이다.
+- 새 이슈: 무인증 `/api/saju/chat` 401 응답 본문이 JSON이 아니라 `Unauthorized` 텍스트라 클라이언트 오류 처리 일관성 확인이 필요하다.
+- 새 이슈: 무료 베타인데 랜딩/FAQ/푸터/paywall/placeholder/정책 문서에 결제 가능 암시 문구가 일부 남아 있다.
+- 새 이슈: Playwright 스냅샷에서 사이드바 문구가 `기록을저장하고`처럼 붙어 보여 접근성/시각 텍스트 확인이 필요하다.
+- 개발자 전달 문서: `docs/pm/테스터피드백-무료베타-실사용QA-잔여이슈-개발자전달-20260723.md`.
+
+## 2026-07-23 20대 여성 유저 무료베타/결제비활성화 후속수정 재리뷰
+- 소스코드는 수정하지 않고 `/ko`, `/ko/coin-shop`, `/ko/reading` Playwright 스냅샷과 최근 문서/QA/관련 파일 읽기만으로 유저 관점 재리뷰를 진행했다.
+- 로컬 제품 경험은 9.7/10, production 배포 승인 관점은 9.4/10, 종합 점수는 9.5/10으로 판단했다.
+- 좋아진 점: 랜딩 가격 패널에 월간 멤버십이 직접 노출됐고, 결제 off 상태에서는 `월간 멤버십 준비 중`으로 기대치를 낮춘다. 코인샵 직접 접근도 `무료 상담 베타`, `별 충전은 잠시 닫아뒀어` 안내로 막힌다.
+- 캐릭터 문구는 지안의 불안 티저가 사라졌고, 서준/도윤도 `커리어는 시기야`/`사업은 시기야` 대신 `흐름`, `방향`, `조건` 중심으로 자연스러워졌다.
+- `/ko/reading` 입력 화면의 개인정보 안내와 태어난 시간 모름 허용은 여전히 좋다. Gemini 첫 상담 QA 2026-07-23 리포트도 6케이스 모두 통과했다.
+- 남은 유저 관점 이슈: Supabase DNS `ENOTFOUND`로 실제 무료 상담 API QA가 아직 미완료라 production 배포 승인은 보류가 맞다.
+- 무료 베타 메시지와 일부 문구가 아직 어긋난다. 랜딩/코인샵은 결제 닫힘을 말하지만 푸터는 `결제는 Paddle의 안전한 결제 시스템을 통해 처리됩니다`, JSON-LD FAQ는 `이후에는 별을 충전하여 계속 상담할 수 있습니다`를 말한다.
+- 사이드바는 코드상 `aria-label`이 추가됐지만 Playwright 스냅샷에서는 여전히 `대화 기록을저장하고`처럼 붙어 보여 실제 보조기술 읽힘 확인이 필요하다.
+- 채팅 입력 disabled placeholder `별을 충전해주세요`는 결제 off 상태의 `추가 충전은 잠시 닫아뒀어` 안내와 충돌할 수 있다.
+- 다음 우선순위: Supabase 정상 환경에서 `pnpm qa:live-api:free`, `pnpm qa:live-api` 재실행, 무료 베타 문구 일관화, 사이드바 접근성 재확인, Gemini QA 재시도 횟수/응답지연 관찰.
+- 상세 문서: `docs/개발일지/20대-여성관점-무료베타-결제비활성화-후속수정-재리뷰-20260723.md`.
+
+## 2026-07-23 20대 여성 피드백 무료베타 배포보류/문구일관성
+- 최신 20대 여성 피드백 기준으로 무료 베타 배포 승인은 계속 보류가 맞다.
+- 핵심 blocker는 Supabase DNS `ENOTFOUND`로 실제 무료 상담 API QA가 아직 임시 인증 사용자 생성 단계까지 가지 못한 점이다.
+- 무료 첫 상담, 별 지급/차감, 거래 로그, assistant 저장 품질은 실제 DB 기준으로 아직 확인되지 않았다.
+- Paddle 결제 기능은 이번 배포에서 제외/비활성화해도 되지만, 무료 베타 핵심 API QA는 제외하면 안 된다.
+- 무료 베타 상태와 충돌하는 푸터/JSON-LD의 결제/별 충전 문구가 남아 있어 메시지 일관성 정리가 필요하다.
+- 개발자 전달 문서: `docs/pm/20대여성피드백-무료베타-배포보류-문구일관성-개발자전달-20260723.md`.
+
+## 2026-07-23 배포/서버보안 릴리즈게이트 차단상태
+- 배포 및 서버보안 담당자 피드백 기준 production 배포 승인은 계속 보류다.
+- `pnpm run release:gate:payments`는 Paddle 필수 env 누락으로 실패한다. `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`, 별 상품/가격 ID, 월간멤버십 상품/가격 ID가 비어 있다.
+- Vercel `todocori/monthlysaju` production env는 `pnpm dlx vercel env ls` 기준 `No Environment Variables found` 상태다.
+- 기본 `pnpm run release:gate`도 `qa:live-api:free`에서 Supabase DNS `sfpwgywcmhgilrqearsz.supabase.co ENOTFOUND`로 실패한다.
+- `release:gate:code`는 통과했지만 실제 무료 상담 API QA와 결제 env 검증을 대체하지 않는다.
+- `pnpm audit --prod` 전체 기준 `@ai-sdk/provider-utils` uncontrolled resource consumption low 1건이 남아 있으며 high gate는 통과라 즉시 차단급은 아니지만 AI 비용/리소스 리스크로 추적해야 한다.
+- 개발자 전달 문서: `docs/pm/배포서버보안-릴리즈게이트-차단상태-개발자전달-20260723.md`.
+
+## 2026-07-23 무료베타 실사용 QA 잔여이슈 수정
+- `/api/saju/chat` 무인증 401 응답을 plain text `Unauthorized`에서 JSON `{ error: "unauthorized", message: "로그인이 필요해." }`로 바꿨다.
+- 무료 베타 결제 off 상태와 충돌하던 JSON-LD FAQ, 푸터, 채팅 disabled placeholder, paywall, Paddle checkout, 약관/개인정보 문구를 정리했다.
+- 로그인 사이드바 안내 문구는 한 줄 텍스트로 유지해 Playwright 스냅샷에서 `기록을저장`처럼 붙어 보일 여지를 제거했다.
+- `pnpm release:gate:code`는 통과했고 전체 vitest는 53개 파일 / 215개 테스트 통과했다.
+- `pnpm qa:live-api:free`는 여전히 Supabase DNS `sfpwgywcmhgilrqearsz.supabase.co ENOTFOUND`로 실패한다. production 배포 승인은 계속 보류다.
+
+## 2026-07-23 20대여성 피드백 무료베타 문구일관성 후속수정
+- 문서 `docs/pm/20대여성피드백-무료베타-배포보류-문구일관성-개발자전달-20260723.md`의 P1 문구 일관성 항목을 후속 반영했다.
+- 회귀 테스트가 JSON-LD, 푸터, 코인샵, 채팅, 월간 리포트, 종합 리포트 소스에서 `결제는 Paddle의 안전한 결제 시스템`, `별을 충전해주세요`, `별 충전하러 가기`, `별 충전하기` 같은 문제 예시 문구를 금지한다.
+- 결제-on 조건부 문구도 `별 충전` 중심 대신 `상담권` 중심으로 낮췄다.
+- `pnpm release:gate:code`는 통과했지만 `pnpm qa:live-api:free`는 Supabase DNS `ENOTFOUND`로 계속 실패한다.
+
+## 2026-07-23 배포서버보안 릴리즈게이트 production env 차단보강
+- `release:gate`가 `release:gate:code` 뒤에 `REQUIRE_PRODUCTION_ENV=true pnpm test:env`를 실행하도록 바뀌었다.
+- production gate는 `APP_ORIGIN` 또는 `NEXT_PUBLIC_APP_URL`, `RATE_LIMIT_BACKEND=supabase`, 결제 제외 무료 베타의 `PAYMENTS_ENABLED=false`/`NEXT_PUBLIC_PAYMENTS_ENABLED=false`를 강제한다.
+- `release:gate:payments`는 `REQUIRE_PRODUCTION_ENV=true REQUIRE_PADDLE_ENV=true pnpm test:env`로 시작해 production env와 Paddle env를 같이 확인한다.
+- 현재 `pnpm release:gate`는 코드 게이트 통과 후 `RATE_LIMIT_BACKEND=supabase` 누락으로 실패한다.
+- `pnpm release:gate:payments`는 Paddle env와 `RATE_LIMIT_BACKEND=supabase` 누락으로 실패한다.
+- `@ai-sdk/provider-utils` low advisory는 `@ai-sdk/google-vertex@3.0.146` 경유이며 patched version이 없어 rate limit/production gate로 방어하고 추적한다.
+
+## 2026-07-24 운영 env/release gate 재실행 점검
+- 로컬 `.env.local`에 `RATE_LIMIT_BACKEND=supabase`, `PAYMENTS_ENABLED=false`, `NEXT_PUBLIC_PAYMENTS_ENABLED=false`, `REQUIRE_PADDLE_ENV=false`, `APP_ORIGIN`을 보강했다.
+- `REQUIRE_PRODUCTION_ENV=true pnpm test:env`는 통과했다.
+- Vercel project는 `todocori/monthlysaju`로 연결되어 있고 production env는 아직 비어 있다.
+- Vercel env 업로드는 Supabase service role과 AI 자격증명을 외부 SaaS로 전송하는 민감 작업이라 사용자의 명시 승인이 필요해 자동 승인에서 차단됐다.
+- Supabase project `sfpwgywcmhgilrqearsz`는 `status: INACTIVE`이며 `supabase link`도 `project is paused`로 실패했다.
+- `sfpwgywcmhgilrqearsz.supabase.co` DNS `ENOTFOUND`의 근본 원인은 프로젝트 paused 상태다. Supabase Dashboard에서 unpause 후 live API QA를 다시 실행해야 한다.
+
+## 2026-07-24 Supabase unpause 후 release gate 통과
+- 사용자가 Supabase project `sfpwgywcmhgilrqearsz`를 unpause 했다.
+- DNS가 회복됐고 Supabase project status는 `ACTIVE_HEALTHY`로 전환됐다.
+- 첫 `qa:live-api:free`는 `user_stars` schema cache/table 누락으로 실패했다.
+- 원격 migration history가 비어 있어 `supabase db push --linked --yes`로 13개 마이그레이션을 적용했고, 이후 local/remote migration history가 일치했다.
+- `pnpm qa:live-api:free` 통과, `pnpm qa:live-api` 통과, `pnpm release:gate` 통과.
+- 전체 release gate 기준 vitest 53개 파일 / 218개 테스트, 타입체크, lint, build, high audit, production env gate, 무료/전체 live API QA가 통과했다.
+- Vercel production env는 아직 비어 있으며, 업로드에는 사용자 명시 승인이 필요하다.
+
+## 2026-07-24 Vercel production env 업로드
+- 사용자가 Vercel `monthlysaju` production env 업로드를 명시 승인했다.
+- Vercel project `todocori/monthlysaju` production에 무료 베타 필수 env 15개를 업로드했다.
+- Paddle 결제 env는 무료 베타 배포 범위가 아니라 업로드하지 않았다.
+- `pnpm dlx vercel env ls production`에서 15개 env가 `Encrypted`, `Production`으로 등록된 것을 확인했다.
+- 현재 production env의 `AI_PROVIDER=vertex`는 Vercel 런타임에서 별도 인증 확인이 필요할 수 있다.

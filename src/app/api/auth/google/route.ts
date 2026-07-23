@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { buildAuthCallbackUrl, getSiteUrl } from "@/lib/auth/oauth";
+import { buildAuthCallbackUrl, getSiteUrlFromRequestHeaders } from "@/lib/auth/oauth";
 import { createClient } from "@/utils/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const next =
     requestUrl.searchParams.get("next") ??
     requestUrl.searchParams.get("redirectTo");
-  const siteUrl = getSiteUrl(request.headers.get("origin"));
+  const siteUrl = getSiteUrlFromRequestHeaders(request.headers);
   const redirectTo = buildAuthCallbackUrl({ siteUrl, next });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -26,4 +26,3 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.redirect(data.url);
 }
-

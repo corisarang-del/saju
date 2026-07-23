@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { createReading } from '@/services/saju/actions';
 import { Link } from '@/i18n/routing';
-
-const REPORT_COST = 10;
+import { REPORT_STAR_COST } from '@/lib/monthly-saju/star-deduction';
+import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
 
 const SIJI_OPTIONS = [
   { value: 'unknown', label: '모름' },
@@ -54,10 +54,10 @@ interface SajuReportClientProps {
 type Step = 'input' | 'generating' | 'done' | 'error';
 
 export default function SajuReportClient({
-  userId,
   starBalance,
   previousBirthInfo,
 }: SajuReportClientProps) {
+  const paymentsEnabled = areClientPaymentsEnabled();
   const [step, setStep] = useState<Step>('input');
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +89,7 @@ export default function SajuReportClient({
     if (!birthYear || Number(birthYear) < 1940 || Number(birthYear) > 2025) { setError('올바른 년도를 입력해주세요'); return; }
     if (!birthMonth || Number(birthMonth) < 1 || Number(birthMonth) > 12) { setError('올바른 월을 입력해주세요'); return; }
     if (!birthDay || Number(birthDay) < 1 || Number(birthDay) > 31) { setError('올바른 일을 입력해주세요'); return; }
-    if (starBalance < REPORT_COST) { setError(`별이 부족합니다. (필요: ${REPORT_COST}개, 보유: ${starBalance}개)`); return; }
+    if (starBalance < REPORT_STAR_COST) { setError(`별이 부족합니다. (필요: ${REPORT_STAR_COST}개, 보유: ${starBalance}개)`); return; }
 
     setError(null);
     setStep('generating');
@@ -117,25 +117,14 @@ export default function SajuReportClient({
       const deductRes = await fetch('/api/saju/deduct-stars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, amount: REPORT_COST, readingId: reading.id }),
+        body: JSON.stringify({ readingId: reading.id }),
       });
 
       if (!deductRes.ok) {
         throw new Error('별 차감에 실패했습니다.');
       }
 
-      // 3. Status를 paid로 변경
-      const statusRes = await fetch('/api/saju/update-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ readingId: reading.id, status: 'paid' }),
-      });
-
-      if (!statusRes.ok) {
-        throw new Error('상태 업데이트에 실패했습니다.');
-      }
-
-      // 4. AI 종합 분석 생성
+      // 3. AI 종합 분석 생성
       const analyzeRes = await fetch('/api/saju/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -223,7 +212,7 @@ export default function SajuReportClient({
           </p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <span className="text-yellow-400">&#9733;</span>
-            <span className="text-sm text-gray-300">{REPORT_COST}개 사용</span>
+            <span className="text-sm text-gray-300">{REPORT_STAR_COST}개 사용</span>
             <span className="text-xs text-gray-600">|</span>
             <span className="text-xs text-gray-500">보유: {starBalance}개</span>
           </div>
@@ -359,24 +348,29 @@ export default function SajuReportClient({
           {/* 생성 버튼 */}
           <button
             onClick={handleGenerate}
-            disabled={starBalance < REPORT_COST}
+            disabled={starBalance < REPORT_STAR_COST}
             className="w-full mt-4 py-4 rounded-2xl bg-purple-600 text-white text-base font-semibold
               hover:bg-purple-500 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {starBalance < REPORT_COST ? (
+            {starBalance < REPORT_STAR_COST ? (
               '별이 부족합니다'
             ) : (
-              <>종합 리포트 생성하기 (&#9733; {REPORT_COST}개)</>
+              <>종합 리포트 생성하기 (&#9733; {REPORT_STAR_COST}개)</>
             )}
           </button>
 
-          {starBalance < REPORT_COST && (
+          {starBalance < REPORT_STAR_COST && paymentsEnabled && (
             <Link
               href="/coin-shop"
               className="block text-center text-sm text-purple-400 hover:text-purple-300 transition-colors mt-2"
             >
-              별 충전하러 가기 →
+              별 받으러 가기 →
             </Link>
+          )}
+          {starBalance < REPORT_STAR_COST && !paymentsEnabled && (
+            <p className="mt-2 text-center text-sm text-gray-500">
+              무료 베타 기간에는 종합 리포트 결제를 잠시 닫아뒀어.
+            </p>
           )}
         </div>
       </div>

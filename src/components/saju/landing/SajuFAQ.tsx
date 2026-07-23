@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { formatWon, STAR_PACKS, SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+import { formatWon, MONTHLY_MEMBERSHIP, STAR_PACKS, SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
 
 const priceText = STAR_PACKS.map((pack) => `별 ${pack.stars}개 ${formatWon(pack.price)}`).join(", ");
+const membershipText = `${MONTHLY_MEMBERSHIP.name}은 월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개가 지급돼요.`;
 
-const faqs = [
+function buildFaqs(paymentsEnabled: boolean) {
+  return [
   {
     q: "별(★)은 뭔가요?",
-    a: `별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 모든 상담사에서 공통으로 사용됩니다. 로그인하면 3회 무료 상담을 먼저 이용할 수 있고, 추가 충전 가격은 ${priceText}입니다.`,
+    a: paymentsEnabled
+      ? `별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 모든 상담사에서 공통으로 사용됩니다. 로그인하면 3회 무료 상담을 먼저 이용할 수 있고, 추가 충전 가격은 ${priceText}입니다. ${membershipText}`
+      : "별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 로그인하면 3회 무료 상담을 먼저 이용할 수 있어요. 유료 충전과 멤버십은 준비 중이에요.",
   },
   {
     q: "무료로도 이용할 수 있나요?",
@@ -28,16 +33,20 @@ const faqs = [
   },
   {
     q: "환불이 가능한가요?",
-    a: `대화 크레딧 구매 후 사용 전이라면 전액 환불이 가능합니다. 이메일(${SUPPORT_CONTACT.email})로 문의해주세요.`,
+    a: paymentsEnabled
+      ? `대화 크레딧 구매 후 사용 전이라면 전액 환불이 가능합니다. 이메일(${SUPPORT_CONTACT.email})로 문의해주세요.`
+      : `현재는 무료 상담 베타라 결제와 환불 운영을 열지 않았어요. 결제 기능이 열리면 이메일(${SUPPORT_CONTACT.email})로 환불 문의를 받을 예정이에요.`,
   },
   {
     q: "개인정보는 안전한가요?",
     a: "입력하신 개인정보는 사주 분석 외 목적으로 사용하지 않으며, 요청 시 즉시 삭제합니다.",
   },
-];
+  ];
+}
 
 export default function SajuFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const faqs = buildFaqs(areClientPaymentsEnabled());
 
   return (
     <section className="py-10 px-4 bg-[#f6f1e8]">

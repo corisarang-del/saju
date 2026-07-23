@@ -4,6 +4,12 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "carbon-generator-farms-initiated.trycloudflare.com",
+    "equally-brochures-ratio-palestinian.trycloudflare.com",
+    "deeply-incorporated-editorials-ntsc.trycloudflare.com",
+    "khaki-facts-crash.loca.lt",
+  ],
   images: {
     remotePatterns: [
       {

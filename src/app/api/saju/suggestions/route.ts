@@ -58,7 +58,7 @@ export async function POST(req: Request) {
   }
 
   const shortWindowKey = `suggestions:minute:${user.id}:${ip}`;
-  const shortWindowLimit = checkRateLimit(
+  const shortWindowLimit = await checkRateLimit(
     shortWindowKey,
     SUGGESTIONS_WINDOW_LIMIT,
     SUGGESTIONS_WINDOW_MS,
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
   }
 
   const dailyQuotaKey = `suggestions:daily:${user.id}`;
-  const dailyQuota = checkRateLimit(
+  const dailyQuota = await checkRateLimit(
     dailyQuotaKey,
     SUGGESTIONS_DAILY_LIMIT,
     SUGGESTIONS_DAILY_MS,

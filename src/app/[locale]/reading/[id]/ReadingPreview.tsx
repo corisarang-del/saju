@@ -4,6 +4,7 @@ import { useState } from "react";
 import PreviewCard from "@/components/saju/preview/PreviewCard";
 import PaywallOverlay from "@/components/saju/preview/PaywallOverlay";
 import { openCheckout } from "@/lib/paddle/client";
+import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
 import type { SajuReading } from "@/types/saju";
 
 interface ReadingPreviewProps {
@@ -16,8 +17,10 @@ export default function ReadingPreview({
   locale,
 }: ReadingPreviewProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const paymentsEnabled = areClientPaymentsEnabled();
 
   const handlePayClick = async () => {
+    if (!paymentsEnabled) return;
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -36,7 +39,7 @@ export default function ReadingPreview({
   return (
     <>
       <PreviewCard reading={reading} />
-      <PaywallOverlay onPayClick={handlePayClick} />
+      <PaywallOverlay onPayClick={handlePayClick} paymentsEnabled={paymentsEnabled} />
     </>
   );
 }

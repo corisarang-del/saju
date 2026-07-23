@@ -13,6 +13,15 @@ export interface DailyFeedInput {
   weakestElement: DailyFeedElement;
   concerns: ConcernType[];
   recentMemory?: string;
+  coachingSnapshot?: {
+    concern: string;
+    todayDo: string;
+    todayAvoid: string;
+    relationshipTip: string;
+    followUpQuestion: string;
+    weeklyFocus: string;
+    monthlyFocus: string;
+  } | null;
 }
 
 export interface DailyActionCard {
@@ -33,6 +42,7 @@ export interface DailyAgentFeed {
   openingMessage: string;
   actionCards: DailyActionCard[];
   timeline: DailyTimelineItem[];
+  followUpQuestion?: string;
 }
 
 const elementTone: Record<DailyFeedElement, string> = {
@@ -52,6 +62,51 @@ function concernHint(concerns: ConcernType[]): string {
 }
 
 export function createDailyAgentFeed(input: DailyFeedInput): DailyAgentFeed {
+  if (input.coachingSnapshot) {
+    const snapshot = input.coachingSnapshot;
+
+    return {
+      characterId: input.characterId,
+      date: input.date,
+      openingMessage: `${input.characterName}가 ${input.date} 흐름을 먼저 봤어. ${snapshot.weeklyFocus} ${snapshot.monthlyFocus}`,
+      actionCards: [
+        {
+          kind: "do",
+          title: "하면 좋은 것",
+          message: snapshot.todayDo,
+        },
+        {
+          kind: "avoid",
+          title: "피할 것",
+          message: snapshot.todayAvoid,
+        },
+        {
+          kind: "relationship",
+          title: "관계/말투",
+          message: snapshot.relationshipTip,
+        },
+      ],
+      timeline: [
+        {
+          period: "morning",
+          title: "아침",
+          message: "오늘 해야 할 일을 하나만 먼저 정해.",
+        },
+        {
+          period: "afternoon",
+          title: "점심 이후",
+          message: "사람을 설득해야 한다면 근거를 짧고 분명하게 말해.",
+        },
+        {
+          period: "evening",
+          title: "저녁",
+          message: "오늘의 감정 찌꺼기를 대화나 메모로 정리해.",
+        },
+      ],
+      followUpQuestion: snapshot.followUpQuestion,
+    };
+  }
+
   const strongest = elementTone[input.strongestElement];
   const weakest = elementTone[input.weakestElement];
   const hint = concernHint(input.concerns);
@@ -64,17 +119,17 @@ export function createDailyAgentFeed(input: DailyFeedInput): DailyAgentFeed {
     actionCards: [
       {
         kind: "do",
-        title: "오늘 밀어붙일 것",
+        title: "하면 좋은 것",
         message: `${strongest}이 강한 날이야. ${hint}`,
       },
       {
         kind: "avoid",
-        title: "오늘 피할 것",
+        title: "피할 것",
         message: `${weakest}이 약하게 흔들릴 수 있어서 즉흥적인 확답은 피하는 게 좋아.`,
       },
       {
         kind: "relationship",
-        title: "관계에서 챙길 것",
+        title: "관계/말투",
         message: "말을 더 많이 하기보다 상대가 놓친 감정을 한 번 짚어줘.",
       },
     ],
@@ -97,4 +152,3 @@ export function createDailyAgentFeed(input: DailyFeedInput): DailyAgentFeed {
     ],
   };
 }
-

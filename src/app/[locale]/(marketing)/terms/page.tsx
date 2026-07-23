@@ -130,8 +130,8 @@ export default function TermsPage() {
                 회원에게 3회의 무료 상담 체험 기회를 제공합니다.
               </li>
               <li>
-                <strong className="text-gray-100">별 충전:</strong> 무료 체험
-                소진 후 추가 상담을 위해 별을 충전하여 이용할 수 있습니다.
+                <strong className="text-gray-100">유료 충전 준비:</strong>{" "}
+                유료 충전과 멤버십은 정식 결제 기능 안정화 후 열릴 예정입니다.
               </li>
             </ol>
             <p className="text-gray-400 mt-3 text-sm">
@@ -142,20 +142,15 @@ export default function TermsPage() {
           {/* 제5조 */}
           <section>
             <h2 className="text-lg font-semibold text-white mb-3">
-              제5조 (별 충전 및 결제)
+              제5조 (유료 충전 및 결제 준비)
             </h2>
             <ol className="list-decimal list-inside space-y-2 text-gray-300 pl-1">
               <li>
-                별 충전 상품은 다음과 같습니다.
-                <ul className="list-disc list-inside pl-5 mt-1 space-y-1">
-                  <li>30개: 9,900원</li>
-                  <li>70개: 19,900원</li>
-                  <li>250개: 39,900원</li>
-                </ul>
+                유료 충전 상품과 멤버십은 정식 결제 기능 안정화 후 열릴 예정입니다.
               </li>
               <li>
-                결제는 Paddle 결제 시스템을 통해 처리되며, 카카오페이 등 다양한
-                결제 수단을 지원합니다.
+                결제 기능이 열리는 경우 Paddle 결제 시스템을 통해 처리되며,
+                지원 결제 수단은 서비스 화면에서 안내합니다.
               </li>
               <li>
                 별의 유효기간은 충전일로부터 1년입니다. 유효기간이 경과한 별은
