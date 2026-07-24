@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildSafeInitialAnalysisFallback,
   getInitialAnalysisPrompt,
   shouldAutoStartInitialAnalysis,
 } from "./initial-analysis";
@@ -58,7 +59,9 @@ describe("initial_analysis", () => {
   });
 
   it("returns_character_specific_initial_prompt", () => {
-    expect(getInitialAnalysisPrompt("charon_f")).toContain("관계운");
+    expect(getInitialAnalysisPrompt("charon_f")).toContain("두 사람");
+    expect(getInitialAnalysisPrompt("charon_f")).toContain("상대방 정보");
+    expect(getInitialAnalysisPrompt("charon_f")).not.toContain("내 사주를 바탕으로 지금 관계운");
     expect(getInitialAnalysisPrompt("seojun")).toContain("커리어");
     expect(getInitialAnalysisPrompt("doyun")).toContain("사업");
   });
@@ -66,5 +69,19 @@ describe("initial_analysis", () => {
   it("keeps_initial_prompts_aligned_with_first_consultation_foreign_word_rules", () => {
     expect(getInitialAnalysisPrompt("doyun")).toContain("창업 시기");
     expect(getInitialAnalysisPrompt("doyun")).not.toContain("타이밍");
+  });
+
+  it("fallback_mentions_partner_when_compatibility_context_exists", () => {
+    const fallback = buildSafeInitialAnalysisFallback({
+      characterId: "charon_f",
+      callName: "현철 씨",
+      partnerName: "민지",
+    });
+
+    expect(fallback).toContain("현철 씨");
+    expect(fallback).toContain("민지");
+    expect(fallback).toContain("두 사람");
+    expect(fallback).toContain("궁합");
+    expect(fallback).not.toContain("내 사주만");
   });
 });

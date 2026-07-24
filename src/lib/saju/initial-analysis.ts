@@ -64,13 +64,82 @@ ${birthHourGuidance}
 `;
 }
 
+function getFallbackConcernText(characterId: CharacterType): {
+  concern: string;
+  actionTarget: string;
+  questionTarget: string;
+} {
+  switch (characterId) {
+    case "charon_f":
+      return {
+        concern: "관계와 연애, 마음의 방향",
+        actionTarget: "관계에서 마음이 흔들린 순간",
+        questionTarget: "상대의 마음과 내 선택 중 무엇",
+      };
+    case "jian":
+      return {
+        concern: "재회와 마음 정리, 관계의 거리",
+        actionTarget: "상대와 마지막으로 나눈 말",
+        questionTarget: "재회 가능성과 마음 정리 중 무엇",
+      };
+    case "minjun":
+      return {
+        concern: "돈 흐름과 수입, 지출의 균형",
+        actionTarget: "최근 한 달 수입과 지출",
+        questionTarget: "수입을 키우는 방향과 지출 정리 중 무엇",
+      };
+    case "seojun":
+      return {
+        concern: "일과 회사, 이직 판단",
+        actionTarget: "회사에서 힘든 점과 바라는 점",
+        questionTarget: "이직 준비와 현재 일 정리 중 무엇",
+      };
+    case "doyun":
+      return {
+        concern: "사업과 창업, 의사결정의 흐름",
+        actionTarget: "사업에서 확인해야 할 조건",
+        questionTarget: "창업 시기와 사업 조건 중 무엇",
+      };
+    case "doctor":
+      return {
+        concern: "건강과 마음, 생활 흐름",
+        actionTarget: "피로가 커진 순간과 몸 상태",
+        questionTarget: "몸 관리와 마음 정리 중 무엇",
+      };
+    default:
+      return {
+        concern: "지금 중요한 흐름과 조심할 점",
+        actionTarget: "오늘 마음에 걸리는 일",
+        questionTarget: "흐름과 조심할 점 중 무엇",
+      };
+  }
+}
+
+export function buildSafeInitialAnalysisFallback(params: {
+  characterId: CharacterType;
+  callName: string;
+  partnerName?: string | null;
+}): string {
+  if ((params.characterId === "charon_f" || params.characterId === "jian") && params.partnerName) {
+    return `${params.callName}, ${params.partnerName} 님과의 궁합은 지금 한쪽 마음만으로 결론내리기보다 두 사람의 표현 방식과 속도 차이를 먼저 봐야 하는 흐름이에요. 사주 흐름으로 보면 ${params.callName} 쪽은 기준을 세우려는 기운이 강하고, ${params.partnerName} 님 쪽은 반응이 늦거나 다르게 보일 수 있어서 감정을 바로 단정하면 오해가 커질 수 있어요.
+
+오늘은 두 사람이 마지막으로 나눈 말과 그때 느낀 감정을 각각 한 줄씩 적어보세요. 지금은 ${params.partnerName} 님의 마음과 ${params.callName}의 선택 기준 중 무엇을 먼저 확인하고 싶나요?`;
+  }
+
+  const fallback = getFallbackConcernText(params.characterId);
+
+  return `${params.callName}, 지금은 ${fallback.concern}을 차분히 확인하고 싶은 마음이 큰 시기예요. 사주 흐름으로 보면 당장 결론을 정하기보다, 먼저 기준을 세우고 흔들리는 부분을 분리해야 안정되는 흐름이에요.
+
+오늘은 ${fallback.actionTarget}을 세 가지로 기록하고, 각 항목 옆에 내가 바라는 방향을 한 줄씩 정리해보세요. 지금은 ${fallback.questionTarget}을 먼저 확인하고 싶나요?`;
+}
+
 export function getInitialAnalysisPrompt(characterId: CharacterType): string {
   if (characterId === "charon_f" || characterId === "jian") {
     if (characterId === "jian") {
       return "내 사주를 바탕으로 재회 가능성과 마음 정리 흐름을 먼저 차분히 정리해줘.";
     }
 
-    return "내 사주를 바탕으로 지금 관계운과 연애에서 조심할 점을 먼저 차분히 정리해줘.";
+    return "내 정보와 상대방 정보를 함께 바탕으로 두 사람의 관계와 궁합 흐름, 잘 맞는 부분, 조심할 점을 먼저 차분히 정리해줘.";
   }
 
   if (characterId === "minjun") {

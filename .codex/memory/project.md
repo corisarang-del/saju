@@ -1029,3 +1029,14 @@
 - Playwright 로컬 측정: 1280x720 CTA bottom `529.23`, 여유 `190.77px`, active dot 0, scrollLeft 0, overflowX 0. 390x844 CTA bottom `615.94`, 여유 `228.06px`, active dot 0, scrollLeft 0, overflowX 0. 7초 후에도 자동 이동 없음.
 - 검증: 디자인 회귀 테스트 24개, 전체 vitest 260개, tsc, eslint, 승인 경로 Next build 통과.
 - 상세 문서: `docs/개발일지/다른디자인스킬-배포웹사이트-프리미엄마감-반영-20260724.md`.
+
+## 2026-07-24 하나 궁합상담 상대방정보 반영 수정
+- 하나 상담에서 상대방 정보를 입력해도 첫 답변이 내 정보 중심으로 보이는 문제를 수정했다.
+- 근본 원인은 첫 자동 상담 문구가 `내 사주를 바탕으로`라서 상대방 컨텍스트가 있어도 모델을 사용자 단독 분석으로 강하게 유도한 점과, 첫 상담 fallback이 상대방 정보를 받지 않는 점이었다.
+- `getInitialAnalysisPrompt("charon_f")`는 이제 `내 정보와 상대방 정보`, `두 사람의 관계와 궁합 흐름`을 명시한다.
+- `buildSafeInitialAnalysisFallback`을 `initial-analysis.ts` 순수 함수로 옮기고, `partnerName`이 있으면 사용자와 상대방 이름을 모두 넣어 두 사람 궁합으로 답한다.
+- `/api/saju/chat`은 최신 `saju_compatibility` row를 `.order("created_at", { ascending: false }).limit(1).maybeSingle()`로 읽고 `compatibilityPartnerName`을 시스템 프롬프트와 fallback에 전달한다.
+- 상대방 만세력/오행 JSON이 비어 있어도 상대방 기본 정보는 프롬프트에 남기고, 분석 블록만 안전하게 생략한다.
+- 시스템 프롬프트에는 “첫 답변부터 반드시 두 사람을 함께 언급”과 “사용자가 내 사주라고 물어도 상대방 입력 정보까지 반영” 규칙을 추가했다.
+- 검증: initial-analysis, first-consultation-quality, chat-stream-failure-regression focused tests와 tsc 통과.
+- 상세 문서: `docs/개발일지/하나-궁합상담-상대방정보-미반영-수정-20260724.md`.

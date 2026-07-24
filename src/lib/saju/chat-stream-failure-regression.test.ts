@@ -110,4 +110,17 @@ describe("chat_stream_failure_regression", () => {
     expect(route).toContain("Ascendant");
     expect(route).toContain("Children's Palace");
   });
+
+  it("carries_partner_context_into_hana_initial_consultation_and_fallback", () => {
+    const route = readProjectFile("src/app/api/saju/chat/route.ts");
+
+    expect(route).toContain("let compatibilityPartnerName: string | null = null");
+    expect(route).toContain(".order(\"created_at\", { ascending: false })");
+    expect(route).toContain(".maybeSingle()");
+    expect(route).toContain("compatibilityPartnerName = String(compat.partner_name || \"\").trim() || null");
+    expect(route).toContain("첫 답변부터 반드시");
+    expect(route).toContain("두 사람을 함께 언급");
+    expect(route).toContain("사용자가 \"내 사주\"라고 물어도");
+    expect(route).toContain("partnerName: compatibilityPartnerName");
+  });
 });
