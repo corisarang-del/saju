@@ -170,6 +170,17 @@ describe("CHARACTER_LIST", () => {
     expect(inyoung.paidPrompt).not.toContain("넌 '하은'이야");
   });
 
+  it("keeps_inyoung_first_response_easy_without_front_loaded_hanja_terms", () => {
+    const inyoung = CHARACTERS.haeun;
+    const prompts = [inyoung.freePrompt, inyoung.paidPrompt].join("\n");
+
+    expect(prompts).toContain("첫 상담에서는 한자 병기와 어려운 사주 용어를 앞에 꺼내지 마");
+    expect(prompts).toContain("2026년, 이번 달, 이번 주를 쉬운 말로 나누어");
+    expect(prompts).not.toContain("2026년(병오년, 丙午年)");
+    expect(prompts).not.toContain("올해 병오(丙午)년은");
+    expect(prompts).not.toContain("편재(偏財, 한방 수입)");
+  });
+
   it("keeps_character_tone_profiles_structured_by_consultation_role", () => {
     expect(CHARACTERS.charon_m.toneProfile.answerPattern).toEqual([
       "핵심 판단",

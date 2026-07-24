@@ -100,6 +100,12 @@ function getFallbackConcernText(characterId: CharacterType): {
         actionTarget: "사업에서 확인해야 할 조건",
         questionTarget: "창업 시기와 사업 조건 중 무엇",
       };
+    case "haeun":
+      return {
+        concern: "2026년 흐름과 이번 달, 이번 주에 준비할 일",
+        actionTarget: "이번 주에 결정하거나 미뤄둔 일",
+        questionTarget: "좋은 시기와 피하면 좋은 시기 중 무엇",
+      };
     case "doctor":
       return {
         concern: "건강과 마음, 생활 흐름",
@@ -128,6 +134,12 @@ export function buildSafeInitialAnalysisFallback(params: {
 
   const fallback = getFallbackConcernText(params.characterId);
 
+  if (params.characterId === "haeun") {
+    return `${params.callName}, 2026년은 큰 결론을 서두르기보다 이번 달과 이번 주에 준비할 일을 나누어 보면 안정되는 흐름이에요. 사주 흐름으로 보면 지금은 마음이 급해질수록 중요한 시기를 놓치기 쉬워서, 좋은 날을 찾기 전에 먼저 피곤함이 커지는 순간과 미뤄둔 결정을 구분해야 해요.
+
+오늘은 이번 주에 결정하거나 미뤄둔 일을 세 가지로 기록하고, 각 항목 옆에 바로 정할 일과 조금 더 볼 일을 나누어 정리해보세요. 지금은 좋은 시기와 피하면 좋은 시기 중 무엇을 먼저 확인하고 싶나요?`;
+  }
+
   return `${params.callName}, 지금은 ${fallback.concern}을 차분히 확인하고 싶은 마음이 큰 시기예요. 사주 흐름으로 보면 당장 결론을 정하기보다, 먼저 기준을 세우고 흔들리는 부분을 분리해야 안정되는 흐름이에요.
 
 오늘은 ${fallback.actionTarget}을 세 가지로 기록하고, 각 항목 옆에 내가 바라는 방향을 한 줄씩 정리해보세요. 지금은 ${fallback.questionTarget}을 먼저 확인하고 싶나요?`;
@@ -148,6 +160,10 @@ export function getInitialAnalysisPrompt(characterId: CharacterType): string {
 
   if (characterId === "seojun") {
     return "내 사주를 바탕으로 지금 커리어 흐름, 일에서 강점과 조심할 점을 먼저 차분히 정리해줘.";
+  }
+
+  if (characterId === "haeun") {
+    return "내 사주를 바탕으로 2026년 흐름과 이번 달, 이번 주에 좋은 시기와 피하면 좋은 시기, 오늘 할 행동을 먼저 차분히 정리해줘.";
   }
 
   if (characterId === "doyun") {

@@ -44,6 +44,7 @@ const CHAT_WINDOW_MS = 60 * 1000;
 const CHAT_DAILY_LIMIT = 80;
 const CHAT_DAILY_MS = 24 * 60 * 60 * 1000;
 const MAX_INITIAL_ANALYSIS_ATTEMPTS = 3;
+const INITIAL_ANALYSIS_ATTEMPT_TIMEOUT_MS = 25_000;
 const INITIAL_ANALYSIS_TEXT_PART_ID = "initial-analysis-text";
 
 /** 시간(0~23)을 시진명으로 변환 */
@@ -153,17 +154,42 @@ async function generateValidatedInitialAnalysis(params: {
 }) {
   let prompt = params.userText;
   let lastAssistantText = "";
+  let lastProviderError: unknown = null;
+  const initialAnalysisStartedAt = Date.now();
+  const attemptDurationsMs: number[] = [];
 
   for (let attempt = 0; attempt < MAX_INITIAL_ANALYSIS_ATTEMPTS; attempt += 1) {
-    const result = await generateText({
-      model: getChatModel({ vercelOidcToken: params.vercelOidcToken }),
-      system: params.system,
-      prompt,
-      maxOutputTokens: getChatMaxOutputTokens({
-        isFree: params.isFree,
-        isFirstAssistantTurn: true,
-      }),
-    });
+    const attemptStartedAt = Date.now();
+    let result: Awaited<ReturnType<typeof generateText>>;
+    try {
+      result = await generateText({
+        model: getChatModel({ vercelOidcToken: params.vercelOidcToken }),
+        system: params.system,
+        prompt,
+        maxOutputTokens: getChatMaxOutputTokens({
+          isFree: params.isFree,
+          isFirstAssistantTurn: true,
+        }),
+        maxRetries: 0,
+        timeout: INITIAL_ANALYSIS_ATTEMPT_TIMEOUT_MS,
+      });
+    } catch (error) {
+      const attemptDurationMs = Date.now() - attemptStartedAt;
+      attemptDurationsMs.push(attemptDurationMs);
+      lastProviderError = error;
+      console.error("[saju/chat] Initial analysis attempt provider error", {
+        attempt: attempt + 1,
+        durationMs: attemptDurationMs,
+        error: serializeChatProviderError(error),
+      });
+
+      if (attemptDurationMs >= INITIAL_ANALYSIS_ATTEMPT_TIMEOUT_MS - 500) {
+        break;
+      }
+      continue;
+    }
+    const attemptDurationMs = Date.now() - attemptStartedAt;
+    attemptDurationsMs.push(attemptDurationMs);
     const assistantText = result.text.trim();
 
     if (shouldPersistAssistantAnswer({
@@ -177,11 +203,20 @@ async function generateValidatedInitialAnalysis(params: {
         finishReason: result.finishReason,
         usage: result.usage,
         attempts: attempt + 1,
+        durationMs: Date.now() - initialAnalysisStartedAt,
+        attemptDurationsMs,
         usedFallback: false,
       };
     }
 
     lastAssistantText = assistantText;
+    console.warn("[saju/chat] Initial analysis attempt failed quality gate", {
+      attempt: attempt + 1,
+      durationMs: attemptDurationMs,
+      textLength: assistantText.length,
+      finishReason: result.finishReason,
+      qualityReport: getInitialAnalysisQualityReport(assistantText),
+    });
     prompt = buildInitialAnalysisRetryPrompt({
       userText: params.userText,
       failedText: assistantText,
@@ -191,7 +226,10 @@ async function generateValidatedInitialAnalysis(params: {
 
   console.warn("[saju/chat] Initial analysis failed quality gate", {
     attempts: MAX_INITIAL_ANALYSIS_ATTEMPTS,
+    durationMs: Date.now() - initialAnalysisStartedAt,
+    attemptDurationsMs,
     textLength: lastAssistantText.length,
+    providerError: lastProviderError ? serializeChatProviderError(lastProviderError) : undefined,
     qualityReport: getInitialAnalysisQualityReport(lastAssistantText),
   });
 
@@ -206,6 +244,8 @@ async function generateValidatedInitialAnalysis(params: {
       finishReason: "stop",
       usage: undefined,
       attempts: MAX_INITIAL_ANALYSIS_ATTEMPTS,
+      durationMs: Date.now() - initialAnalysisStartedAt,
+      attemptDurationsMs,
       usedFallback: true,
     };
   }
@@ -779,6 +819,8 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
         readingId,
         characterId,
         attempts: initialAnalysis.attempts,
+        durationMs: initialAnalysis.durationMs,
+        attemptDurationsMs: initialAnalysis.attemptDurationsMs,
         finishReason: initialAnalysis.finishReason,
         usage: initialAnalysis.usage,
         usedFallback: initialAnalysis.usedFallback,

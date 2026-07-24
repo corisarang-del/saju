@@ -62,6 +62,11 @@ describe("initial_analysis", () => {
     expect(getInitialAnalysisPrompt("charon_f")).toContain("두 사람");
     expect(getInitialAnalysisPrompt("charon_f")).toContain("상대방 정보");
     expect(getInitialAnalysisPrompt("charon_f")).not.toContain("내 사주를 바탕으로 지금 관계운");
+    expect(getInitialAnalysisPrompt("haeun")).toContain("2026년");
+    expect(getInitialAnalysisPrompt("haeun")).toContain("이번 달");
+    expect(getInitialAnalysisPrompt("haeun")).toContain("이번 주");
+    expect(getInitialAnalysisPrompt("haeun")).toContain("오늘 할 행동");
+    expect(getInitialAnalysisPrompt("haeun")).not.toContain("가장 중요한 흐름과 조심할 점");
     expect(getInitialAnalysisPrompt("seojun")).toContain("커리어");
     expect(getInitialAnalysisPrompt("doyun")).toContain("사업");
   });
@@ -83,5 +88,21 @@ describe("initial_analysis", () => {
     expect(fallback).toContain("두 사람");
     expect(fallback).toContain("궁합");
     expect(fallback).not.toContain("내 사주만");
+  });
+
+  it("fallback_uses_haeun_timing_language_without_hard_terms", () => {
+    const fallback = buildSafeInitialAnalysisFallback({
+      characterId: "haeun",
+      callName: "하늘 씨",
+    });
+
+    expect(fallback).toContain("2026년");
+    expect(fallback).toContain("이번 달");
+    expect(fallback).toContain("이번 주");
+    expect(fallback).toContain("오늘은");
+    expect(fallback).not.toContain("비견");
+    expect(fallback).not.toContain("일간");
+    expect(fallback).not.toContain("병오");
+    expect(fallback).toMatch(/[?？]\s*$/);
   });
 });

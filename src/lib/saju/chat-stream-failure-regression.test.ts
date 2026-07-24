@@ -101,6 +101,18 @@ describe("chat_stream_failure_regression", () => {
     expect(streamTextIndex).toBeGreaterThan(uiStreamIndex);
   });
 
+  it("logs_first_consultation_generation_latency_for_intermittent_provider_failures", () => {
+    const route = readProjectFile("src/app/api/saju/chat/route.ts");
+
+    expect(route).toContain("initialAnalysisStartedAt");
+    expect(route).toContain("INITIAL_ANALYSIS_ATTEMPT_TIMEOUT_MS");
+    expect(route).toContain("timeout: INITIAL_ANALYSIS_ATTEMPT_TIMEOUT_MS");
+    expect(route).toContain("attemptDurationsMs");
+    expect(route).toContain("durationMs");
+    expect(route).toContain("Initial analysis attempt failed quality gate");
+    expect(route).toContain("Initial analysis attempt provider error");
+  });
+
   it("instructs_every_chat_answer_to_stay_korean_even_when_source_context_has_astrology_terms", () => {
     const route = readProjectFile("src/app/api/saju/chat/route.ts");
 

@@ -278,6 +278,22 @@ describe("chat_completion_guard", () => {
     }
   });
 
+  it("rejects_initial_analysis_with_korean_technical_terms_before_persisting", () => {
+    const result = {
+      assistantText:
+        "하늘 씨, 2026년 병오년 흐름은 사주에서 일간과 비견의 힘이 강해지는 시기라 마음이 조급해질 수 있어요.\n\n오늘은 이번 주에 결정해야 할 일을 세 가지로 정리해보세요. 먼저 확인하고 싶은 건 좋은 시기예요, 피하면 좋은 시기예요?",
+      finishReason: "stop",
+      isError: false,
+      isInitialAnalysis: true,
+    } as const;
+
+    expect(getInitialAnalysisQualityReport(result.assistantText)).toMatchObject({
+      hasBlockedPattern: true,
+      isValid: false,
+    });
+    expect(shouldPersistAssistantAnswer(result)).toBe(false);
+  });
+
   it("rejects_initial_analysis_with_missing_name_honorific_before_persisting", () => {
     const result = {
       assistantText:
