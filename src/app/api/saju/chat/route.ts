@@ -32,6 +32,7 @@ import { createCoachingSnapshot } from "@/lib/monthly-saju/coaching-snapshot";
 import { extractSajuSummary } from "@/lib/saju/calculator";
 import { generateAdvancedSajuContext } from "@/lib/saju/advanced-analysis";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { safeJson } from "@/lib/http/safe-json";
 import type { CharacterType, ConcernType } from "@/types/saju";
 import type { FourPillarsDetail } from "manseryeok";
 import type { FiveElementDistribution } from "@/types/saju";
@@ -296,11 +297,17 @@ export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
   const ip = getClientIp(req);
   const vercelOidcToken = getVercelOidcTokenFromRequest(req);
-  const { messages: rawMessages, readingId, characterId } = (await req.json()) as {
+  const parsed = await safeJson<{
     messages: ChatRequestMessage[];
     readingId: string;
     characterId: CharacterType;
-  };
+  }>(req, {
+    requestId,
+    source: "saju/chat",
+  });
+  if (!parsed.ok) return parsed.response;
+
+  const { messages: rawMessages, readingId, characterId } = parsed.data;
 
   const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").filter(Boolean);
 

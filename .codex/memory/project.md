@@ -853,6 +853,17 @@
 - 모바일 홈 H1/CTA, `/ko/reading` 시간 placeholder/하단 CTA 개선은 유지 확인됐다. `/ko`, `/ko/reading` console error/warning은 0건이다.
 - 개발자 전달 문서: `docs/pm/현우카드-이름클리핑-디자인재리뷰-20260724.md`.
 
+## 2026-07-24 배포웹사이트 디자인개선 수정후리뷰 Findings
+- 최신 production 기준 릴리즈 차단급 디자인 이슈는 없다.
+- 해결됨: PC 1280x720 `/ko`에서 `현우` 카드 이름 클리핑이 재현되지 않는다. 가시 카드 이름 라인은 `y=509`, `bottom=537` 수준으로 올라와 viewport 안에 들어온다.
+- 해결 유지: PC 1366x768 `/ko`에서도 캐릭터 이름 라인이 안정적으로 보이고 가로 오버플로우가 없다.
+- 해결 유지: 모바일 390x844 `/ko`에서 H1 단어 중간 줄바꿈이 없고, 가시 카드와 `대화하기` CTA가 하단 탭 위에 보인다.
+- 해결 유지: 모바일 390x844 `/ko/reading`에서 시간 선택 placeholder 대비가 개선됐고, 하단 `다음` CTA는 `y=752`, `bottom=812`로 안정적이다.
+- `/ko`, `/ko/reading` production console error/warning은 0건이다.
+- 남은 P3: PC 1280x720에서 카드 하단 액션 영역이 fold에 거의 맞닿아 명시적 `대화하기` 발견성은 조금 약하다.
+- 남은 P3: 캐러셀 첫 진입/스냅 위치가 뷰포트나 상태에 따라 달라져 보일 수 있으므로 pagination active state와 시작 카드 일치성을 QA하면 좋다.
+- 개발자 전달 문서: `docs/pm/배포웹사이트-디자인개선-수정후리뷰-20260724.md`.
+
 ## 2026-07-24 캐릭터 인영 변경과 말투 차별화
 - PM 판단으로 `하은`은 `인영`으로 변경하는 방향이 좋다.
 - 단, 내부 id `haeun`은 유지한다. 기존 채팅/리딩/analytics/URL 호환 때문에 표시명과 프롬프트 자기소개만 `인영`으로 바꾸는 게 안전하다.
@@ -929,3 +940,61 @@
 - 이번 커밋 묶음은 가격 정책 변경과 배포 현우 카드 좌측 fade 수정, 관련 테스트/문서/메모리를 함께 포함한다.
 - 검증 기준은 전체 vitest 253개, tsc, eslint, Next production build 통과다.
 - 운영 반영 후에는 Vercel production에서 현우 카드 첫 상태와 Paddle price id 매핑을 다시 확인해야 한다.
+
+## 2026-07-24 Vercel Paddle price env 업데이트 차단
+- Vercel CLI 인증과 `monthlysaju` production env 조회는 가능하다.
+- production env에는 Paddle 필수 env가 아직 없다. 특히 `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`, `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`, product/price id가 빠져 있다.
+- 로컬 `.env.local`의 `PADDLE_API_KEY`는 placeholder라 Paddle API로 실제 `2,900원 스타터`, `9,900원/50별 멤버십` price id를 조회할 수 없다.
+- signed webhook QA는 `NEXT_PUBLIC_PADDLE_PRODUCT_STAR_10`, `NEXT_PUBLIC_PADDLE_PRICE_STAR_10`, `NEXT_PUBLIC_PADDLE_PRODUCT_MONTHLY_MEMBERSHIP`, `NEXT_PUBLIC_PADDLE_PRICE_MONTHLY_MEMBERSHIP` 누락으로 차단됐다.
+- 다음 진행에는 실제 Paddle product/price id 네 개 또는 실제 Paddle API key가 필요하다.
+
+## 2026-07-24 배포웹사이트 디자인개선 수정후리뷰 반영
+- production 리뷰에서 릴리즈 차단급 디자인 이슈는 없지만 PC 1280x720 카드 하단 CTA 여유와 캐러셀 첫 진입 예측성이 P3로 남았다.
+- `CharacterCards.tsx`에서 자동 캐러셀 이동을 제거하고 첫 진입 `scrollLeft=0`, active dot 1번으로 고정했다.
+- 1024px 이상, 높이 760px 이하 PC에서는 카드 폭을 `252px`, 이미지 비율을 `4/5`로 줄이고 정보 영역 spacing을 압축해 CTA breathing room을 확보했다.
+- Playwright 1280x720 로컬 측정에서 `대화하기` CTA bottom은 `686.09`, 하단 여유는 `33.91px`, 7초 후에도 `scrollLeft=0`과 active dot 1번이 유지됐다.
+- 모바일 390x844에서는 CTA bottom `743.19`, 하단 여유 `100.81px`, 가로 오버플로우 0을 확인했다.
+- 검증: 디자인 회귀 테스트, 전체 vitest 254개, tsc, eslint, Next production build 통과.
+
+## 2026-07-24 20대 여성 유저 가격/현우카드 수정후 재리뷰
+- 소스코드는 수정하지 않고 최신 개발일지, 메모리, 가격 정책 코드, 결제 QA 차단 기록을 읽고 20대 여성 소비자 관점으로 다시 리뷰했다.
+- 이번 최신 수정의 핵심은 `10별 2,900원` 스타터, `월 9,900원 / 50별` 멤버십, 코인샵 스타터 우선 노출, 현우 카드 좌측 fade/첫 화면 잘림 보정이다.
+- 무료 3회 상담 사용 의향은 9.6/10, 2,900원 스타터 결제 의향은 8.8/10, 월 9,900원/50별 구독 의향은 7.4/10으로 판단했다.
+- 2,900원 스타터는 20대 여성 유저에게 `한 번만 더 물어볼까`를 만들기 좋은 가격이고, 이전 3,900원보다 첫 결제 심리 장벽이 낮다.
+- 월 50별은 `매일 1회 상담 30별 + 월간 리포트 3별 + 후속 질문 17별`처럼 사용 예시로 설명하면 월 9,900원 가치가 더 납득된다.
+- 현우 카드 첫 상태에서 왼쪽 fade가 빠져 대표 카드가 온전히 보이는 방향은 랜딩 첫인상 완성도와 신뢰를 올린다.
+- 유료 오픈 준비도는 결제 운영 안정성까지 닫힌 뒤에는 8.4/10이지만, 현재 Paddle production env와 signed webhook QA가 막힌 상태까지 포함하면 7.1/10이다.
+- 결제 오픈 전에는 Vercel production Paddle env 등록, 실제 Paddle Dashboard product/price id 검증, signed webhook live QA 통과가 필수다.
+- 2,900원 스타터는 30별 9,900원보다 별 단가가 낮으므로 첫 결제 1회 한정 또는 첫 결제용 문구를 명확히 해야 한다.
+- 상세 문서: `docs/개발일지/20대-여성-유저관점-가격현우카드-수정후-재리뷰-20260724.md`.
+
+## 2026-07-24 운영사이트 공격형 보안점검
+- 대상은 `https://monthlysaju.vercel.app/` production이다.
+- 비파괴 공격형 payload로 비인증 음수 별 차감, status 권한상승, prompt-injection, XSS/prompt payload, 악성 CORS origin, OAuth host spoofing/open redirect, 공개 파일/secret/sourcemap, query reflected XSS, invalid JSON/body, Paddle webhook, authenticated IDOR를 확인했다.
+- 무료 상담형 핵심 경로는 큰 구멍이 보이지 않았다. 비인증 민감 API payload는 대체로 401, CORS는 악성 origin에 열려 있지 않음, OAuth open redirect는 재현되지 않음, sourcemap은 403, 공개 secret 패턴 없음.
+- authenticated IDOR는 개선됐다. `preview`, `analyze`, `deduct-stars`, `update-status`, `chat`, `pdf` 모두 타인 리딩 접근 시 404이고 owner row unchanged다. 이전 `update-status` no-op 200은 해결됐다.
+- 운영 live API free/full QA는 통과했고, 운영 RLS 대상 10개 테이블은 enabled, 민감 RPC는 anon/authenticated에 열려 있지 않다.
+- 남은 P1은 Paddle signed webhook 정상 서명 payload가 계속 401인 점과 `GOOGLE_VERTEX_RUNTIME_AUTH` production env gate 실패다.
+- 새 P2는 `/api/saju/preview`, `/api/saju/analyze`, `/api/saju/compatibility`, `/api/saju/chat`이 invalid JSON/body에 500을 반환하는 것이다.
+- CSP는 `object-src 'none'`까지 좋아졌지만 `unsafe-inline` 때문에 MDN Observatory B+ 80점, 실패 1개가 남아 있다.
+- 개발자 전달 문서: `docs/pm/운영사이트-공격형-보안점검-개발자전달-20260724.md`.
+
+## 2026-07-24 운영사이트 공격형 보안점검 수정 반영
+- invalid JSON/body 500 이슈는 `src/lib/http/safe-json.ts` 공통 helper로 닫았다.
+- `/api/saju/preview`, `/api/saju/analyze`, `/api/saju/compatibility`, `/api/saju/chat`은 더 이상 직접 `req.json()`을 호출하지 않고 parse 실패 시 400 구조화 JSON을 반환한다.
+- `/api/saju/chat`은 invalid JSON 응답에 `requestId`를 포함한다.
+- `/api/saju/compatibility`는 catch에서 `req.clone().json()`을 다시 호출하지 않고, 요청 초기에 확보한 id와 user id로 실패 복구한다.
+- Vercel production env에 `GOOGLE_VERTEX_RUNTIME_AUTH=vercel-oidc`를 등록했다. 새 production 배포부터 반영된다.
+- 검증: focused invalid JSON 테스트, 전체 vitest 257개, tsc, eslint, Next production build, direct env check, audit high gate 통과.
+- `pnpm test:env` 래퍼는 기존 `fetch failed`로 실패하지만 `node scripts/check-env.js` 직접 실행은 통과했다.
+- Paddle signed webhook QA는 product/price id 4개 누락으로 계속 차단됐다.
+- 상세 문서: `docs/개발일지/운영사이트-공격형-보안점검-invalid-json-env-반영-20260724.md`.
+
+## 2026-07-24 다른 디자인 스킬 기준 배포웹사이트 프리미엄마감 Findings
+- 사용자가 `design-taste-frontend`를 제외하라고 해서 `high-end-visual-design`, `minimalist-ui`, `redesign-existing-projects` 기준으로 직전 디자인 문제를 정리했다.
+- 최신 production 기준 릴리즈 차단급 디자인 이슈는 없고, 남은 항목은 프리미엄 마감/발견성 개선이다.
+- P2: PC 1280x720에서 카드 이름 클리핑은 해결됐지만 카드 하단 `대화하기` CTA 발견성은 아직 약하다. 낮은 PC 높이에서 CTA bottom과 viewport 하단 사이 16px 이상 여유를 목표로 둔다.
+- P2: 캐러셀 첫 진입 상태가 뷰포트/스냅/이전 상태에 따라 다르게 느껴질 수 있어 시작 카드와 pagination active state를 더 결정적으로 맞춰야 한다.
+- P3: 보라색 accent가 버튼, 배지, 진행바, 하단 탭까지 넓게 반복돼 흔한 SaaS 톤으로 보일 수 있다. CTA/active state 중심으로 강도를 재배치한다.
+- P3: 캐릭터 카드 표면이 이미지 카드+흰 하단 영역으로 약간 평평해 보인다. outer/inner radius 계층, 약한 tinted shadow, inner highlight로 물성을 보강하면 더 프리미엄해진다.
+- 개발자 전달 문서: `docs/pm/다른디자인스킬-배포웹사이트-프리미엄마감-개발자전달-20260724.md`.

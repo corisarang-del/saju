@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { analyzeSaju } from '@/lib/saju/calculator';
 import { generatePreview } from '@/lib/saju/ai/analyzer';
+import { safeJson } from '@/lib/http/safe-json';
 import type { Gender } from '@/types/saju';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { readingId } = body;
+    const parsed = await safeJson<{ readingId?: unknown }>(req, {
+      source: 'saju/preview',
+    });
+    if (!parsed.ok) return parsed.response;
+
+    const readingId = typeof parsed.data.readingId === 'string'
+      ? parsed.data.readingId.trim()
+      : '';
 
     if (!readingId) {
       return NextResponse.json(

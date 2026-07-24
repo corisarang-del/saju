@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { analyzeSaju } from '@/lib/saju/calculator';
 import { generateCompatibility } from '@/lib/saju/ai/analyzer';
+import { safeJson } from '@/lib/http/safe-json';
 import type { FourPillarsDetail } from 'manseryeok';
 import type {
   FiveElementDistribution,
@@ -9,9 +10,19 @@ import type {
 } from '@/types/saju';
 
 export async function POST(req: NextRequest) {
+  let compatibilityIdForFailure: string | null = null;
+  let userIdForFailure: string | null = null;
+
   try {
-    const body = await req.json();
-    const { compatibilityId } = body;
+    const parsed = await safeJson<{ compatibilityId?: unknown }>(req, {
+      source: 'saju/compatibility',
+    });
+    if (!parsed.ok) return parsed.response;
+
+    const compatibilityId = typeof parsed.data.compatibilityId === 'string'
+      ? parsed.data.compatibilityId.trim()
+      : '';
+    compatibilityIdForFailure = compatibilityId || null;
 
     if (!compatibilityId) {
       return NextResponse.json(
@@ -26,6 +37,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    userIdForFailure = user.id;
 
     // 궁합 레코드 조회
     const { data: compat, error: compatError } = await supabase
@@ -138,21 +150,17 @@ export async function POST(req: NextRequest) {
     console.error('[saju/compatibility] Error:', error);
 
     // 실패 시 status 복구
-    try {
-      const body = await req.clone().json();
-      if (body.compatibilityId) {
+    if (compatibilityIdForFailure && userIdForFailure) {
+      try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('saju_compatibilities')
-            .update({ status: 'failed', updated_at: new Date().toISOString() })
-            .eq('id', body.compatibilityId)
-            .eq("user_id", user.id);
-        }
+        await supabase
+          .from('saju_compatibilities')
+          .update({ status: 'failed', updated_at: new Date().toISOString() })
+          .eq('id', compatibilityIdForFailure)
+          .eq("user_id", userIdForFailure);
+      } catch {
+        // ignore cleanup error
       }
-    } catch {
-      // ignore cleanup error
     }
 
     return NextResponse.json(

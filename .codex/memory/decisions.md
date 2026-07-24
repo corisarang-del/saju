@@ -922,3 +922,45 @@ production webhook endpoint는 무서명/오서명 401 방어는 통과했지만
 - 2026-07-24 코드 상수와 테스트는 `stars10.price === 2900`, `MONTHLY_MEMBERSHIP.stars === 50` 기준으로 변경 완료했다.
 - 코인샵 기본 선택은 `stars10`으로 둔다.
 - 첫 결제 1회 제한은 아직 서버 정책으로 강제하지 않고, 스타터 포지셔닝과 운영 price id 검증을 우선한다.
+
+---
+
+## DEC-051: 운영 API는 invalid JSON/body를 500으로 반환하지 않는다
+
+**날짜**: 2026-07-24
+**상태**: 승인됨
+
+**결정**:
+운영 API route는 invalid content-type, invalid JSON, malformed body를 일반 서버 오류로 처리하지 않는다. 인증이 필요한 민감 API는 가능하면 인증을 먼저 확인하고, body parse 오류는 400으로 구조화해서 반환한다.
+
+**근거**:
+운영 공격형 점검에서 `/api/saju/preview`, `/api/saju/analyze`, `/api/saju/compatibility`, `/api/saju/chat`이 비인증 `text/plain not-json` payload에 500을 반환했다. 스택 노출은 없었지만, 공격자가 5xx 로그/알람을 오염시킬 수 있고 API 상태코드 원칙과 맞지 않는다.
+
+**검증 기준**:
+- 비인증 invalid body는 정책에 따라 401 또는 400을 반환하되 500은 반환하지 않는다.
+- 인증된 사용자 invalid JSON은 400을 반환한다.
+- 응답은 `{ error, message?, requestId? }` 형태로 구조화한다.
+- 서버 로그는 request id와 parse failure 정도만 남기고 body 원문 전체나 민감 정보를 남기지 않는다.
+
+**구현 메모**:
+- 2026-07-24 `safeJson` helper와 회귀 테스트를 추가했다.
+- `preview`, `analyze`, `compatibility`, `chat` route는 invalid JSON/body에 400 구조화 JSON을 반환한다.
+- `chat` route는 request id를 응답과 로그에 연결한다.
+- `compatibility` route는 실패 복구용으로 body를 재파싱하지 않는다.
+
+---
+
+## DEC-052: Vercel production Vertex 런타임 인증은 vercel-oidc로 둔다
+
+**날짜**: 2026-07-24
+**상태**: 승인됨
+
+**결정**:
+Vercel production의 `GOOGLE_VERTEX_RUNTIME_AUTH` 값은 `vercel-oidc`로 둔다.
+
+**근거**:
+운영은 Vertex AI를 사용하고, `GOOGLE_VERTEX_WORKLOAD_IDENTITY_AUDIENCE`, `GOOGLE_VERTEX_SERVICE_ACCOUNT_EMAIL`이 이미 production env에 등록되어 있다. `scripts/check-env.js`도 `vercel-oidc`를 허용 런타임 인증 방식으로 인정한다.
+
+**주의**:
+- Vercel env 변경은 새 production 배포 이후 런타임에 반영된다.
+- Paddle env 누락과 signed webhook 401은 이 결정과 별개로 계속 닫아야 한다.

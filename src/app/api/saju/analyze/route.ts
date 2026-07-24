@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { generateFullAnalysis } from '@/lib/saju/ai/analyzer';
 import { generateAdvancedSajuContext } from '@/lib/saju/advanced-analysis';
+import { safeJson } from '@/lib/http/safe-json';
 import type { FourPillarsDetail } from 'manseryeok';
 import type {
   FiveElementDistribution,
@@ -14,9 +15,13 @@ export async function POST(req: NextRequest) {
   let userIdForFailure: string | null = null;
 
   try {
-    const body = (await req.json()) as { readingId?: unknown };
-    const readingId = typeof body.readingId === 'string'
-      ? body.readingId.trim()
+    const parsed = await safeJson<{ readingId?: unknown }>(req, {
+      source: 'saju/analyze',
+    });
+    if (!parsed.ok) return parsed.response;
+
+    const readingId = typeof parsed.data.readingId === 'string'
+      ? parsed.data.readingId.trim()
       : '';
     readingIdForFailure = readingId || null;
 

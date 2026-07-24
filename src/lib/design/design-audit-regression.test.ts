@@ -59,13 +59,14 @@ describe("design_audit_regression", () => {
     }
   });
 
-  it("names_character_carousel_controls_and_stops_auto_motion_after_user_intent", () => {
+  it("names_character_carousel_controls_and_keeps_first_entry_user_controlled", () => {
     const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
 
     expect(content).toContain("aria-label={`${i + 1}번째 상담사 보기`}");
     expect(content).toContain("aria-current={i === activeIndex ? \"true\" : undefined}");
-    expect(content).toContain("prefers-reduced-motion: reduce");
-    expect(content).toContain("stopAutoScroll");
+    expect(content).toContain("el.scrollLeft = 0");
+    expect(content).not.toContain("setInterval");
+    expect(content).not.toContain("autoScrollPausedRef");
     expect(content).not.toContain("onTouchEnd={() => { isHoveredRef.current = false; }}");
   });
 
@@ -207,11 +208,20 @@ describe("design_audit_regression", () => {
 
     expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-3");
     expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pb-1");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[3/4]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[4/5]");
     expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-3");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-4");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
+  });
+
+  it("keeps_pc_720h_character_action_area_with_breathing_room", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[252px]");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-3");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-2");
   });
 
   it("prevents_pc_landing_h1_widow_line_breaks_with_a_wider_measure_and_balanced_wrap", () => {
