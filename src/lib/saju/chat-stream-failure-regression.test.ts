@@ -36,7 +36,7 @@ describe("chat_stream_failure_regression", () => {
   it("shows_recoverable_quota_error_and_retry_copy_on_the_client", () => {
     const room = readProjectFile("src/components/saju/chat/ChatRoom.tsx");
 
-    expect(room).toContain("지금 AI 응답 한도가 잠시 막혔어");
+    expect(room).toContain("답변을 완성하지 못했어. 무료 횟수는 차감하지 않았어. 다시 시도해줘.");
     expect(room).toContain("getUserFacingChatErrorMessage");
     expect(room).toContain("retryInitialAnalysis");
   });
@@ -122,5 +122,16 @@ describe("chat_stream_failure_regression", () => {
     expect(route).toContain("두 사람을 함께 언급");
     expect(route).toContain("사용자가 \"내 사주\"라고 물어도");
     expect(route).toContain("partnerName: compatibilityPartnerName");
+  });
+
+  it("shows_staged_first_consultation_loading_copy_after_long_waits", () => {
+    const room = readProjectFile("src/components/saju/chat/ChatRoom.tsx");
+    const funnel = readProjectFile("src/lib/analytics/free-beta-funnel.ts");
+
+    expect(room).toContain("getFirstConsultationLoadingMessage");
+    expect(room).toContain("firstConsultationElapsedMs");
+    expect(funnel).toContain("사주 흐름을 정리하고 있어");
+    expect(funnel).toContain("고민에 맞는 상담 방향을 잡고 있어");
+    expect(funnel).toContain("답변이 조금 길어지고 있어. 완료되면 바로 보여줄게");
   });
 });

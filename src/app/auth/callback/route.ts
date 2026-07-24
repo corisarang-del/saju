@@ -123,6 +123,12 @@ export async function GET(request: Request) {
         trackEvent({ userId: user.id, eventType: "login" }).catch(() => {});
       }
 
+      trackEvent({
+        userId: user.id,
+        eventType: "login_success",
+        properties: { isNewUser },
+      }).catch(() => {});
+
       return NextResponse.redirect(
         buildAuthRedirectUrl({
           requestUrl: request.url,

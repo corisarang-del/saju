@@ -1,20 +1,9 @@
 import { trackEvent } from "@/lib/analytics/track";
-import type { AnalyticsEventType } from "@/types/analytics";
+import { ANALYTICS_EVENT_TYPES, type AnalyticsEventType } from "@/types/analytics";
 
 export const runtime = "nodejs";
 
-const ANALYTICS_EVENT_TYPES = new Set<AnalyticsEventType>([
-  "page_view",
-  "signup",
-  "login",
-  "reading_start",
-  "reading_complete",
-  "chat_message",
-  "purchase",
-  "compatibility_start",
-  "payment_success",
-  "payment_failed",
-]);
+const ANALYTICS_EVENT_TYPE_SET = new Set<AnalyticsEventType>(ANALYTICS_EVENT_TYPES);
 
 interface AnalyticsTrackRequest {
   event_type?: string;
@@ -39,7 +28,7 @@ interface AnalyticsTrackRequest {
 
 function toAnalyticsEventType(value: string | undefined): AnalyticsEventType | null {
   if (!value) return null;
-  return ANALYTICS_EVENT_TYPES.has(value as AnalyticsEventType)
+  return ANALYTICS_EVENT_TYPE_SET.has(value as AnalyticsEventType)
     ? (value as AnalyticsEventType)
     : null;
 }

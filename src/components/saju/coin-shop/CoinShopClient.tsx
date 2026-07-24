@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { openCheckout } from '@/lib/paddle/client';
 import type { ProductType } from '@/lib/paddle/config';
-import { formatWon, MONTHLY_MEMBERSHIP, STAR_PACKS } from '@/lib/monthly-saju/pricing';
+import {
+  formatWon,
+  MONTHLY_MEMBERSHIP,
+  MONTHLY_MEMBERSHIP_USAGE_EXAMPLE,
+  STAR_PACKS,
+} from '@/lib/monthly-saju/pricing';
 import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
+import { trackClientEvent } from '@/lib/analytics/client';
 
 interface CoinShopClientProps {
   totalCoins: number;
@@ -27,6 +33,13 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(isPaidRedirect);
+
+  useEffect(() => {
+    trackClientEvent('coin_shop_view', { paymentsEnabled });
+    if (!paymentsEnabled) {
+      trackClientEvent('payment_disabled_notice_view', { source: 'coin_shop' });
+    }
+  }, [paymentsEnabled]);
 
   useEffect(() => {
     if (!isPaidRedirect) return;
@@ -141,7 +154,7 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
         <h2 className="text-lg font-bold text-white mb-4">월간 멤버십</h2>
         <button
             onClick={() => paymentsEnabled && setSelected(MONTHLY_MEMBERSHIP.type)}
-          aria-label={`${MONTHLY_MEMBERSHIP.name}, 매월 별 ${MONTHLY_MEMBERSHIP.stars}개, ${formatWon(MONTHLY_MEMBERSHIP.price)}`}
+          aria-label={`${MONTHLY_MEMBERSHIP.name}, 매월 별 ${MONTHLY_MEMBERSHIP.stars}개, ${formatWon(MONTHLY_MEMBERSHIP.price)}, ${MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}`}
           className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border text-sm transition-all ${
             selected === MONTHLY_MEMBERSHIP.type
               ? 'border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10'
@@ -158,6 +171,9 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
                 </span>
               </div>
               <span className="text-[11px] text-amber-200/80">{MONTHLY_MEMBERSHIP.description}</span>
+              <span className="mt-1 block text-[11px] leading-5 text-amber-100/65">
+                예: {MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}
+              </span>
             </div>
           </div>
           <div className="text-right">

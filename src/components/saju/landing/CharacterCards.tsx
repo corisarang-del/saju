@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { CHARACTER_LIST } from "@/lib/saju/characters";
 import { loginWithGoogle } from "@/services/auth/actions";
+import { trackClientEvent } from "@/lib/analytics/client";
 
 interface CharacterCardsProps {
   isLoggedIn?: boolean;
@@ -234,7 +235,21 @@ function CharacterCard({
   );
 
   if (isLoggedIn) {
-    return <Link href={`/chat/${char.id}`} className="block h-full">{cardContent}</Link>;
+    return (
+      <Link
+        href={`/chat/${char.id}`}
+        className="block h-full"
+        onClick={() => {
+          trackClientEvent("character_selected", {
+            characterId: char.id,
+            characterName: char.name,
+            isLoggedIn: true,
+          });
+        }}
+      >
+        {cardContent}
+      </Link>
+    );
   }
 
   return (
@@ -243,7 +258,14 @@ function CharacterCard({
         ref={triggerRef}
         type="button"
         className="block h-full w-full text-left"
-        onClick={() => setShowLoginPrompt(true)}
+        onClick={() => {
+          trackClientEvent("character_selected", {
+            characterId: char.id,
+            characterName: char.name,
+            isLoggedIn: false,
+          });
+          setShowLoginPrompt(true);
+        }}
       >
         {cardContent}
       </button>
@@ -274,7 +296,15 @@ function CharacterCard({
                 1별 = 메시지 1회, 가입 후에도 가격을 확인할 수 있어요
               </p>
 
-              <form action={async () => { await loginWithGoogle(`/chat/${char.id}`); }}>
+              <form
+                action={async () => { await loginWithGoogle(`/chat/${char.id}`); }}
+                onSubmit={() => {
+                  trackClientEvent("login_start", {
+                    source: "character_modal",
+                    characterId: char.id,
+                  });
+                }}
+              >
                 <button
                   type="submit"
                   aria-label="Google로 로그인하고 상담 시작하기"

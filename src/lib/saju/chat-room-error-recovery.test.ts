@@ -12,7 +12,7 @@ describe("chat_room_error_recovery", () => {
     expect(content).toContain("onError:");
     expect(content).toContain("setChatError");
     expect(content).toContain("window.sessionStorage.removeItem(autoStartKey)");
-    expect(content).toContain("분석을 시작하지 못했어");
+    expect(content).toContain("답변을 완성하지 못했어. 무료 횟수는 차감하지 않았어. 다시 시도해줘.");
   });
 
   it("logs_streaming_errors_on_the_chat_api_boundary", () => {

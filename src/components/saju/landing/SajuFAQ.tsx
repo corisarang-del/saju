@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { formatWon, MONTHLY_MEMBERSHIP, STAR_PACKS, SUPPORT_CONTACT } from "@/lib/monthly-saju/pricing";
+import {
+  formatWon,
+  MONTHLY_MEMBERSHIP,
+  MONTHLY_MEMBERSHIP_USAGE_EXAMPLE,
+  STAR_PACKS,
+  SUPPORT_CONTACT,
+} from "@/lib/monthly-saju/pricing";
 import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
 
 const priceText = STAR_PACKS.map((pack) => `별 ${pack.stars}개 ${formatWon(pack.price)}`).join(", ");
-const membershipText = `${MONTHLY_MEMBERSHIP.name}은 월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개가 지급돼요.`;
+const membershipText = `${MONTHLY_MEMBERSHIP.name}은 월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개가 지급돼요. 예: ${MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}.`;
 
 function buildFaqs(paymentsEnabled: boolean) {
   return [
@@ -13,7 +19,7 @@ function buildFaqs(paymentsEnabled: boolean) {
     q: "별(★)은 뭔가요?",
     a: paymentsEnabled
       ? `별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 모든 상담사에서 공통으로 사용됩니다. 로그인하면 3회 무료 상담을 먼저 이용할 수 있고, 추가 충전 가격은 ${priceText}입니다. ${membershipText}`
-      : "별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 로그인하면 3회 무료 상담을 먼저 이용할 수 있어요. 유료 충전과 멤버십은 준비 중이에요.",
+      : `별은 대화에 사용되는 포인트예요. 별 1개 = 메시지 1회이고, 로그인하면 3회 무료 상담을 먼저 이용할 수 있어요. 유료 충전과 멤버십은 준비 중이에요. 열리면 ${MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}처럼 쓸 수 있어요.`,
   },
   {
     q: "무료로도 이용할 수 있나요?",

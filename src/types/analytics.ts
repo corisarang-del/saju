@@ -1,15 +1,41 @@
+export const BASE_ANALYTICS_EVENT_TYPES = [
+  "page_view",
+  "signup",
+  "login",
+  "reading_start",
+  "reading_complete",
+  "chat_message",
+  "purchase",
+  "compatibility_start",
+  "payment_success",
+  "payment_failed",
+] as const;
+
+export const FREE_BETA_FUNNEL_EVENT_TYPES = [
+  "landing_view",
+  "reading_page_view",
+  "birth_date_completed",
+  "gender_completed",
+  "character_selected",
+  "login_start",
+  "login_success",
+  "free_chat_started",
+  "first_assistant_response_success",
+  "first_assistant_response_failed",
+  "follow_up_question_sent",
+  "free_quota_exhausted",
+  "pricing_panel_view",
+  "coin_shop_view",
+  "payment_disabled_notice_view",
+] as const;
+
+export const ANALYTICS_EVENT_TYPES = [
+  ...BASE_ANALYTICS_EVENT_TYPES,
+  ...FREE_BETA_FUNNEL_EVENT_TYPES,
+] as const;
+
 // 이벤트 타입
-export type AnalyticsEventType =
-  | "page_view"
-  | "signup"
-  | "login"
-  | "reading_start"
-  | "reading_complete"
-  | "chat_message"
-  | "purchase"
-  | "compatibility_start"
-  | "payment_success"
-  | "payment_failed";
+export type AnalyticsEventType = (typeof ANALYTICS_EVENT_TYPES)[number];
 
 // 이벤트 로그
 export interface AnalyticsEvent {

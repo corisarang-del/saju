@@ -72,4 +72,30 @@ describe("free_beta_qa_regression", () => {
     expect(sidebar).not.toContain("로그인하면 모든 대화 기록을\n");
     expect(sidebar).not.toContain("대화 기록을저장");
   });
+
+  it("tracks_free_beta_funnel_events_without_opening_payment_ctas", () => {
+    const trackRoute = readProjectFile("src/app/api/analytics/track/route.ts");
+    const tracker = readProjectFile("src/components/analytics/ClientAnalyticsEvent.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+    const reading = readProjectFile("src/app/[locale]/reading/page.tsx");
+    const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+    const chatRoom = readProjectFile("src/components/saju/chat/ChatRoom.tsx");
+    const coinShop = readProjectFile("src/components/saju/coin-shop/CoinShopClient.tsx");
+
+    expect(trackRoute).toContain("ANALYTICS_EVENT_TYPES");
+    expect(tracker).toContain("trackClientEvent");
+    expect(landing).toContain('eventType="landing_view"');
+    expect(landing).toContain('eventType="pricing_panel_view"');
+    expect(reading).toContain('eventType="reading_page_view"');
+    expect(reading).toContain("birth_date_completed");
+    expect(reading).toContain("gender_completed");
+    expect(characterCards).toContain("character_selected");
+    expect(chatRoom).toContain("free_chat_started");
+    expect(chatRoom).toContain("first_assistant_response_success");
+    expect(chatRoom).toContain("first_assistant_response_failed");
+    expect(chatRoom).toContain("follow_up_question_sent");
+    expect(chatRoom).toContain("free_quota_exhausted");
+    expect(coinShop).toContain("coin_shop_view");
+    expect(coinShop).toContain("payment_disabled_notice_view");
+  });
 });

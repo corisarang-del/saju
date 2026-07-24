@@ -23,6 +23,8 @@ import {
   getChatMessagePlainText,
   getFinishedAssistantText,
 } from '@/lib/ai/chat-finished-message';
+import { getFirstConsultationLoadingMessage } from '@/lib/analytics/free-beta-funnel';
+import { trackClientEvent } from '@/lib/analytics/client';
 import { Link } from '@/i18n/routing';
 
 /** 오행 분포 */
@@ -66,7 +68,40 @@ export default function ChatRoom({
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [showOhang, setShowOhang] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [isFirstConsultationLoading, setIsFirstConsultationLoading] = useState(false);
+  const [firstConsultationElapsedMs, setFirstConsultationElapsedMs] = useState(0);
+  const activeRequestStartedAtRef = useRef<number | null>(null);
+  const activeRequestIsInitialRef = useRef(false);
+  const firstConsultationFailureTrackedRef = useRef(false);
+  const freeQuotaExhaustedTrackedRef = useRef(false);
   const autoStartKey = readingId ? `monthly-saju:auto-start:${readingId}:${characterId}` : null;
+
+  const getActiveRequestDurationMs = useCallback(() => {
+    const startedAt = activeRequestStartedAtRef.current;
+    return startedAt ? Date.now() - startedAt : undefined;
+  }, []);
+
+  const clearActiveRequest = useCallback(() => {
+    activeRequestStartedAtRef.current = null;
+    activeRequestIsInitialRef.current = false;
+    firstConsultationFailureTrackedRef.current = false;
+    setIsFirstConsultationLoading(false);
+    setFirstConsultationElapsedMs(0);
+  }, []);
+
+  const trackFirstConsultationFailure = useCallback((properties: Record<string, unknown>) => {
+    if (!activeRequestIsInitialRef.current || firstConsultationFailureTrackedRef.current) {
+      return;
+    }
+
+    firstConsultationFailureTrackedRef.current = true;
+    trackClientEvent("first_assistant_response_failed", {
+      characterId,
+      readingId,
+      durationMs: getActiveRequestDurationMs(),
+      ...properties,
+    });
+  }, [characterId, getActiveRequestDurationMs, readingId]);
 
   const handleChatError = useCallback((error?: Error) => {
     if (autoStartKey) {
@@ -75,7 +110,7 @@ export default function ChatRoom({
     setChatError(
       error
         ? getUserFacingChatErrorMessage(error)
-        : '분석을 시작하지 못했어. 지금 AI 응답 한도가 잠시 막혔어. 잠시 후 다시 시도해줘.',
+        : '답변을 완성하지 못했어. 무료 횟수는 차감하지 않았어. 다시 시도해줘.',
     );
   }, [autoStartKey]);
 
@@ -110,6 +145,8 @@ export default function ChatRoom({
       : undefined,
     messages: initialMessages,
     onError: (error) => {
+      trackFirstConsultationFailure({ reason: error.message || "stream_error" });
+      clearActiveRequest();
       handleChatError(error);
     },
     onFinish: ({ message, messages: finishedMessages, isError, finishReason }) => {
@@ -124,10 +161,25 @@ export default function ChatRoom({
       });
 
       if (failureMessage) {
+        trackFirstConsultationFailure({
+          reason: failureMessage,
+          finishReason,
+          isError,
+        });
+        clearActiveRequest();
         handleChatError(new Error(failureMessage));
         return;
       }
 
+      if (activeRequestIsInitialRef.current) {
+        trackClientEvent("first_assistant_response_success", {
+          characterId,
+          readingId,
+          durationMs: getActiveRequestDurationMs(),
+          finishReason,
+        });
+      }
+      clearActiveRequest();
       setChatError(null);
       setStarBalance((prev) => Math.max(0, prev - 1));
     },
@@ -135,6 +187,30 @@ export default function ChatRoom({
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const prevStatusRef = useRef(status);
+
+  const startChatRequest = useCallback((text: string) => {
+    const initialPrompt = getInitialAnalysisPrompt(characterId);
+    const isInitialAnalysis = messages.length === 0 && text === initialPrompt;
+
+    activeRequestStartedAtRef.current = Date.now();
+    activeRequestIsInitialRef.current = isInitialAnalysis;
+    firstConsultationFailureTrackedRef.current = false;
+    setIsFirstConsultationLoading(isInitialAnalysis);
+    setFirstConsultationElapsedMs(0);
+
+    trackClientEvent(isInitialAnalysis ? "free_chat_started" : "follow_up_question_sent", {
+      characterId,
+      readingId,
+    });
+
+    return sendMessage({ text });
+  }, [characterId, messages.length, readingId, sendMessage]);
+
+  const handleSendFailure = useCallback((error?: Error) => {
+    trackFirstConsultationFailure({ reason: error?.message || "send_message_failed" });
+    clearActiveRequest();
+    handleChatError(error);
+  }, [clearActiveRequest, handleChatError, trackFirstConsultationFailure]);
 
   // status가 streaming/submitted → ready로 변할 때 추천 질문 생성
   useEffect(() => {
@@ -158,6 +234,28 @@ export default function ChatRoom({
     }
   }, [status, messages]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!isLoading || !isFirstConsultationLoading) return;
+
+    const updateElapsed = () => {
+      setFirstConsultationElapsedMs(getActiveRequestDurationMs() ?? 0);
+    };
+    updateElapsed();
+
+    const timer = window.setInterval(updateElapsed, 1000);
+    return () => window.clearInterval(timer);
+  }, [getActiveRequestDurationMs, isFirstConsultationLoading, isLoading]);
+
+  useEffect(() => {
+    if (!isExhausted || freeQuotaExhaustedTrackedRef.current) return;
+
+    freeQuotaExhaustedTrackedRef.current = true;
+    trackClientEvent("free_quota_exhausted", {
+      characterId,
+      readingId,
+      starBalance,
+    });
+  }, [characterId, isExhausted, readingId, starBalance]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -186,25 +284,28 @@ export default function ChatRoom({
     if (autoStartKey) {
       window.sessionStorage.setItem(autoStartKey, '1');
     }
-    void sendMessage({ text: getInitialAnalysisPrompt(characterId) }).catch(handleChatError);
+    const timer = window.setTimeout(() => {
+      void startChatRequest(getInitialAnalysisPrompt(characterId)).catch(handleSendFailure);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [
     autoStartKey,
     characterId,
-    handleChatError,
+    handleSendFailure,
     isAnalyzing,
     isExhausted,
     isLoading,
     messages.length,
     readingId,
-    sendMessage,
     showBirthForm,
+    startChatRequest,
   ]);
 
   const handleSubmit = (value: string) => {
     if (!readingId || isExhausted || isLoading) return;
     setSuggestions([]);
     setChatError(null);
-    void sendMessage({ text: value }).catch(handleChatError);
+    void startChatRequest(value).catch(handleSendFailure);
   };
 
   const retryInitialAnalysis = () => {
@@ -213,7 +314,7 @@ export default function ChatRoom({
       window.sessionStorage.removeItem(autoStartKey);
     }
     setChatError(null);
-    void sendMessage({ text: getInitialAnalysisPrompt(characterId) }).catch(handleChatError);
+    void startChatRequest(getInitialAnalysisPrompt(characterId)).catch(handleSendFailure);
   };
 
   const handleBirthInfoComplete = (newReadingId: string) => {
@@ -477,11 +578,18 @@ export default function ChatRoom({
             >
               <CharacterAvatar characterId={characterId} size="sm" />
               <div
-                className="rounded-2xl rounded-bl-md px-4 py-3 flex gap-1 bg-[#1e1e2a]"
+                className="rounded-2xl rounded-bl-md px-4 py-3 bg-[#1e1e2a]"
               >
-                <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                </div>
+                {isFirstConsultationLoading && (
+                  <p className="mt-2 max-w-[260px] text-xs leading-relaxed text-gray-300">
+                    {getFirstConsultationLoadingMessage(firstConsultationElapsedMs)}
+                  </p>
+                )}
               </div>
             </motion.div>
           )}

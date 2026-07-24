@@ -37,7 +37,10 @@ export const MONTHLY_MEMBERSHIP = {
   stars: 50,
   price: 9900,
   description: "매월 50별 지급, 오늘피드/월간 리포트 우선 노출",
+  usageExample: "매일 1회 상담 30별 + 월간 리포트 3별 + 후속 질문 17회",
 } as const;
+
+export const MONTHLY_MEMBERSHIP_USAGE_EXAMPLE = MONTHLY_MEMBERSHIP.usageExample;
 
 export const SUPPORT_CONTACT = {
   email: "corisarang@gmail.com",
@@ -60,7 +63,7 @@ export function buildPricingFaqAnswer(): string {
     .map((pack) => `별 ${pack.stars}개 ${formatWon(pack.price)}`)
     .join(", ");
 
-  return `${packs} 패키지가 있고, ${MONTHLY_MEMBERSHIP.name}은 월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개가 지급돼요.`;
+  return `${packs} 패키지가 있고, ${MONTHLY_MEMBERSHIP.name}은 월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개가 지급돼요. 예: ${MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}.`;
 }
 
 export function buildProductJsonLd() {

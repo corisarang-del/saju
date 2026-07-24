@@ -5,6 +5,7 @@ import {
   FREE_SIGNUP_STARS,
   FULL_REPORT_STAR_COST,
   MONTHLY_MEMBERSHIP,
+  MONTHLY_MEMBERSHIP_USAGE_EXAMPLE,
   MONTHLY_REPORT_STAR_COST,
   STAR_PACKS,
   STAR_USAGE_SUMMARY,
@@ -39,7 +40,15 @@ describe("monthly_saju_pricing", () => {
       stars: 50,
       price: 9900,
       description: "매월 50별 지급, 오늘피드/월간 리포트 우선 노출",
+      usageExample: "매일 1회 상담 30별 + 월간 리포트 3별 + 후속 질문 17회",
     });
+  });
+
+  it("explains_how_monthly_membership_50_stars_can_be_used", () => {
+    expect(MONTHLY_MEMBERSHIP_USAGE_EXAMPLE).toBe(
+      "매일 1회 상담 30별 + 월간 리포트 3별 + 후속 질문 17회",
+    );
+    expect(buildPricingFaqAnswer()).toContain(MONTHLY_MEMBERSHIP_USAGE_EXAMPLE);
   });
 
   it("publishes_starter_existing_and_subscription_products", () => {

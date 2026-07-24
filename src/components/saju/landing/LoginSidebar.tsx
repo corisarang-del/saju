@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { CHARACTER_LIST, type CharacterType } from '@/lib/saju/characters';
 import { areClientPaymentsEnabled } from '@/lib/payments/feature-flag';
+import { trackClientEvent } from '@/lib/analytics/client';
 
 interface ChatHistoryItem {
   id: string;
@@ -138,7 +139,13 @@ export default function LoginSidebar({ user, chatHistory = [], currentReading, t
             대화 기록은 로그인 후 자동으로 저장돼
           </p>
 
-          <form action={async () => { await loginWithGoogle('/'); }} className="w-full">
+          <form
+            action={async () => { await loginWithGoogle('/'); }}
+            className="w-full"
+            onSubmit={() => {
+              trackClientEvent('login_start', { source: 'sidebar' });
+            }}
+          >
             <button
               type="submit"
               className="w-full flex items-center justify-center gap-2 bg-[#1e1e2a] hover:bg-[#2a2a3a] border border-[#2a2a3a] rounded-xl py-3 text-sm font-semibold text-gray-200 transition-colors cursor-pointer"

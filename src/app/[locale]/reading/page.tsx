@@ -4,12 +4,14 @@ import { useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "@/i18n/routing";
+import ClientAnalyticsEvent from "@/components/analytics/ClientAnalyticsEvent";
 import BirthDateForm, {
   type BirthDateFormData,
 } from "@/components/saju/input/BirthDateForm";
 import ConcernSelector from "@/components/saju/input/ConcernSelector";
 import AnalysisLoading from "@/components/saju/input/AnalysisLoading";
 import { createReading } from "@/services/saju/actions";
+import { trackClientEvent } from "@/lib/analytics/client";
 import type { ConcernType } from "@/types/saju";
 
 /** 시진 value를 시간(hour)으로 변환 */
@@ -90,6 +92,11 @@ export default function ReadingPage() {
     setFormData(data);
     setLoginRequired(false);
     setStep(2);
+    trackClientEvent("birth_date_completed", {
+      calendar: data.calendar,
+      birthHourKnown: data.time !== "unknown",
+    });
+    trackClientEvent("gender_completed", { gender: data.gender });
   };
 
   const handleConcernSubmit = async (concerns: string[]) => {
@@ -159,6 +166,7 @@ export default function ReadingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ClientAnalyticsEvent eventType="reading_page_view" />
       {/* 진행 바 (Step 3에서는 숨김) */}
       {step <= 2 && (
         <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
@@ -203,6 +211,7 @@ export default function ReadingPage() {
             <button
               type="button"
               onClick={() => {
+                trackClientEvent("login_start", { source: "reading_resume" });
                 window.location.href = `/api/auth/google?next=${encodeURIComponent(loginNextPath)}`;
               }}
               className="mt-3 w-full rounded-xl bg-[#6f3f93] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#5f347f]"

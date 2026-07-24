@@ -6,6 +6,7 @@ import { Link } from "@/i18n/routing";
 import { loginWithGoogle } from "@/services/auth/actions";
 import ReferralSection from "@/components/saju/referral/ReferralSection";
 import { areClientPaymentsEnabled } from "@/lib/payments/feature-flag";
+import { trackClientEvent } from "@/lib/analytics/client";
 
 interface SajuNavbarProps {
   isLoggedIn?: boolean;
@@ -61,7 +62,12 @@ export default function SajuNavbar({ isLoggedIn = false, isAdmin = false, onMenu
           </div>
           <div className="flex items-center gap-2">
             {!isLoggedIn ? (
-              <form action={async () => { await loginWithGoogle('/'); }}>
+              <form
+                action={async () => { await loginWithGoogle('/'); }}
+                onSubmit={() => {
+                  trackClientEvent("login_start", { source: "navbar" });
+                }}
+              >
                 <button
                   type="submit"
                   className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"

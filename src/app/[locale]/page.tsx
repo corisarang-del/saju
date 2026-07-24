@@ -3,12 +3,14 @@ import CharacterCards from "@/components/saju/landing/CharacterCards";
 import SajuTestimonials from "@/components/saju/landing/SajuTestimonials";
 import SajuFAQ from "@/components/saju/landing/SajuFAQ";
 import SajuFooter from "@/components/saju/landing/SajuFooter";
+import ClientAnalyticsEvent from "@/components/analytics/ClientAnalyticsEvent";
 import { createClient } from "@/utils/supabase/server";
 import type { CharacterType } from "@/lib/saju/characters";
 import type { SajuReading } from "@/types/saju";
 import {
   formatWon,
   MONTHLY_MEMBERSHIP,
+  MONTHLY_MEMBERSHIP_USAGE_EXAMPLE,
   STAR_PACKS,
   STAR_USAGE_SUMMARY,
 } from "@/lib/monthly-saju/pricing";
@@ -49,6 +51,7 @@ export default async function HomePage() {
 
   return (
     <SajuLayout currentReading={currentReading}>
+      <ClientAnalyticsEvent eventType="landing_view" />
       {/* 카드 + 이용방법 = 한 영역 */}
       <div className="bg-[radial-gradient(circle_at_top_left,#ede9fe_0,#f7f3ea_36%,#fffaf0_100%)]">
         <div className="mx-auto max-w-5xl px-4 pt-7 md:pt-8 [@media_(min-width:1024px)_and_(max-height:800px)]:pt-3">
@@ -72,6 +75,10 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="rounded-3xl border border-stone-200/30 bg-[#3a332b] p-5 text-white shadow-[0_20px_48px_-34px_rgba(58,51,43,0.55)]">
+            <ClientAnalyticsEvent
+              eventType="pricing_panel_view"
+              properties={{ source: "landing", paymentsEnabled }}
+            />
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-200">가격과 별 사용 기준</p>
             <h2 className="mt-3 text-xl font-bold tracking-tight">{STAR_USAGE_SUMMARY}</h2>
             <p className="mt-2 text-sm leading-6 text-stone-100/80">
@@ -87,6 +94,9 @@ export default async function HomePage() {
                 {paymentsEnabled
                   ? `월 ${formatWon(MONTHLY_MEMBERSHIP.price)}에 매월 별 ${MONTHLY_MEMBERSHIP.stars}개를 받아 자주 상담할 때 부담을 줄일 수 있어.`
                   : `매월 별 ${MONTHLY_MEMBERSHIP.stars}개를 받는 멤버십은 정식 결제 기능 안정화 후 열릴 예정이야.`}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-stone-100/70">
+                예: {MONTHLY_MEMBERSHIP_USAGE_EXAMPLE}
               </p>
             </div>
             <dl className="mt-4 space-y-2">
