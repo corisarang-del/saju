@@ -999,6 +999,27 @@
 - P3: 캐릭터 카드 표면이 이미지 카드+흰 하단 영역으로 약간 평평해 보인다. outer/inner radius 계층, 약한 tinted shadow, inner highlight로 물성을 보강하면 더 프리미엄해진다.
 - 개발자 전달 문서: `docs/pm/다른디자인스킬-배포웹사이트-프리미엄마감-개발자전달-20260724.md`.
 
+## 2026-07-24 배포웹사이트 프리미엄마감 수정후재리뷰 Findings
+- `design-taste-frontend`는 사용하지 않고 `high-end-visual-design`, `minimalist-ui`, `redesign-existing-projects` 기준으로 production을 재리뷰했다.
+- 최신 production 기준 릴리즈 차단급 디자인 이슈는 없다.
+- 해결됨: PC 1280x720 `/ko` 첫 진입에서 `scrollLeft=0`이고 7초 뒤에도 첫 가시 카드가 `현우`로 유지된다.
+- 해결됨: PC 1280x720 `/ko`에서 가시 카드 bottom은 `622px`, `대화하기` 텍스트 bottom은 `603px`으로 viewport height `720px` 안에 안정적으로 들어온다.
+- 해결됨: 모바일 390x844 `/ko`는 `현우` 시작, H1 줄바꿈 안정, CTA bottom `736px`으로 하단 탭 위에 보인다.
+- 해결 유지: 모바일 390x844 `/ko/reading`의 placeholder 대비와 하단 `다음` CTA bottom `812px`은 안정적이다.
+- `/ko`, `/ko/reading` console error/warning은 0건이고 가로 오버플로우도 없다.
+- 남은 P2: PC 1366x768 첫 화면에서는 이름은 보이나 `대화하기` CTA가 viewport 밖이다. 일반 노트북 해상도까지 CTA 발견성을 확장해야 한다.
+- 남은 P3: 보라색 accent hierarchy는 개선됐지만 CTA와 배지/진행바 같은 보조 상태의 강도 구분을 더 정리하면 좋다.
+- 개발자 전달 문서: `docs/pm/배포웹사이트-프리미엄마감-수정후재리뷰-20260724.md`.
+
+## 2026-07-24 배포웹사이트 프리미엄마감 수정후재리뷰 반영
+- PC 1366x768 첫 화면에서 현우 카드 CTA가 fold 밖으로 밀리던 P2를 수정했다.
+- low-height PC 보정 기준을 `max-height:760px`에서 `max-height:800px`로 확장해 1366x768 일반 노트북 높이에도 적용되게 했다.
+- low-height 카드 폭은 `236px`, hero top padding은 `pt-3`, H1은 `2.25rem`으로 압축했다.
+- 캐릭터 서비스 배지는 `#6f5f74`, active dot은 `#8b778e`, reading progress는 `#d8c9d9`로 낮춰 primary CTA 중심의 보라색 위계를 유지했다.
+- Playwright 로컬 측정: 1366x768 CTA bottom `512.38`, 하단 여유 `255.63`; 1280x720 CTA bottom `512.38`, 하단 여유 `207.63`; 390x844 CTA bottom `615.94`, 하단 여유 `228.06`. 세 viewport 모두 `scrollLeft=0`, active dot `0`, overflowX `0`.
+- 검증: focused design regression, 전체 vitest, tsc, eslint, Next production build 통과.
+- 상세 문서: `docs/개발일지/배포웹사이트-프리미엄마감-수정후재리뷰-문서화-메모리저장-20260724.md`.
+
 ## 2026-07-24 다른 디자인 스킬 기준 프리미엄마감 반영
 - `high-end-visual-design`, `minimalist-ui`, `redesign-existing-projects` 기준으로 홈 캐릭터 카드와 `/ko/reading` 입력 흐름을 수정했다.
 - 캐릭터 카드 low-height PC 대응은 `244px` 폭, `7/8` 이미지 비율, quote 숨김으로 더 압축해 CTA 여유를 확보했다.

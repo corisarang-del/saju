@@ -206,24 +206,37 @@ describe("design_audit_regression", () => {
     const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
     const landing = readProjectFile("src/app/[locale]/page.tsx");
 
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-3");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pb-1");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[7/8]");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5");
-    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-4");
-    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]");
-    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:pt-3");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:pb-1");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:aspect-[7/8]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:p-2.5");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:pt-3");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:text-[2.25rem]");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:mt-2");
+    expect(characterCards).not.toContain("max-height:760px");
+    expect(landing).not.toContain("max-height:760px");
   });
 
   it("keeps_pc_720h_character_action_area_with_breathing_room", () => {
     const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
 
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[244px]");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[7/8]");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:hidden");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-2");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:auto-cols-[236px]");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:aspect-[7/8]");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:hidden");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:p-2.5");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:mt-1.5");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:pt-2");
+  });
+
+  it("keeps_pc_768h_character_cta_visible_on_common_laptop_height", () => {
+    const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:auto-cols-[236px]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:aspect-[7/8]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:hidden");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:pt-3");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:800px)]:text-[2.25rem]");
   });
 
   it("keeps_landing_character_cards_as_premium_double_bezel_surfaces", () => {
@@ -242,11 +255,12 @@ describe("design_audit_regression", () => {
     const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
     const landing = readProjectFile("src/app/[locale]/page.tsx");
 
-    expect(characterCards).toContain("i === activeIndex ? \"w-6 bg-[#7b5d87]\"");
-    expect(characterCards).toContain("bg-white/90 text-[var(--character-accent)] ring-1 ring-white/70");
+    expect(characterCards).toContain("i === activeIndex ? \"w-6 bg-[#8b778e]\"");
+    expect(characterCards).toContain("bg-white/90 text-[#6f5f74] ring-1 ring-white/70");
     expect(characterCards).toContain("bg-[#6f3f93] text-white");
     expect(characterCards).not.toContain("bg-purple-700");
     expect(characterCards).not.toContain("text-white shadow-lg");
+    expect(characterCards).not.toContain("--character-accent");
     expect(landing).toContain("text-[#6f5f74]");
     expect(landing).toContain("text-[#76607b]");
     expect(landing).not.toContain("text-purple-800");
@@ -258,7 +272,7 @@ describe("design_audit_regression", () => {
     const concern = readProjectFile("src/components/saju/input/ConcernSelector.tsx");
 
     expect(reading).toContain("bg-[#eee8df]");
-    expect(reading).toContain("bg-[#c7b2d2]");
+    expect(reading).toContain("bg-[#d8c9d9]");
     expect(reading).toContain("border-[#eadfe8] bg-[#fbf7f1]");
     expect(reading).not.toContain("border border-purple-100 bg-purple-50");
     expect(birthForm).toContain("border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]");

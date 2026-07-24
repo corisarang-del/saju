@@ -170,7 +170,7 @@ export default function ReadingPage() {
             </div>
             <div className="w-full h-1.5 bg-[#eee8df] rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-[#c7b2d2] rounded-full"
+                className="h-full bg-[#d8c9d9] rounded-full"
                 initial={{ width: 0 }}
                 animate={{
                   width: `${(currentProgress / totalSteps) * 100}%`,
