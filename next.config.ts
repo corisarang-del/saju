@@ -68,6 +68,7 @@ const nextConfig: NextConfig = {
               "connect-src 'self' https://*.supabase.co https://accounts.google.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.paddle.com https://*.profitwell.com",
               "frame-src 'self' https://accounts.google.com https://*.paddle.com https://buy.paddle.com",
               "frame-ancestors 'self'",
+              "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
             ].join("; "),

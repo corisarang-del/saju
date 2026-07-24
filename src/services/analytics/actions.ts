@@ -321,7 +321,7 @@ export async function getBehaviorData(from: string, to: string) {
     charon_m: "현우 (종합분석)",
     charon_f: "하나 (궁합분석)",
     minjun: "민준 (재물분석)",
-    haeun: "하은 (운세분석)",
+    haeun: "인영 (운세분석)",
     doctor: "현우 (레거시)",
   };
 

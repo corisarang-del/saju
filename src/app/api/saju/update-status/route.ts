@@ -28,14 +28,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { data: updatedReading, error } = await supabase
     .from('saju_readings')
     .update({ status: status, updated_at: new Date().toISOString() })
     .eq('id', readingId)
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     return NextResponse.json({ error: 'Failed to update status' }, { status: 500 });
+  }
+
+  if (!updatedReading) {
+    return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });

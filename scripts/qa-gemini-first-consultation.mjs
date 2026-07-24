@@ -40,7 +40,7 @@ const cases = [
   {
     id: "burnout",
     label: "번아웃",
-    character: "하은",
+    character: "인영",
     userName: "지우",
     concern: "요즘 계속 지치고 의욕이 떨어져. 내 흐름에서 지금 쉬어야 하는지 알고 싶어.",
     expectedKeywords: ["지침", "휴식", "흐름"],

@@ -14,6 +14,14 @@ const REQUIRED_ENV_KEYS = [
 const GOOGLE_AI_ENV_KEYS = ["GOOGLE_GENERATIVE_AI_API_KEY"];
 const GOOGLE_VERTEX_ENV_KEYS = ["GOOGLE_VERTEX_PROJECT", "GOOGLE_VERTEX_LOCATION"];
 const GOOGLE_VERTEX_RUNTIME_AUTH_KEY = "GOOGLE_VERTEX_RUNTIME_AUTH";
+const GOOGLE_VERTEX_RUNTIME_AUTH_VALUES = [
+  "adc",
+  "service-account",
+  "service-account-json",
+  "workload-identity",
+  "vercel-oidc",
+  "wif",
+];
 
 const PADDLE_ENV_KEYS = [
   "PADDLE_API_KEY",
@@ -104,8 +112,14 @@ function hasVertexWorkloadIdentity(env) {
     && !isPlaceholderValue(env.GOOGLE_VERTEX_SERVICE_ACCOUNT_EMAIL);
 }
 
+function hasExplicitVertexRuntimeAuth(env) {
+  const value = String(env.GOOGLE_VERTEX_RUNTIME_AUTH ?? "").trim().toLowerCase();
+  return GOOGLE_VERTEX_RUNTIME_AUTH_VALUES.includes(value);
+}
+
 function hasVertexRuntimeAuth(env) {
-  return !isPlaceholderValue(env.GOOGLE_APPLICATION_CREDENTIALS)
+  return hasExplicitVertexRuntimeAuth(env)
+    || !isPlaceholderValue(env.GOOGLE_APPLICATION_CREDENTIALS)
     || hasVertexServiceAccountPair(env)
     || hasVertexCredentialsJson(env)
     || hasVertexWorkloadIdentity(env);
@@ -202,12 +216,14 @@ module.exports = {
   GOOGLE_AI_ENV_KEYS,
   GOOGLE_VERTEX_ENV_KEYS,
   GOOGLE_VERTEX_RUNTIME_AUTH_KEY,
+  GOOGLE_VERTEX_RUNTIME_AUTH_VALUES,
   PADDLE_ENV_KEYS,
   APP_ORIGIN_ENV_KEY,
   RATE_LIMIT_BACKEND_ENV_KEY,
   PAYMENTS_DISABLED_FREE_BETA_KEY,
   FORBIDDEN_PUBLIC_SECRET_KEYS,
   getAiProvider,
+  hasExplicitVertexRuntimeAuth,
   hasVertexRuntimeAuth,
   isPlaceholderValue,
   validateEnv,

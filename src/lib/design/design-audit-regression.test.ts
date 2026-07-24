@@ -193,6 +193,19 @@ describe("design_audit_regression", () => {
     expect(content).toContain("pt-3 md:pt-8 pb-2 md:pb-6");
   });
 
+  it("keeps_pc_720h_character_name_line_above_the_fold_when_cookie_banner_is_visible", () => {
+    const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-3");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pb-1");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[3/4]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-3");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-4");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]");
+    expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
+  });
+
   it("prevents_pc_landing_h1_widow_line_breaks_with_a_wider_measure_and_balanced_wrap", () => {
     const content = readProjectFile("src/app/[locale]/page.tsx");
 

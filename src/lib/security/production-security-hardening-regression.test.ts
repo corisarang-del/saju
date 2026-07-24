@@ -20,6 +20,7 @@ describe("production_security_hardening_regression", () => {
     const config = readProjectFile("next.config.ts");
 
     expect(config).toContain("\"frame-ancestors 'self'\"");
+    expect(config).toContain("\"object-src 'none'\"");
     expect(config).not.toContain("frame-ancestors 'self' https://*.paddle.com");
     expect(config).not.toContain("'unsafe-eval'");
     expect(config).toContain("frame-src 'self' https://accounts.google.com https://*.paddle.com https://buy.paddle.com");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTER_LIST, CHARACTERS } from "./characters";
+import { CHARACTER_LIST, CHARACTERS, getCharacter } from "./characters";
 
 describe("CHARACTER_LIST", () => {
   it("keeps_direct_characters_soft_enough_for_women_customers", () => {
@@ -149,5 +149,65 @@ describe("CHARACTER_LIST", () => {
     expect(content).not.toMatch(/위험 경고|미리 알아야 해|좀 위험|경고부터|위험한 건 먼저|겁주/);
     expect(content).not.toContain("이거 모르고 지나가면 나중에 후회할 수 있어");
     expect(content).toContain("직설적이어도 무례하게 말하지 마");
+  });
+
+  it("renames_haeun_to_inyoung_without_changing_the_stored_character_id", () => {
+    const inyoung = CHARACTERS.haeun;
+    const visibleNames = CHARACTER_LIST.map((character) => character.name);
+
+    expect(inyoung).toMatchObject({
+      id: "haeun",
+      name: "인영",
+      avatar: "/characters/haeun-premium.png",
+      cardImage: "/characters/haeun-premium.png",
+    });
+    expect(getCharacter("haeun").name).toBe("인영");
+    expect(visibleNames).toContain("인영");
+    expect(visibleNames).not.toContain("하은");
+    expect(inyoung.freePrompt).toContain("넌 '인영'이야");
+    expect(inyoung.paidPrompt).toContain("넌 '인영'이야");
+    expect(inyoung.freePrompt).not.toContain("넌 '하은'이야");
+    expect(inyoung.paidPrompt).not.toContain("넌 '하은'이야");
+  });
+
+  it("keeps_character_tone_profiles_structured_by_consultation_role", () => {
+    expect(CHARACTERS.charon_m.toneProfile.answerPattern).toEqual([
+      "핵심 판단",
+      "주의할 흐름",
+      "좋은 흐름",
+      "오늘 바로 할 행동",
+    ]);
+    expect(CHARACTERS.charon_f.toneProfile.preferredPhrases).toEqual(
+      expect.arrayContaining(["마음의 속도", "대화 온도", "표현 방식"]),
+    );
+    expect(CHARACTERS.minjun.toneProfile.answerPattern).toEqual(
+      expect.arrayContaining(["돈이 새는 구멍", "이번 달 관리 기준"]),
+    );
+    expect(CHARACTERS.haeun.toneProfile.answerPattern).toEqual(
+      expect.arrayContaining(["좋은 시기", "피하면 좋은 시기", "미리 준비할 것"]),
+    );
+    expect(CHARACTERS.jian.toneProfile.answerPattern).toEqual(
+      expect.arrayContaining(["다시 잡아도 되는지", "연락하거나 멈출 기준"]),
+    );
+    expect(CHARACTERS.seojun.toneProfile.answerPattern).toEqual(
+      expect.arrayContaining(["지금 버틸 조건", "움직여도 되는 조건"]),
+    );
+    expect(CHARACTERS.doyun.toneProfile.answerPattern).toEqual(
+      expect.arrayContaining(["사람/돈/시기 리스크", "확장 또는 보류 기준"]),
+    );
+  });
+
+  it("injects_character_tone_profiles_into_final_prompts_without_pressure_words", () => {
+    const finalPrompts = CHARACTER_LIST.map((character) =>
+      [character.name, character.freePrompt, character.paidPrompt].join("\n"),
+    ).join("\n");
+
+    expect(finalPrompts).toContain("## 캐릭터별 답변 구조");
+    expect(finalPrompts).toContain("좋은 시기 → 피하면 좋은 시기 → 미리 준비할 것");
+    expect(finalPrompts).toContain("다시 만나도 덜 다칠 조건");
+    expect(finalPrompts).toContain("버틸 조건");
+    expect(finalPrompts).toContain("현금흐름");
+    expect(finalPrompts).not.toContain("하은");
+    expect(finalPrompts).not.toMatch(/돈 냄새|놓치면 안 돼|무조건|반드시|위험 경고|이 날 놓치면/);
   });
 });

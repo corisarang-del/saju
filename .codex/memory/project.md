@@ -54,6 +54,22 @@
 - TRD: `docs/planning/02-trd.md`
 - 화면 구성: `docs/planning/06-screens.md`
 
+## 2026-07-24 운영 배포 보안 재점검
+- 대상 운영 URL은 `https://monthlysaju.vercel.app/`이다.
+- `codex-security`는 제외하고 `security-review`, OWASP IDOR/API1 BOLA, Supabase RLS 공식 문서, Paddle webhook signature 공식 문서, MDN Observatory 기준으로 재점검했다.
+- 공개 파일 `.env`, `.git/config`, `package.json`은 404이고 공개 HTML에서 service role, Paddle secret, Google AI key, AWS key, DB URL 패턴은 발견하지 못했다.
+- OAuth PKCE cookie는 `Secure`, `HttpOnly`, `Max-Age=600`, `SameSite=Lax`로 개선됐다.
+- `x-powered-by`는 노출되지 않고, CSP에서 `unsafe-eval` 제거, `frame-ancestors 'self'`, COOP/CORP/HSTS 적용이 확인됐다.
+- MDN Observatory는 `B+ / 80`, 실패 1개이며 잔여 실패는 CSP `unsafe-inline`이다.
+- 운영 Supabase linked DB에서 대상 10개 테이블 RLS enabled를 확인했다.
+- 민감 RPC는 `postgres`, `service_role`에만 EXECUTE가 있고 `anon`/`authenticated`에는 열려 있지 않다.
+- 운영 URL 기준 `pnpm qa:live-api:free`와 `pnpm qa:live-api`는 통과했다.
+- authenticated IDOR QA에서 `preview`, `analyze`, `deduct-stars`, `chat`, `pdf`는 타인 리딩 접근 시 404로 막혔다.
+- `update-status`는 타인 리딩에 대해 200 no-op을 반환하지만 실제 owner row는 변경되지 않아 P3로 남겼다.
+- Paddle signed webhook QA는 로컬 QA secret으로 서명한 정상 payload도 운영 endpoint에서 401이 나와 결제 재오픈 차단 이슈다.
+- `QA_BASE_URL=https://monthlysaju.vercel.app pnpm run release:gate`는 코드/테스트/빌드까지 통과했지만 `GOOGLE_VERTEX_RUNTIME_AUTH` production env 검사에서 실패했다.
+- 개발자 전달 문서: `docs/pm/운영배포-보안재점검-Paddle-webhook-env-개발자전달-20260724.md`
+
 ## 현재 제품 방향
 - 가입 전 신뢰 형성이 중요하다.
 - 랜딩에 결과 샘플과 가격 기준을 바로 보여준다.
@@ -828,3 +844,62 @@
 - 남은 P2: `/ko/reading` 시간 선택 placeholder 대비가 날짜 입력보다 살짝 약하므로 한 단계 보강하면 좋다.
 - 남은 P3: PC 1280px 전후 캐러셀 왼쪽 peek/fade 존재감을 조금 더 낮추면 사이드바 옆 시선 걸림이 줄어든다.
 - 개발자 전달 문서: `docs/pm/배포반영후-PC-폰-디자인개선-최종재리뷰-20260724.md`.
+
+## 2026-07-24 현우 카드 이름클리핑 디자인 재리뷰 Findings
+- 사용자 PC에서 `현우` 카드 이름이 짤려 보인다는 제보는 production에서 실제 재현됐다.
+- 1280x720 `/ko` 첫 화면 기준 `현우` 이름 영역은 `y=709`, `height=28`, `bottom=737`이고 viewport height는 `720`이라 약 41%만 보인다.
+- 1366x768에서는 같은 이름 영역이 viewport 안에 온전히 들어오므로, 핵심 원인은 낮은 PC 높이에서 상단 쿠키 배너/헤더/히어로/카드 높이가 누적되는 것이다.
+- 이 문제는 `현우` 텍스트 자체의 카드 내부 clipping이 아니라 카드 이름 라인이 fold 아래로 밀리는 레이아웃 문제다.
+- 모바일 홈 H1/CTA, `/ko/reading` 시간 placeholder/하단 CTA 개선은 유지 확인됐다. `/ko`, `/ko/reading` console error/warning은 0건이다.
+- 개발자 전달 문서: `docs/pm/현우카드-이름클리핑-디자인재리뷰-20260724.md`.
+
+## 2026-07-24 캐릭터 인영 변경과 말투 차별화
+- PM 판단으로 `하은`은 `인영`으로 변경하는 방향이 좋다.
+- 단, 내부 id `haeun`은 유지한다. 기존 채팅/리딩/analytics/URL 호환 때문에 표시명과 프롬프트 자기소개만 `인영`으로 바꾸는 게 안전하다.
+- 상담사 말투는 공통 안전장치 때문에 평준화될 수 있으므로 캐릭터별 `답변 구조`, `선호 표현`, `금지 표현`, `마지막 질문 방식`을 분리해야 한다.
+- 톤 방향: 현우는 차분한 직설, 하나는 감정 번역, 민준은 생활 돈관리, 인영은 시기/월운/준비 행동, 지안은 재회 조건과 경계선, 서준은 커리어 선택 기준, 도윤은 사업 조건/리스크 중심.
+- 개발자 전달 문서: `docs/pm/캐릭터-하은-인영-변경-말투차별화-개발자전달-20260724.md`.
+
+## 2026-07-24 운영배포 Paddle webhook/env 보안재점검 반영
+- Paddle signed webhook 정합성은 코드만으로 닫지 않고 `qa:paddle-webhook:signed` live QA로 운영 Secret 일치, 성공/실패/중복/구독 상태 전이를 검증한다.
+- 결제 포함 재오픈 게이트는 `release:gate:payments:live`를 기준으로 하며, 기존 코드/빌드/audit/env 검사 뒤 signed webhook QA까지 통과해야 한다.
+- Vercel Vertex WIF/OIDC 운영 정책은 `GOOGLE_VERTEX_RUNTIME_AUTH=vercel-oidc`를 명시 허용값으로 둔다. 임의 문자열은 허용하지 않는다.
+- `update-status`는 소유 row가 실제로 갱신되지 않으면 404를 반환해 타인 리소스 no-op 200을 없앤다.
+- CSP는 우선 `object-src 'none'`를 추가했고, `unsafe-inline` 제거는 nonce/hash 전환 작업으로 분리한다.
+
+## 2026-07-24 인영 리브랜딩 구현
+- `haeun` 내부 id와 `/characters/haeun-premium.png` asset path는 유지하고 유저 노출명과 prompt 자기소개만 `인영`으로 변경했다.
+- `인영`은 시간의 길잡이, 월운/시기/길일을 달 단위로 차분히 정리하는 상담사다.
+- 캐릭터성은 `toneProfile` 구조로 관리한다. 답변 순서, 선호 표현, 피할 표현, 마지막 질문 방식을 캐릭터별로 분리해 공통 안전장치에 묻히지 않게 한다.
+- QA runner의 번아웃 캐릭터도 `인영`으로 바꿨고, 기존 `haeun` 경로와 저장 데이터는 그대로 호환된다.
+
+## 2026-07-24 현우 카드 이름 클리핑 보정
+- PC 1280x720처럼 높이가 낮은 첫 화면에서 캐릭터 이름 라인이 fold 아래로 밀리는 문제를 height-aware CSS로 보정했다.
+- `@media (min-width:1024px) and (max-height:760px)` 조건에서 홈 hero 여백/H1/문단 간격을 압축하고 캐릭터 카드 이미지를 `aspect-[3/4]`로 낮춘다.
+- 모바일 카드 CTA 도달성, PC 캐러셀 edge fade, `/ko/reading` placeholder 보정은 유지한다.
+- Playwright 1280x720 로컬 측정에서 `현우` 이름은 `top=563.25`, `bottom=591.25`, `viewportHeight=720`, `fullyVisible=true`였다.
+
+## 2026-07-24 20대 여성 유저 production정상화/디자인보안 후속수정 재리뷰
+- 소스코드는 수정하지 않고 최근 2026-07-24 개발일지/PM 문서/QA/메모리와 `/ko`, `/ko/reading` Playwright 스냅샷으로 유저 관점 재리뷰를 진행했다.
+- 점수는 무료 상담형 베타 제품 경험 9.7/10, production 운영 신뢰 9.6/10, 결제 재오픈 포함 완성도 9.3/10, 종합 9.6/10으로 판단했다.
+- 좋아진 점: production Google 로그인과 상담이 정상 확인됐고, 무료/전체 live API QA가 실제 user/reading/transaction 기준으로 통과했다. 이전 Supabase DNS/API 미완료 blocker는 해소됐다.
+- 무료 베타 문구 충돌도 많이 정리됐다. 푸터는 `지금은 무료 상담 베타로 운영 중입니다.`, JSON-LD는 결제 가능 암시를 줄였고, 채팅 disabled placeholder는 `무료 베타 상담 횟수를 모두 사용했어`로 바뀌었다.
+- 사이드바 `대화 기록을저장하고` 붙어 읽힘은 스냅샷 기준 `대화 기록을 저장하고`로 해결됐다.
+- 디자인은 모바일 H1 단어 중간 줄바꿈, 첫 카드 CTA 가시성, `/ko/reading` 입력폼 대비, 하단 CTA 안정성이 개선됐고, production 콘솔 0건 문서가 있다.
+- 보안은 OAuth origin, PKCE cookie, x-powered-by 제거, CSP `unsafe-eval` 제거, COOP/CORP, RLS/RPC, IDOR QA가 정리되어 무료 베타 공개 운영 기준 신뢰도가 높아졌다.
+- 남은 유저/브랜드 이슈: `하은→인영`은 PM 방향만 문서화됐고 실제 화면/코드에는 아직 `하은`이 남아 있다. `src/lib/saju/characters.ts`, `src/services/analytics/actions.ts`도 하은 표기다.
+- 캐릭터 말투 차별화도 아직 방향 문서 수준에 가깝다. 상담사별 답변 구조/선호 표현/마지막 질문 방식이 실제 프롬프트와 QA에 더 반영되어야 한다.
+- 첫 상담 지연은 계속 관찰해야 한다. 문서상 무료 live API 약 55초, paid live API 약 110초 사례가 있어 20대 유저가 앱이 멈췄다고 느낄 수 있다.
+- 결제 재오픈 전에는 Paddle signed webhook 운영 정합성, `release:gate:payments:live`, CSP `unsafe-inline` 후속 제거를 닫아야 한다. 무료 베타에서는 결제를 계속 닫는 판단이 맞다.
+- 상세 문서: `docs/개발일지/20대-여성관점-production정상화-디자인보안-후속수정-재리뷰-20260724.md`.
+
+## 2026-07-24 20대 여성 소비자 관점 분위기/유료사용의향 재리뷰
+- 소스코드는 수정하지 않고, 최신 개발일지/메모리/구현 기록을 바탕으로 20대 여성 소비자 관점에서 분위기와 결제 의향을 다시 정리했다.
+- 전체 분위기는 겁주는 운세앱보다 조용히 고민을 정리해주는 상담형 앱에 가까워졌고, 무료 베타 진입 장벽은 낮다.
+- 무료 3회 상담은 바로 써볼 의향이 높다. 무료 베타 사용 의향은 9.5/10으로 판단했다.
+- 첫 상담이 개인화되고 후속 질문에서 이전 맥락을 잘 기억하면 3,900원 정도의 1회성 스타터 결제 의향은 8.2/10까지 올라간다.
+- 월 9,900원 구독은 지금 바로 결제하기보다 며칠 써본 뒤 판단할 가능성이 크다. 현재 월 구독 의향은 6.8/10이다.
+- 월 구독 의향이 8점 이상으로 올라가려면 오늘피드, 월간 리포트, 이전 상담 기억, 반복 체크인처럼 매일/매주 다시 들어올 이유가 체감되어야 한다.
+- 유료 전환을 막는 핵심 요소는 첫 응답 지연, 캐릭터별 실제 답변 차별화 부족 가능성, 결제 준비 중 가격표 노출의 애매함, Paddle live gate 미완료다.
+- 개발자 우선순위는 첫 상담 로딩 단계 표시, 무료 3회 사용량 투명화, 캐릭터별 첫 문단/마지막 질문 차별화, 3,900원 스타터 우선 전환, 결제 재오픈 전 `qa:paddle-webhook:signed`와 `release:gate:payments:live` 통과다.
+- 상세 문서: `docs/개발일지/20대-여성-소비자관점-분위기-유료사용의향-재리뷰-20260724.md`.

@@ -116,6 +116,42 @@ describe("check_env", () => {
     });
   });
 
+  it("accepts_production_vertex_config_with_explicit_vercel_oidc_runtime_policy", () => {
+    expect(
+      validateEnv({
+        ...validVertexEnv,
+        REQUIRE_PRODUCTION_ENV: "true",
+        RATE_LIMIT_BACKEND: "supabase",
+        PAYMENTS_ENABLED: "false",
+        NEXT_PUBLIC_PAYMENTS_ENABLED: "false",
+        GOOGLE_VERTEX_RUNTIME_AUTH: "vercel-oidc",
+      }),
+    ).toEqual({
+      ok: true,
+      missing: [],
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
+  it("rejects_unknown_explicit_vertex_runtime_policy_values", () => {
+    expect(
+      validateEnv({
+        ...validVertexEnv,
+        REQUIRE_PRODUCTION_ENV: "true",
+        RATE_LIMIT_BACKEND: "supabase",
+        PAYMENTS_ENABLED: "false",
+        NEXT_PUBLIC_PAYMENTS_ENABLED: "false",
+        GOOGLE_VERTEX_RUNTIME_AUTH: "plain-text-key",
+      }),
+    ).toEqual({
+      ok: false,
+      missing: ["GOOGLE_VERTEX_RUNTIME_AUTH"],
+      optionalMissing: [],
+      forbiddenPublicKeys: [],
+    });
+  });
+
   it("reports_paddle_keys_only_when_paddle_env_check_is_required", () => {
     expect(validateEnv({ ...validEnv, REQUIRE_PADDLE_ENV: "true" })).toEqual({
       ok: false,

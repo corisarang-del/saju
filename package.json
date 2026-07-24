@@ -16,9 +16,11 @@
     "test:env": "node scripts/check-env.js",
     "qa:live-api:free": "QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs",
     "qa:live-api": "node scripts/qa-live-api-check.mjs",
+    "qa:paddle-webhook:signed": "node scripts/qa-paddle-webhook-check.mjs",
     "release:gate:code": "pnpm test:env && pnpm test && pnpm exec tsc --noEmit && pnpm lint && pnpm build && pnpm audit --prod --audit-level high",
     "release:gate": "pnpm release:gate:code && REQUIRE_PRODUCTION_ENV=true pnpm test:env && pnpm qa:live-api:free && pnpm qa:live-api",
-    "release:gate:payments": "REQUIRE_PRODUCTION_ENV=true REQUIRE_PADDLE_ENV=true pnpm test:env && pnpm test && pnpm exec tsc --noEmit && pnpm lint && pnpm build && pnpm audit --prod --audit-level high"
+    "release:gate:payments": "REQUIRE_PRODUCTION_ENV=true REQUIRE_PADDLE_ENV=true pnpm test:env && pnpm test && pnpm exec tsc --noEmit && pnpm lint && pnpm build && pnpm audit --prod --audit-level high",
+    "release:gate:payments:live": "pnpm release:gate:payments && pnpm qa:paddle-webhook:signed"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.29",

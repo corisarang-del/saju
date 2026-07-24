@@ -51,14 +51,14 @@ export default async function HomePage() {
     <SajuLayout currentReading={currentReading}>
       {/* 카드 + 이용방법 = 한 영역 */}
       <div className="bg-[radial-gradient(circle_at_top_left,#ede9fe_0,#f7f3ea_36%,#fffaf0_100%)]">
-        <div className="mx-auto max-w-5xl px-4 pt-7 md:pt-8">
+        <div className="mx-auto max-w-5xl px-4 pt-7 md:pt-8 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-4">
           <p className="text-sm font-semibold text-purple-800">먼저 챙겨주는 사주친구</p>
-          <h1 className="mt-3 max-w-[760px] text-balance text-[2rem] font-bold leading-[1.08] tracking-tight text-slate-950 md:text-[2.65rem]">
+          <h1 className="mt-3 max-w-[760px] text-balance text-[2rem] font-bold leading-[1.08] tracking-tight text-slate-950 md:text-[2.65rem] [@media_(min-width:1024px)_and_(max-height:760px)]:mt-2 [@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]">
             <span className="inline-block">캐릭터를 고르면</span>{" "}
             <span className="inline-block">오늘의 흐름부터</span>{" "}
             <span className="inline-block">먼저 정리해줄게</span>
           </h1>
-          <p className="mt-4 max-w-[680px] text-sm leading-6 text-slate-600">
+          <p className="mt-4 max-w-[680px] text-sm leading-6 text-slate-600 [@media_(min-width:1024px)_and_(max-height:760px)]:mt-2 [@media_(min-width:1024px)_and_(max-height:760px)]:leading-5">
             월간사주는 사주와 대화 기억을 바탕으로 아침, 중요한 선택 전, 관계가 흔들리는 순간에 바로 쓸 수 있는 조언을 건네.
           </p>
         </div>

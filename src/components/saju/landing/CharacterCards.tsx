@@ -70,7 +70,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
   }, [scrollTo, stopAutoScroll]);
 
   return (
-    <div className="pt-3 md:pt-8 pb-2 md:pb-6">
+    <div className="pt-3 md:pt-8 pb-2 md:pb-6 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-3 [@media_(min-width:1024px)_and_(max-height:760px)]:pb-1">
       <div className="mx-auto max-w-5xl overflow-hidden px-4 md:px-0 md:[mask-image:linear-gradient(to_right,transparent_0,transparent_64px,black_116px,black_calc(100%-28px),transparent_100%)]">
         <div
           ref={scrollRef}
@@ -196,7 +196,7 @@ function CharacterCard({
   const cardContent = (
     <div className="group rounded-[28px] overflow-hidden cursor-pointer bg-white border border-stone-200 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] hover:shadow-[0_26px_60px_-34px_rgba(15,23,42,0.55)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
       {/* 이미지 영역 — 고정 비율 */}
-      <div className="aspect-[5/6] md:aspect-[2/3] relative flex-shrink-0">
+      <div className="aspect-[5/6] md:aspect-[2/3] [@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[3/4] relative flex-shrink-0">
         <Image
           src={char.cardImage}
           alt={char.name}
@@ -217,7 +217,7 @@ function CharacterCard({
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         <div
-          className="absolute bottom-0 left-0 right-0 p-4"
+          className="absolute bottom-0 left-0 right-0 p-4 [@media_(min-width:1024px)_and_(max-height:760px)]:p-3"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
         >
           <h3 className="text-lg md:text-xl font-bold text-white">{char.name}</h3>

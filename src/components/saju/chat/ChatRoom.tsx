@@ -329,7 +329,7 @@ export default function ChatRoom({
                   ) : characterId === 'doyun' ? (
                     <>반가워. 나 <strong>{character.name}</strong>인데, 사업과 창업 시기를 같이 봐줄게. 아래 정보부터 알려줘.</>
                   ) : (
-                    <>보이네요.. <strong>{character.name}</strong>이에요. 2026년 운세를 펼쳐볼게요. 먼저 아래 정보를 알려주세요.</>
+                    <>안녕하세요, <strong>{character.name}</strong>이에요. 이번 달 흐름과 준비할 시기를 차분히 봐드릴게요. 먼저 아래 정보를 알려주세요.</>
                   )}
                 </div>
               </div>
@@ -425,7 +425,7 @@ export default function ChatRoom({
                 ) : characterId === 'minjun' ? (
                   <>좋아, 사주 봤어. 뭐가 궁금해?</>
                 ) : characterId === 'haeun' ? (
-                  <>사주 확인했어요. 궁금하신 점을 편하게 물어봐 주세요.</>
+                  <>사주 확인했어요. 이번 달 흐름이나 중요한 결정을 앞둔 시기를 편하게 물어봐 주세요.</>
                 ) : characterId === 'jian' ? (
                   <>사주 확인했어요. 궁금한 점 있으시면 편하게 말씀해 주세요.</>
                 ) : characterId === 'seojun' ? (

@@ -12,6 +12,10 @@ describe("release_gate_regression", () => {
     expect(route).toContain("isClientAllowedReadingStatus");
     expect(route).toContain("isPrivilegedReadingStatus");
     expect(route).toContain("status: 403");
+    expect(route).toContain(".select('id')");
+    expect(route).toContain(".maybeSingle()");
+    expect(route).toContain("if (!updatedReading)");
+    expect(route).toContain("Reading not found");
     expect(route).not.toContain(".update({ status, updated_at:");
   });
 
@@ -110,6 +114,11 @@ describe("release_gate_regression", () => {
       "REQUIRE_PRODUCTION_ENV=true REQUIRE_PADDLE_ENV=true pnpm test:env",
     );
     expect(scripts["release:gate:payments"]).toContain("pnpm audit --prod");
+    expect(scripts["qa:paddle-webhook:signed"]).toBe(
+      "node scripts/qa-paddle-webhook-check.mjs",
+    );
+    expect(scripts["release:gate:payments:live"]).toContain("pnpm release:gate:payments");
+    expect(scripts["release:gate:payments:live"]).toContain("pnpm qa:paddle-webhook:signed");
   });
 
   it("pins_next_to_a_release_without_known_high_production_advisories", () => {

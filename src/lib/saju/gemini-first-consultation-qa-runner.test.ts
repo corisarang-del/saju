@@ -15,7 +15,9 @@ describe("gemini_first_consultation_qa_runner", () => {
     expect(script).toContain("번아웃");
     expect(script).toContain("친구/가족관계");
     expect(script).toContain("사업/창업");
+    expect(script).toContain('character: "인영"');
     expect(script).toContain("도윤");
+    expect(script).not.toContain('character: "하은"');
     expect(script).toContain("generateText");
     expect(script).toContain("gemini-2.5-flash-lite");
     expect(script).toContain("docs\", \"qa");
