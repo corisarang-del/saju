@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { CHARACTER_LIST } from "@/lib/saju/characters";
@@ -56,7 +56,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
       <div className={`mx-auto max-w-5xl overflow-hidden px-4 md:px-0 ${carouselMaskClass}`}>
         <div
           ref={scrollRef}
-          className="grid grid-flow-col auto-cols-[62vw] md:auto-cols-[280px] [@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[252px] gap-3 md:gap-4 overflow-x-auto snap-x snap-mandatory scroll-ps-4 md:scroll-ps-0 px-0 scrollbar-hide"
+          className="grid grid-flow-col auto-cols-[62vw] md:auto-cols-[280px] [@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[244px] gap-3 md:gap-4 overflow-x-auto snap-x snap-mandatory scroll-ps-4 md:scroll-ps-0 px-0 scrollbar-hide"
         >
           {CHARACTER_LIST.map((char, index) => (
             <div key={char.id} className="snap-start md:snap-center max-w-[236px] md:max-w-none">
@@ -76,7 +76,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
             aria-label={`${i + 1}번째 상담사 보기`}
             aria-current={i === activeIndex ? "true" : undefined}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === activeIndex ? "w-6 bg-purple-700" : "w-1.5 bg-stone-300"
+              i === activeIndex ? "w-6 bg-[#7b5d87]" : "w-1.5 bg-stone-300"
             }`}
           />
         ))}
@@ -166,9 +166,12 @@ function CharacterCard({
   }, [closeLoginPrompt, showLoginPrompt]);
 
   const cardContent = (
-    <div className="group rounded-[28px] overflow-hidden cursor-pointer bg-white border border-stone-200 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] hover:shadow-[0_26px_60px_-34px_rgba(15,23,42,0.55)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
-      {/* 이미지 영역 — 고정 비율 */}
-      <div className="aspect-[5/6] md:aspect-[2/3] [@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[4/5] relative flex-shrink-0">
+    <div
+      className="group h-full cursor-pointer p-1.5 rounded-[30px] bg-white/55 ring-1 ring-white/75 shadow-[0_22px_52px_-38px_rgba(91,76,58,0.42)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_28px_66px_-42px_rgba(91,76,58,0.52)]"
+      style={{ "--character-accent": char.color } as CSSProperties}
+    >
+      <div className="flex h-full flex-col rounded-[24px] overflow-hidden bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+      <div className="aspect-[5/6] md:aspect-[2/3] [@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[7/8] relative flex-shrink-0">
         <Image
           src={char.cardImage}
           alt={char.name}
@@ -181,15 +184,14 @@ function CharacterCard({
         />
         <div className="absolute top-3 left-3 z-[1]">
           <span
-            className="text-xs font-bold px-3 py-1.5 rounded-full text-white shadow-lg"
-            style={{ backgroundColor: char.color }}
+            className="text-xs font-bold px-3 py-1.5 rounded-full bg-white/90 text-[var(--character-accent)] ring-1 ring-white/70 shadow-[0_8px_20px_-16px_rgba(24,24,27,0.45)]"
           >
             {char.service}
           </span>
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         <div
-          className="absolute bottom-0 left-0 right-0 p-4 [@media_(min-width:1024px)_and_(max-height:760px)]:p-3"
+          className="absolute bottom-0 left-0 right-0 p-4 [@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
         >
           <h3 className="text-lg md:text-xl font-bold text-white">{char.name}</h3>
@@ -198,8 +200,8 @@ function CharacterCard({
       </div>
 
       {/* 정보 영역 */}
-      <div className="p-2.5 md:p-4 [@media_(min-width:1024px)_and_(max-height:760px)]:p-3 flex flex-col flex-1">
-        <p className="hidden sm:block text-[13px] md:text-sm text-slate-600 italic leading-snug line-clamp-1 md:line-clamp-2">
+      <div className="p-2.5 md:p-4 [@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5 flex flex-col flex-1">
+        <p className="hidden sm:block [@media_(min-width:1024px)_and_(max-height:760px)]:hidden text-[13px] md:text-sm text-slate-600 italic leading-snug line-clamp-1 md:line-clamp-2">
           &ldquo;{char.quote}&rdquo;
         </p>
 
@@ -214,7 +216,7 @@ function CharacterCard({
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-2.5 md:pt-3 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-2 border-t border-stone-100 mt-auto">
+        <div className="flex items-center justify-between pt-2.5 md:pt-3 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-2 border-t border-[#eee7dd] mt-auto">
           {!isLoggedIn && (
             <span className="text-[11px] md:text-xs font-medium text-slate-500 flex flex-col gap-0.5">
               <span className="flex items-center gap-1">
@@ -223,10 +225,11 @@ function CharacterCard({
               <span>1별 = 메시지 1회</span>
             </span>
           )}
-          <span className={`text-xs font-bold bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-md transition-colors group-hover:bg-purple-600 ${isLoggedIn ? 'ml-auto' : ''}`}>
+          <span className={`text-xs font-bold bg-[#6f3f93] text-white px-3 py-1.5 rounded-lg shadow-[0_10px_20px_-14px_rgba(111,63,147,0.9)] transition-colors group-hover:bg-[#5f347f] ${isLoggedIn ? 'ml-auto' : ''}`}>
             대화하기
           </span>
         </div>
+      </div>
       </div>
     </div>
   );

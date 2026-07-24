@@ -998,3 +998,13 @@
 - P3: 보라색 accent가 버튼, 배지, 진행바, 하단 탭까지 넓게 반복돼 흔한 SaaS 톤으로 보일 수 있다. CTA/active state 중심으로 강도를 재배치한다.
 - P3: 캐릭터 카드 표면이 이미지 카드+흰 하단 영역으로 약간 평평해 보인다. outer/inner radius 계층, 약한 tinted shadow, inner highlight로 물성을 보강하면 더 프리미엄해진다.
 - 개발자 전달 문서: `docs/pm/다른디자인스킬-배포웹사이트-프리미엄마감-개발자전달-20260724.md`.
+
+## 2026-07-24 다른 디자인 스킬 기준 프리미엄마감 반영
+- `high-end-visual-design`, `minimalist-ui`, `redesign-existing-projects` 기준으로 홈 캐릭터 카드와 `/ko/reading` 입력 흐름을 수정했다.
+- 캐릭터 카드 low-height PC 대응은 `244px` 폭, `7/8` 이미지 비율, quote 숨김으로 더 압축해 CTA 여유를 확보했다.
+- 카드 표면은 outer shell + inner core double-bezel 구조, tinted diffuse shadow, inner highlight, warm hairline separator로 바꿨다.
+- 홈의 강한 보라색은 `대화하기` CTA 중심으로 두고, 서비스 배지/eyebrow/dot/reading progress는 muted lavender와 warm neutral로 낮췄다.
+- `/ko/reading` progress fill은 muted lavender, 선택 상태는 연한 보라 tint, primary CTA는 진한 보라로 위계를 분리했다.
+- Playwright 로컬 측정: 1280x720 CTA bottom `529.23`, 여유 `190.77px`, active dot 0, scrollLeft 0, overflowX 0. 390x844 CTA bottom `615.94`, 여유 `228.06px`, active dot 0, scrollLeft 0, overflowX 0. 7초 후에도 자동 이동 없음.
+- 검증: 디자인 회귀 테스트 24개, 전체 vitest 260개, tsc, eslint, 승인 경로 Next build 통과.
+- 상세 문서: `docs/개발일지/다른디자인스킬-배포웹사이트-프리미엄마감-반영-20260724.md`.

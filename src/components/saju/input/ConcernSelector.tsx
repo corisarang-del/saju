@@ -63,7 +63,7 @@ export default function ConcernSelector({
               onClick={() => toggle(concern.id)}
               className={`px-5 py-3 rounded-full text-base font-medium transition-colors ${
                 isSelected
-                  ? "bg-[#7c3aed] text-white"
+                  ? "bg-[#8c659f]/[0.10] text-[#5f347f] ring-1 ring-[#8c659f]/25"
                   : "bg-gray-100 text-[#191F28] hover:bg-gray-200"
               }`}
             >
@@ -81,7 +81,7 @@ export default function ConcernSelector({
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
+          className="w-full bg-[#6f3f93] hover:bg-[#5f347f] text-white rounded-xl py-4 text-lg font-semibold transition-colors"
         >
           분석 시작하기
         </button>

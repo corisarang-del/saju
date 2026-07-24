@@ -168,9 +168,9 @@ export default function ReadingPage() {
                 {currentProgress}/{totalSteps}
               </span>
             </div>
-            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-[#eee8df] rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-[#7c3aed] rounded-full"
+                className="h-full bg-[#c7b2d2] rounded-full"
                 initial={{ width: 0 }}
                 animate={{
                   width: `${(currentProgress / totalSteps) * 100}%`,
@@ -192,7 +192,7 @@ export default function ReadingPage() {
         {loginRequired && (
           <div
             role="alert"
-            className="mb-5 rounded-2xl border border-purple-100 bg-purple-50 px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(88,28,135,0.45)]"
+            className="mb-5 rounded-2xl border border-[#eadfe8] bg-[#fbf7f1] px-4 py-4 text-left shadow-[0_16px_40px_-32px_rgba(91,76,58,0.35)]"
           >
             <p className="text-sm font-semibold text-[#191F28]">
               로그인이 필요해.
@@ -205,7 +205,7 @@ export default function ReadingPage() {
               onClick={() => {
                 window.location.href = `/api/auth/google?next=${encodeURIComponent(loginNextPath)}`;
               }}
-              className="mt-3 w-full rounded-xl bg-[#7c3aed] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#6d28d9]"
+              className="mt-3 w-full rounded-xl bg-[#6f3f93] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#5f347f]"
             >
               Google로 로그인하고 분석 계속하기
             </button>

@@ -208,8 +208,8 @@ describe("design_audit_regression", () => {
 
     expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-3");
     expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pb-1");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[4/5]");
-    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-3");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[7/8]");
+    expect(characterCards).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-4");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]");
     expect(landing).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
@@ -218,10 +218,53 @@ describe("design_audit_regression", () => {
   it("keeps_pc_720h_character_action_area_with_breathing_room", () => {
     const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
 
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[252px]");
-    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-3");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:auto-cols-[244px]");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:aspect-[7/8]");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:hidden");
+    expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:p-2.5");
     expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:mt-2");
     expect(content).toContain("[@media_(min-width:1024px)_and_(max-height:760px)]:pt-2");
+  });
+
+  it("keeps_landing_character_cards_as_premium_double_bezel_surfaces", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("p-1.5 rounded-[30px] bg-white/55 ring-1 ring-white/75");
+    expect(content).toContain("rounded-[24px] overflow-hidden bg-white");
+    expect(content).toContain("shadow-[0_22px_52px_-38px_rgba(91,76,58,0.42)]");
+    expect(content).toContain("shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]");
+    expect(content).toContain("border-t border-[#eee7dd]");
+    expect(content).not.toContain("shadow-md");
+    expect(content).not.toContain("shadow-lg");
+  });
+
+  it("keeps_landing_accent_hierarchy_muted_outside_primary_ctas", () => {
+    const characterCards = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+    const landing = readProjectFile("src/app/[locale]/page.tsx");
+
+    expect(characterCards).toContain("i === activeIndex ? \"w-6 bg-[#7b5d87]\"");
+    expect(characterCards).toContain("bg-white/90 text-[var(--character-accent)] ring-1 ring-white/70");
+    expect(characterCards).toContain("bg-[#6f3f93] text-white");
+    expect(characterCards).not.toContain("bg-purple-700");
+    expect(characterCards).not.toContain("text-white shadow-lg");
+    expect(landing).toContain("text-[#6f5f74]");
+    expect(landing).toContain("text-[#76607b]");
+    expect(landing).not.toContain("text-purple-800");
+  });
+
+  it("keeps_reading_flow_progress_muted_while_primary_cta_stays_dominant", () => {
+    const reading = readProjectFile("src/app/[locale]/reading/page.tsx");
+    const birthForm = readProjectFile("src/components/saju/input/BirthDateForm.tsx");
+    const concern = readProjectFile("src/components/saju/input/ConcernSelector.tsx");
+
+    expect(reading).toContain("bg-[#eee8df]");
+    expect(reading).toContain("bg-[#c7b2d2]");
+    expect(reading).toContain("border-[#eadfe8] bg-[#fbf7f1]");
+    expect(reading).not.toContain("border border-purple-100 bg-purple-50");
+    expect(birthForm).toContain("border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]");
+    expect(birthForm).toContain("bg-[#6f3f93] hover:bg-[#5f347f]");
+    expect(concern).toContain("bg-[#8c659f]/[0.10] text-[#5f347f] ring-1 ring-[#8c659f]/25");
+    expect(concern).toContain("bg-[#6f3f93] hover:bg-[#5f347f]");
   });
 
   it("prevents_pc_landing_h1_widow_line_breaks_with_a_wider_measure_and_balanced_wrap", () => {

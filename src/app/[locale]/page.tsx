@@ -52,7 +52,7 @@ export default async function HomePage() {
       {/* 카드 + 이용방법 = 한 영역 */}
       <div className="bg-[radial-gradient(circle_at_top_left,#ede9fe_0,#f7f3ea_36%,#fffaf0_100%)]">
         <div className="mx-auto max-w-5xl px-4 pt-7 md:pt-8 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-4">
-          <p className="text-sm font-semibold text-purple-800">먼저 챙겨주는 사주친구</p>
+          <p className="text-sm font-semibold text-[#6f5f74]">먼저 챙겨주는 사주친구</p>
           <h1 className="mt-3 max-w-[760px] text-balance text-[2rem] font-bold leading-[1.08] tracking-tight text-slate-950 md:text-[2.65rem] [@media_(min-width:1024px)_and_(max-height:760px)]:mt-2 [@media_(min-width:1024px)_and_(max-height:760px)]:text-[2.35rem]">
             <span className="inline-block">캐릭터를 고르면</span>{" "}
             <span className="inline-block">오늘의 흐름부터</span>{" "}
@@ -65,7 +65,7 @@ export default async function HomePage() {
         <CharacterCards isLoggedIn={!!user} />
         <section className="mx-auto grid max-w-5xl gap-3 px-4 pt-2 md:grid-cols-[1.35fr_1fr]">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-5 shadow-[0_18px_45px_-32px_rgba(15,23,42,0.35)] backdrop-blur">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-purple-800">무료 맛보기 결과</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#76607b]">무료 맛보기 결과</p>
             <h2 className="mt-3 text-xl font-bold tracking-tight text-slate-950">오늘의 샘플 한 문단</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
               지금은 마음이 먼저 앞서기 쉬운 흐름이야. 특히 답장을 기다리거나 이직 결정을 미룰수록 생각이 더 커질 수 있어. 오늘은 결론을 내리기보다, 내가 원하는 조건을 세 줄로 적고 상대나 회사의 반응을 차분히 확인해봐. 네 사주는 감으로 밀어붙일 때보다 기준을 정해두고 움직일 때 훨씬 덜 흔들려.

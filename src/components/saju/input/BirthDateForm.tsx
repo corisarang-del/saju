@@ -163,7 +163,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={2010}
                 value={year}
                 onChange={(e) => handleYearChange(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-8 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-8 text-center text-lg placeholder:text-[#667085] focus:border-[#8c659f] focus:ring-1 focus:ring-[#8c659f] outline-none"
               />
               <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 년
@@ -185,7 +185,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={12}
                 value={month}
                 onChange={(e) => handleMonthChange(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#8c659f] focus:ring-1 focus:ring-[#8c659f] outline-none"
               />
               <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 월
@@ -207,7 +207,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
                 max={maxDay}
                 value={day}
                 onChange={(e) => setDay(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] outline-none"
+                className="w-full border border-gray-200 rounded-xl px-3 py-3 pr-7 text-center text-lg placeholder:text-[#667085] focus:border-[#8c659f] focus:ring-1 focus:ring-[#8c659f] outline-none"
               />
               <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#6B7280]">
                 일
@@ -257,7 +257,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setGender("male")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               gender === "male"
-                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
+                ? "border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -268,7 +268,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setGender("female")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               gender === "female"
-                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
+                ? "border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -291,7 +291,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setCalendar("solar")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               calendar === "solar"
-                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
+                ? "border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -302,7 +302,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
             onClick={() => setCalendar("lunar")}
             className={`h-12 rounded-xl border text-base font-medium transition-all ${
               calendar === "lunar"
-                ? "border-[#7c3aed] bg-[#7c3aed]/5 text-[#7c3aed]"
+                ? "border-[#8c659f] bg-[#8c659f]/[0.06] text-[#6f3f93]"
                 : "border-gray-200 text-[#191F28] hover:border-gray-300"
             }`}
           >
@@ -314,7 +314,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
       {/* 다음 버튼 */}
       <button
         type="submit"
-        className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl py-4 text-lg font-semibold transition-colors mt-2"
+        className="w-full bg-[#6f3f93] hover:bg-[#5f347f] text-white rounded-xl py-4 text-lg font-semibold transition-colors mt-2"
       >
         다음
       </button>
