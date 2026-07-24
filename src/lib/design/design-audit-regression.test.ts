@@ -175,8 +175,8 @@ describe("design_audit_regression", () => {
     expect(content).toContain("max-w-5xl");
     expect(content).toContain("md:px-0");
     expect(content).toContain("md:[mask-image:linear-gradient");
-    expect(content).toContain("transparent_48px");
-    expect(content).toContain("black_88px");
+    expect(content).toContain("transparent_64px");
+    expect(content).toContain("black_116px");
     expect(content).toContain("scroll-ps-4 md:scroll-ps-0");
     expect(content).toContain("snap-start md:snap-center");
   });
@@ -208,7 +208,8 @@ describe("design_audit_regression", () => {
     const content = readProjectFile("src/components/saju/input/BirthDateForm.tsx");
 
     expect(content).toContain("placeholder:text-[#667085]");
-    expect(content).toContain("data-[placeholder]:text-[#667085]");
+    expect(content).toContain("data-[placeholder]:text-[#4E5968]");
+    expect(content).toContain("data-[placeholder]:font-medium");
     expect(content).toContain('placeholder="시간을 선택하세요 (선택)"');
     expect(content).toContain("text-[#4E5968]");
     expect(content).toContain("text-[#6B7280]");

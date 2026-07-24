@@ -71,7 +71,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
 
   return (
     <div className="pt-3 md:pt-8 pb-2 md:pb-6">
-      <div className="mx-auto max-w-5xl overflow-hidden px-4 md:px-0 md:[mask-image:linear-gradient(to_right,transparent_0,transparent_48px,black_88px,black_calc(100%-28px),transparent_100%)]">
+      <div className="mx-auto max-w-5xl overflow-hidden px-4 md:px-0 md:[mask-image:linear-gradient(to_right,transparent_0,transparent_64px,black_116px,black_calc(100%-28px),transparent_100%)]">
         <div
           ref={scrollRef}
           onMouseEnter={() => {

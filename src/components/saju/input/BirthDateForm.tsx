@@ -227,7 +227,7 @@ export default function BirthDateForm({ onSubmit }: BirthDateFormProps) {
           태어난 시간
         </Label>
         <Select value={time} onValueChange={setTime}>
-          <SelectTrigger className="h-12 rounded-xl border-gray-200 text-base text-[#191F28] data-[placeholder]:text-[#667085]">
+          <SelectTrigger className="h-12 rounded-xl border-gray-200 text-base text-[#191F28] data-[placeholder]:font-medium data-[placeholder]:text-[#4E5968]">
             <SelectValue placeholder="시간을 선택하세요 (선택)" />
           </SelectTrigger>
           <SelectContent>

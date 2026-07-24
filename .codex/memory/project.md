@@ -811,3 +811,20 @@
 - `deduct-stars`, `update-status`는 비인증 요청에 body/status 검증보다 먼저 401을 반환하도록 순서를 바꿨다.
 - metadata/JSON-LD URL은 `NEXT_PUBLIC_APP_URL` 기반으로 통일했고 fallback은 `https://monthlysaju.vercel.app`다.
 - authenticated IDOR, 운영 RLS/RPC, Paddle signed webhook 정합성은 실제 운영 계정/DB/provider payload가 필요한 별도 QA 범위로 남아 있다.
+
+## 2026-07-24 배포 반영 후 PC/폰 디자인 최종재리뷰 수정
+- 최신 production 기준 릴리즈 차단급 디자인 이슈는 없고, 남은 P2/P3 마감만 반영했다.
+- `/ko/reading` 시간 선택 placeholder는 `data-[placeholder]:text-[#4E5968]`, `data-[placeholder]:font-medium`으로 날짜 입력 대비와 더 맞췄다.
+- PC 홈 캐러셀 왼쪽 edge fade는 `transparent_64px`, `black_116px`로 넓혀 사이드바 옆 peek 존재감을 더 낮췄다.
+- 검증: 디자인 회귀 테스트, 전체 vitest, tsc, eslint, Next build 통과.
+
+## 2026-07-24 배포 반영 후 PC/폰 디자인 최종재리뷰 Findings
+- 최신 production `https://monthlysaju.vercel.app/ko`, `/ko/reading` 기준 릴리즈 차단급 디자인 이슈는 없다.
+- 해결됨: 모바일 홈 H1의 `고르면` 단어 중간 줄바꿈이 재현되지 않는다.
+- 해결됨: 모바일 홈 첫 카드 `대화하기` CTA가 하단 탭 위에서 온전히 보인다.
+- 해결됨: `/ko/reading` 하단 `다음` CTA가 하단 탭에 가려지지 않는다.
+- 해결됨: PC 홈 H1은 의미 단위 줄바꿈으로 안정적이고, 캐러셀은 오류가 아닌 의도된 peek 패턴으로 읽힌다.
+- 검증: PC 1280x720, 모바일 390x844 모두 가로 오버플로우 없음. `/ko`, `/ko/reading` production console error/warning 0건.
+- 남은 P2: `/ko/reading` 시간 선택 placeholder 대비가 날짜 입력보다 살짝 약하므로 한 단계 보강하면 좋다.
+- 남은 P3: PC 1280px 전후 캐러셀 왼쪽 peek/fade 존재감을 조금 더 낮추면 사이드바 옆 시선 걸림이 줄어든다.
+- 개발자 전달 문서: `docs/pm/배포반영후-PC-폰-디자인개선-최종재리뷰-20260724.md`.
