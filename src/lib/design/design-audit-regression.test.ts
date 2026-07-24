@@ -181,6 +181,14 @@ describe("design_audit_regression", () => {
     expect(content).toContain("snap-start md:snap-center");
   });
 
+  it("keeps_first_desktop_character_card_fully_visible_before_left_edge_fade_starts", () => {
+    const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
+
+    expect(content).toContain("activeIndex > 0");
+    expect(content).toContain("black_0,black_calc(100%-28px),transparent_100%");
+    expect(content).toContain("transparent_64px,black_116px");
+  });
+
   it("keeps_mobile_first_character_cta_reachable_above_the_fold", () => {
     const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
 

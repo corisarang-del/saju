@@ -15,6 +15,9 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoScrollStoppedRef = useRef(false);
   const autoScrollPausedRef = useRef(false);
+  const carouselMaskClass = activeIndex > 0
+    ? "md:[mask-image:linear-gradient(to_right,transparent_0,transparent_64px,black_116px,black_calc(100%-28px),transparent_100%)]"
+    : "md:[mask-image:linear-gradient(to_right,black_0,black_calc(100%-28px),transparent_100%)]";
 
   const stopAutoScroll = useCallback(() => {
     autoScrollStoppedRef.current = true;
@@ -71,7 +74,7 @@ export default function CharacterCards({ isLoggedIn = false }: CharacterCardsPro
 
   return (
     <div className="pt-3 md:pt-8 pb-2 md:pb-6 [@media_(min-width:1024px)_and_(max-height:760px)]:pt-3 [@media_(min-width:1024px)_and_(max-height:760px)]:pb-1">
-      <div className="mx-auto max-w-5xl overflow-hidden px-4 md:px-0 md:[mask-image:linear-gradient(to_right,transparent_0,transparent_64px,black_116px,black_calc(100%-28px),transparent_100%)]">
+      <div className={`mx-auto max-w-5xl overflow-hidden px-4 md:px-0 ${carouselMaskClass}`}>
         <div
           ref={scrollRef}
           onMouseEnter={() => {

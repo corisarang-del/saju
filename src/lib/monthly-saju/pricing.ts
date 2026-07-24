@@ -19,7 +19,13 @@ export interface StarPack {
 }
 
 export const STAR_PACKS: StarPack[] = [
-  { type: "stars10", stars: 10, price: 3900, badge: "스타터" },
+  {
+    type: "stars10",
+    stars: 10,
+    price: 2900,
+    badge: "스타터",
+    description: "무료 3회 뒤 조금 더 이어보고 싶을 때",
+  },
   { type: "stars30", stars: 30, price: 9900 },
   { type: "stars70", stars: 70, price: 19900, badge: "인기" },
   { type: "starsPremium", stars: 250, price: 39900, badge: "최고 가성비" },
@@ -28,9 +34,9 @@ export const STAR_PACKS: StarPack[] = [
 export const MONTHLY_MEMBERSHIP = {
   type: "monthlyMembership",
   name: "월간 멤버십",
-  stars: 40,
+  stars: 50,
   price: 9900,
-  description: "매월 40별 지급, 오늘피드/월간 리포트 우선 노출",
+  description: "매월 50별 지급, 오늘피드/월간 리포트 우선 노출",
 } as const;
 
 export const SUPPORT_CONTACT = {

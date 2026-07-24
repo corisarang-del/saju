@@ -22,35 +22,55 @@ describe("monthly_saju_pricing", () => {
     expect(FREE_SIGNUP_STARS).toBe(3);
   });
 
+  it("publishes_starter_price_as_2900_won", () => {
+    expect(STAR_PACKS.find((pack) => pack.type === "stars10")).toEqual({
+      type: "stars10",
+      stars: 10,
+      price: 2900,
+      badge: "스타터",
+      description: "무료 3회 뒤 조금 더 이어보고 싶을 때",
+    });
+  });
+
+  it("publishes_monthly_membership_with_50_stars", () => {
+    expect(MONTHLY_MEMBERSHIP).toEqual({
+      type: "monthlyMembership",
+      name: "월간 멤버십",
+      stars: 50,
+      price: 9900,
+      description: "매월 50별 지급, 오늘피드/월간 리포트 우선 노출",
+    });
+  });
+
   it("publishes_starter_existing_and_subscription_products", () => {
     expect(STAR_PACKS).toEqual([
-      { type: "stars10", stars: 10, price: 3900, badge: "스타터" },
+      {
+        type: "stars10",
+        stars: 10,
+        price: 2900,
+        badge: "스타터",
+        description: "무료 3회 뒤 조금 더 이어보고 싶을 때",
+      },
       { type: "stars30", stars: 30, price: 9900 },
       { type: "stars70", stars: 70, price: 19900, badge: "인기" },
       { type: "starsPremium", stars: 250, price: 39900, badge: "최고 가성비" },
     ]);
-    expect(MONTHLY_MEMBERSHIP).toEqual({
-      type: "monthlyMembership",
-      name: "월간 멤버십",
-      stars: 40,
-      price: 9900,
-      description: "매월 40별 지급, 오늘피드/월간 리포트 우선 노출",
-    });
   });
 
   it("uses_same_price_policy_for_landing_terms_jsonld_and_paddle_mapping", () => {
     expect(getPricingListItems()).toEqual([
-      "10개: 3,900원",
+      "10개: 2,900원",
       "30개: 9,900원",
       "70개: 19,900원",
       "250개: 39,900원",
-      "월간 멤버십: 월 9,900원, 매월 40별 지급",
+      "월간 멤버십: 월 9,900원, 매월 50별 지급",
     ]);
-    expect(buildPricingFaqAnswer()).toContain("별 10개 3,900원");
+    expect(buildPricingFaqAnswer()).toContain("별 10개 2,900원");
     expect(buildPricingFaqAnswer()).toContain("월간 멤버십은 월 9,900원");
+    expect(buildPricingFaqAnswer()).toContain("매월 별 50개");
     expect(buildProductJsonLd().offers).toEqual({
       "@type": "AggregateOffer",
-      lowPrice: "3900",
+      lowPrice: "2900",
       highPrice: "39900",
       priceCurrency: "KRW",
       offerCount: 5,
@@ -69,11 +89,11 @@ describe("monthly_saju_pricing", () => {
     );
 
     expect(paddleProducts).toEqual({
-      stars10: { amount: 3900, chatCredits: 10, name: "별 10개" },
+      stars10: { amount: 2900, chatCredits: 10, name: "별 10개" },
       stars30: { amount: 9900, chatCredits: 30, name: "별 30개" },
       stars70: { amount: 19900, chatCredits: 70, name: "별 70개" },
       starsPremium: { amount: 39900, chatCredits: 250, name: "별 250개" },
-      monthlyMembership: { amount: 9900, chatCredits: 40, name: "월간 멤버십" },
+      monthlyMembership: { amount: 9900, chatCredits: 50, name: "월간 멤버십" },
     });
   });
 

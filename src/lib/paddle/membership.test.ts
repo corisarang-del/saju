@@ -10,7 +10,7 @@ const products = {
   stars30: { productId: "pro_star_30", priceId: "pri_star_30", chatCredits: 30 },
   stars70: { productId: "pro_star_70", priceId: "pri_star_70", chatCredits: 70 },
   starsPremium: { productId: "pro_star_250", priceId: "pri_star_250", chatCredits: 250 },
-  monthlyMembership: { productId: "pro_monthly", priceId: "pri_monthly", chatCredits: 40 },
+  monthlyMembership: { productId: "pro_monthly", priceId: "pri_monthly", chatCredits: 50 },
 };
 
 function subscriptionEvent(

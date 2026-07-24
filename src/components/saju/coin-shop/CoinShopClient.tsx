@@ -23,7 +23,7 @@ export default function CoinShopClient({ totalCoins, userId, userEmail }: CoinSh
   const searchParams = useSearchParams();
   const isPaidRedirect = searchParams.get('paid') === 'true';
   const paymentsEnabled = areClientPaymentsEnabled();
-  const [selected, setSelected] = useState<ProductType>('stars70');
+  const [selected, setSelected] = useState<ProductType>('stars10');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(isPaidRedirect);

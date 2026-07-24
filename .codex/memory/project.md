@@ -903,3 +903,29 @@
 - 유료 전환을 막는 핵심 요소는 첫 응답 지연, 캐릭터별 실제 답변 차별화 부족 가능성, 결제 준비 중 가격표 노출의 애매함, Paddle live gate 미완료다.
 - 개발자 우선순위는 첫 상담 로딩 단계 표시, 무료 3회 사용량 투명화, 캐릭터별 첫 문단/마지막 질문 차별화, 3,900원 스타터 우선 전환, 결제 재오픈 전 `qa:paddle-webhook:signed`와 `release:gate:payments:live` 통과다.
 - 상세 문서: `docs/개발일지/20대-여성-소비자관점-분위기-유료사용의향-재리뷰-20260724.md`.
+
+## 2026-07-24 가격정책 스타터 2,900원 / 월구독 50별
+- PM 최종 정책으로 스타터는 `10별 2,900원`으로 낮춘다.
+- 월간 멤버십은 `월 9,900원 / 매월 50별 지급`으로 조정한다.
+- 가입 후 3회 무료, `1별 = 메시지 1회`, 30별 9,900원, 70별 19,900원, 250별 39,900원, 월간 리포트 3별, 종합 사주 백서 5별은 이번 지시에서는 유지한다.
+- 스타터는 30별 패키지보다 별 단가가 낮아지므로 첫 결제 1회 한정 또는 첫 결제용 포지셔닝이 필요하다.
+- 월 50별은 매일 1회 상담 30별 + 월간 리포트 3별 + 후속 질문 17별 구조로 설명하면 20대 여성 유저에게 월 9,900원 가치가 더 납득된다.
+- 개발자 전달 문서: `docs/pm/가격정책-스타터2900-월구독50별-개발자전달-20260724.md`.
+
+## 2026-07-24 가격정책 스타터 2,900원 / 월구독 50별 구현
+- 가격 source of truth인 `src/lib/monthly-saju/pricing.ts`에서 `stars10`을 `10별 2,900원`으로 낮췄다.
+- `MONTHLY_MEMBERSHIP.stars`는 `50`으로 조정했고 FAQ, JSON-LD, Paddle config mapping은 같은 상수에서 파생된다.
+- 코인샵 기본 선택 상품은 `stars10`으로 바꿔 첫 결제용 스타터 상품이 먼저 보이게 했다.
+- 검증: 가격/Paddle 타깃 테스트, 전체 vitest, tsc, eslint, Next production build 통과.
+- 남은 운영 작업: Paddle Dashboard와 Vercel production env의 실제 price id를 `2,900원 스타터`, `9,900원/50별 멤버십` 상품으로 교체한 뒤 signed webhook live QA를 다시 돌린다.
+
+## 2026-07-24 배포 현우카드 좌측 페이드 잘림 수정
+- 배포 스크린샷에서 현우 카드 왼쪽이 덜 보인 원인은 첫 카드에도 데스크톱 왼쪽 edge fade mask가 적용된 것이다.
+- `CharacterCards.tsx`에서 `activeIndex === 0`일 때는 mask를 `black_0`부터 시작하게 하고, `activeIndex > 0`일 때만 기존 `transparent_64px -> black_116px` 왼쪽 fade를 적용한다.
+- 1280x720 Playwright 측정에서 첫 위치 `scrollLeft=0`, `sidebarRight=240`, `imageLeft=249`, `mask=black_0...`로 확인했다.
+- 검증: 디자인 회귀 테스트, 전체 vitest, tsc, eslint, Next production build 통과.
+
+## 2026-07-24 가격정책/현우카드 수정 커밋 묶음
+- 이번 커밋 묶음은 가격 정책 변경과 배포 현우 카드 좌측 fade 수정, 관련 테스트/문서/메모리를 함께 포함한다.
+- 검증 기준은 전체 vitest 253개, tsc, eslint, Next production build 통과다.
+- 운영 반영 후에는 Vercel production에서 현우 카드 첫 상태와 Paddle price id 매핑을 다시 확인해야 한다.

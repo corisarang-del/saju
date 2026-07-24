@@ -8,7 +8,7 @@ const products = {
   stars30: { priceId: "pri_30", chatCredits: 30 },
   stars70: { priceId: "pri_70", chatCredits: 70 },
   starsPremium: { priceId: "pri_250", chatCredits: 250 },
-  monthlyMembership: { priceId: "pri_monthly", chatCredits: 40 },
+  monthlyMembership: { priceId: "pri_monthly", chatCredits: 50 },
 } as Record<ProductType, { priceId: string; chatCredits: number }>;
 
 function makeEvent(priceId: string, customProductType = "starsPremium"): PaddleWebhookPayload {
@@ -47,13 +47,13 @@ describe("paddle_credit_grant", () => {
     });
   });
 
-  it("grants_forty_stars_when_monthly_membership_price_is_paid", () => {
+  it("grants_fifty_stars_when_monthly_membership_price_is_paid", () => {
     expect(resolvePaddleCreditGrant(makeEvent("pri_monthly"), products)).toEqual({
       userId: "user_123",
       transactionId: "txn_123",
       productType: "monthlyMembership",
       priceId: "pri_monthly",
-      credits: 40,
+      credits: 50,
     });
   });
 
