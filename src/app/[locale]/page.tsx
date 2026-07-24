@@ -54,7 +54,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-5xl px-4 pt-7 md:pt-8">
           <p className="text-sm font-semibold text-purple-800">먼저 챙겨주는 사주친구</p>
           <h1 className="mt-3 max-w-[760px] text-balance text-[2rem] font-bold leading-[1.08] tracking-tight text-slate-950 md:text-[2.65rem]">
-            캐릭터를 고르면{" "}
+            <span className="inline-block">캐릭터를 고르면</span>{" "}
             <span className="inline-block">오늘의 흐름부터</span>{" "}
             <span className="inline-block">먼저 정리해줄게</span>
           </h1>

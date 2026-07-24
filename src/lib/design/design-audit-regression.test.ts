@@ -175,6 +175,8 @@ describe("design_audit_regression", () => {
     expect(content).toContain("max-w-5xl");
     expect(content).toContain("md:px-0");
     expect(content).toContain("md:[mask-image:linear-gradient");
+    expect(content).toContain("transparent_48px");
+    expect(content).toContain("black_88px");
     expect(content).toContain("scroll-ps-4 md:scroll-ps-0");
     expect(content).toContain("snap-start md:snap-center");
   });
@@ -182,10 +184,12 @@ describe("design_audit_regression", () => {
   it("keeps_mobile_first_character_cta_reachable_above_the_fold", () => {
     const content = readProjectFile("src/components/saju/landing/CharacterCards.tsx");
 
-    expect(content).toContain("auto-cols-[66vw]");
-    expect(content).toContain("max-w-[250px]");
-    expect(content).toContain("aspect-[4/5]");
-    expect(content).toContain("p-3 md:p-4");
+    expect(content).toContain("auto-cols-[62vw]");
+    expect(content).toContain("max-w-[236px]");
+    expect(content).toContain("aspect-[5/6]");
+    expect(content).toContain("p-2.5 md:p-4");
+    expect(content).toContain("hidden sm:block");
+    expect(content).toContain("pt-2.5 md:pt-3");
     expect(content).toContain("pt-3 md:pt-8 pb-2 md:pb-6");
   });
 
@@ -195,6 +199,7 @@ describe("design_audit_regression", () => {
     expect(content).toContain("max-w-[760px]");
     expect(content).toContain("text-balance");
     expect(content).toContain("md:text-[2.65rem]");
+    expect(content).toContain('<span className="inline-block">캐릭터를 고르면</span>');
     expect(content).toContain('<span className="inline-block">오늘의 흐름부터</span>');
     expect(content).toContain('<span className="inline-block">먼저 정리해줄게</span>');
   });
@@ -203,6 +208,8 @@ describe("design_audit_regression", () => {
     const content = readProjectFile("src/components/saju/input/BirthDateForm.tsx");
 
     expect(content).toContain("placeholder:text-[#667085]");
+    expect(content).toContain("data-[placeholder]:text-[#667085]");
+    expect(content).toContain('placeholder="시간을 선택하세요 (선택)"');
     expect(content).toContain("text-[#4E5968]");
     expect(content).toContain("text-[#6B7280]");
     expect(content).not.toContain("text-[#8B95A1]\">예:");

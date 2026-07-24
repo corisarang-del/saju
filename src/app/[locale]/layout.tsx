@@ -15,13 +15,17 @@ import { arePaymentsEnabled } from "@/lib/payments/feature-flag";
 
 import { ClientWidgets } from "@/components/shared/ClientWidgets";
 
+function getPublicAppUrl(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://monthlysaju.vercel.app").replace(/\/+$/, "");
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   await params;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://monthly-saju.com";
+  const baseUrl = getPublicAppUrl();
 
   return {
     title: {
@@ -114,6 +118,7 @@ export default async function LocaleLayout({
 
   const messages = await getMessages({ locale });
   const paymentsEnabled = arePaymentsEnabled();
+  const baseUrl = getPublicAppUrl();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -126,7 +131,7 @@ export default async function LocaleLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "월간사주",
-              url: "https://monthly-saju.com",
+              url: baseUrl,
               description:
                 "사주팔자와 대화 기억을 바탕으로 오늘의 선택과 월간 흐름을 먼저 챙겨주는 AI 사주 라이프 코치.",
               inLanguage: "ko",
@@ -141,7 +146,7 @@ export default async function LocaleLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "월간사주",
-              url: "https://monthly-saju.com",
+              url: baseUrl,
               contactPoint: {
                 "@type": "ContactPoint",
                 email: SUPPORT_CONTACT.email,

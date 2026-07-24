@@ -5,6 +5,11 @@ export const routing = defineRouting({
   locales: ["ko"],
   defaultLocale: "ko",
   localePrefix: "always",
+  localeCookie: {
+    name: "NEXT_LOCALE",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  },
 });
 
 // Lightweight wrappers around Next.js' navigation APIs

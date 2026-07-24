@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { hardenSupabaseCookieOptions } from "./cookie-options";
 import { getSupabaseConfig } from "./config";
 
 type EmptyQueryResult<T = null> = Promise<{ data: T; error: null }>;
@@ -93,7 +94,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, hardenSupabaseCookieOptions(name, options))
             );
           } catch {
             // The `setAll` method was called from a Server Component.

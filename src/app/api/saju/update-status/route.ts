@@ -6,6 +6,14 @@ import {
 } from '@/lib/saju/reading-status-policy';
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+
+  // 인증 확인
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { readingId, status } = await req.json();
 
   if (!readingId || !status) {
@@ -18,14 +26,6 @@ export async function POST(req: NextRequest) {
 
   if (!isClientAllowedReadingStatus(status)) {
     return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
-  }
-
-  const supabase = await createClient();
-
-  // 인증 확인
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { error } = await supabase

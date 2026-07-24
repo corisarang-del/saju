@@ -4,18 +4,18 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { REPORT_STAR_COST } from '@/lib/monthly-saju/star-deduction';
 
 export async function POST(req: NextRequest) {
-  const { readingId } = await req.json();
-
-  if (!readingId) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-  }
-
   const supabase = await createClient();
 
   // 인증 확인
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { readingId } = await req.json();
+
+  if (!readingId) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   const { data: reading } = await supabase

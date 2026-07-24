@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   allowedDevOrigins: [
     "carbon-generator-farms-initiated.trycloudflare.com",
     "equally-brochures-ratio-palestinian.trycloudflare.com",
@@ -44,6 +45,8 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-DNS-Prefetch-Control", value: "on" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
@@ -58,13 +61,13 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://*.paddle.com https://*.profitwell.com",
+              "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://*.paddle.com https://*.profitwell.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.paddle.com",
               "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.paddle.com https://*.profitwell.com",
               "font-src 'self' https://fonts.gstatic.com https://*.paddle.com",
               "connect-src 'self' https://*.supabase.co https://accounts.google.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.paddle.com https://*.profitwell.com",
               "frame-src 'self' https://accounts.google.com https://*.paddle.com https://buy.paddle.com",
-              "frame-ancestors 'self' https://*.paddle.com https://buy.paddle.com",
+              "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",
             ].join("; "),

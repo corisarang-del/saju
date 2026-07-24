@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hardenSupabaseCookieOptions } from "./cookie-options";
 import { getSupabaseConfig } from "./config";
 
 export async function updateSession(
@@ -31,7 +32,7 @@ export async function updateSession(
           );
 
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, hardenSupabaseCookieOptions(name, options))
           );
         },
       },

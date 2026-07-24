@@ -773,6 +773,25 @@
 - 릴리즈 차단급 디자인 깨짐은 아니지만, production 배포 반영 여부와 남은 P1/P2 개선을 다시 확인해야 한다.
 - 개발자 전달 문서: `docs/pm/배포후-PC-폰-디자인개선-수정후재리뷰-20260724.md`.
 
+## 2026-07-24 배포 반영 후 PC/폰 디자인 재리뷰 Findings
+- 이전 “주요 개선점 일부 미해결” 판단은 최신 수정본이 production에 아직 배포되지 않아서 생긴 것으로 정정한다.
+- 최신 production 기준 릴리즈 차단급 디자인 이슈는 없다.
+- 해결됨: `/api/analytics/track` 404가 사라졌고 production console은 `/ko`, `/ko/reading` 기준 errors 0/warnings 0이다.
+- 해결됨: PC H1 외톨이 줄바꿈은 의미 단위 줄바꿈으로 개선됐다.
+- 대부분 해결됨: 모바일 `/ko/reading` 생년월일 placeholder와 예시 텍스트 대비가 좋아졌고 하단 `다음` CTA도 안정적으로 보인다.
+- 개선됨: 모바일 랜딩 첫 카드 CTA가 첫 viewport 하단까지 올라왔다.
+- 남은 P2: 모바일 H1에서 `고르면`이 `고르/면`으로 단어 중간 줄바꿈된다.
+- 남은 P2: 모바일 첫 CTA는 보이기 시작했지만 하단 탭과 너무 가까워 버튼 전체가 여유 있게 보이진 않는다.
+- 남은 P2/P3: PC 캐러셀 왼쪽 peek는 의도는 읽히지만 1280폭에서는 아직 사이드바 옆 카드 조각이 조금 무겁다. 시간 선택 placeholder 대비도 미세 보강 여지가 있다.
+- 개발자 전달 문서: `docs/pm/배포반영후-PC-폰-디자인개선-재리뷰-20260724.md`.
+
+## 2026-07-24 배포 반영 후 PC/폰 디자인 재리뷰 수정 완료
+- 모바일 랜딩 H1의 `캐릭터를 고르면`을 `inline-block`으로 묶어 390px 폭에서 `고르/면` 단어 중간 줄바꿈을 막았다.
+- 모바일 캐릭터 카드는 `62vw`, `max-w-[236px]`, `aspect-[5/6]`로 조정하고 모바일 quote를 숨겨 첫 카드 CTA가 하단 탭 위에 더 안정적으로 보이게 했다.
+- PC 캐러셀 edge fade를 `transparent_48px`, `black_88px`로 강화해 1280x720에서 사이드바 옆 이전 카드 조각의 존재감을 낮췄다.
+- `/ko/reading` 시간 선택 placeholder는 `data-[placeholder]:text-[#667085]`로 대비를 보강했다.
+- 검증: 디자인 회귀 테스트, 전체 vitest, tsc, eslint, Next build, Playwright 390x844/1280x720 스크린샷 확인 통과.
+
 ## 2026-07-24 운영 사이트 보안점검
 - `https://monthlysaju.vercel.app/` production 배포 후 `codex-security` 없이 `security-review`, OWASP, MDN HTTP Observatory 기준으로 비파괴 외부 보안점검을 수행했다.
 - 개발자 전달 문서: `docs/pm/운영사이트-보안점검-authenticated-QA-개발자전달-20260724.md`.
@@ -783,3 +802,12 @@
 - OAuth redirect는 악성 `origin`/`x-forwarded-host`를 넣어도 `https://monthlysaju.vercel.app/auth/callback`로 유지됐다.
 - 남은 P1은 OAuth PKCE code verifier cookie의 `Secure`/`HttpOnly`/TTL 하드닝과 CSP의 `unsafe-inline`/`unsafe-eval`/넓은 `frame-ancestors` 축소다.
 - 별도 authenticated QA 범위로 계정 데이터 IDOR, 운영 Supabase RLS/RPC 적용, Paddle 결제 성공/실패 webhook 정합성을 문서화했다.
+
+## 2026-07-24 운영 사이트 보안점검 하드닝 반영
+- `next.config.ts`에서 `poweredByHeader: false`, COOP/CORP 헤더, CSP `unsafe-eval` 제거, `frame-ancestors 'self'` 최소화를 반영했다.
+- Supabase SSR PKCE code verifier cookie 전용 helper를 추가해 production `Secure`, `HttpOnly`, `maxAge: 600`, `SameSite=Lax`를 적용했다.
+- 일반 Supabase auth cookie는 브라우저 클라이언트 호환을 위해 기존 읽기 가능 옵션을 유지한다.
+- `NEXT_LOCALE` cookie는 next-intl routing에서 production `secure` 옵션을 사용한다.
+- `deduct-stars`, `update-status`는 비인증 요청에 body/status 검증보다 먼저 401을 반환하도록 순서를 바꿨다.
+- metadata/JSON-LD URL은 `NEXT_PUBLIC_APP_URL` 기반으로 통일했고 fallback은 `https://monthlysaju.vercel.app`다.
+- authenticated IDOR, 운영 RLS/RPC, Paddle signed webhook 정합성은 실제 운영 계정/DB/provider payload가 필요한 별도 QA 범위로 남아 있다.
