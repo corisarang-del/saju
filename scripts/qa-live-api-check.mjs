@@ -125,7 +125,7 @@ function extractStreamText(raw) {
 function evaluateFirstConsultation(text, expectedWords) {
   const paragraphs = text.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
   const hasEmoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(text);
-  const hasLightForeign = /(타이밍|루틴|패턴|플랜|체크|밸런스|리스크|포인트)/.test(text);
+  const hasLightForeign = /(타이밍|루틴|패턴|플랜|체크|밸런스|리스크|포인트|아웃풋)/.test(text);
   const hasEnglish = /[A-Za-z]/.test(text);
   const hasMixedAstrology = /(별자리 데이터|자미두수)/.test(text);
   const hasDenseHanjaTerms = /[\u3400-\u9FFF].{0,80}[\u3400-\u9FFF]/.test(text.slice(0, 200));

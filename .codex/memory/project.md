@@ -1133,3 +1133,9 @@
 - `QA_BASE_URL=https://monthlysaju.vercel.app QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs` 통과: 2문단, 질문 마무리, 사주 근거, 오늘 행동, 이모지/영어/혼합점술/전문용어 과다 없음. 단 `freeChatDurationMs=70288`.
 - `QA_BASE_URL=https://monthlysaju.vercel.app node scripts/qa-live-api-check.mjs` 통과: paid/free 모두 품질 기준 통과, paid 동시 상담은 `409` lock 확인. `paidChatDurationMs=12165`, `paidConflictDurationMs=2986`, `freeChatDurationMs=34332`.
 - 이전 실패였던 live QA free/full은 닫혔다. 남은 운영 리스크는 무료 첫 상담 응답 시간이 34초~70초까지 늘어나는 점이다.
+
+## 2026-07-27 20대 여성 production 상담QA 반복검증 자동화
+- `scripts/qa-character-live-check.mjs`와 `qa:characters:live`를 추가했다. 기본값은 7개 캐릭터 각각 3회 production live QA다.
+- 검사 항목은 HTTP 200, assistant 저장, `chat_used` 증가, 2문단, 질문 마무리, 사주 근거, 오늘 행동, 이모지/영어/혼합점술/한자 과다/외래어 없음, 반말 캐릭터 존댓말 혼합 없음, latency, fallback 추정이다.
+- production `QA_CHARACTER_REPEAT=3` 결과는 21/21 통과, 실패 0건이다. p50 33238ms, p95 46825ms, max 66591ms, 30초 초과 13건, fallback 추정 15건이다.
+- 품질 P0는 통과했지만 P1 속도와 fallback 비율은 미해결이다. 인영은 3/3 fallback 추정, max 66591ms라 유료 오픈 전 provider/fallback 전략 개선이 필요하다.
