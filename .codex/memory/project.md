@@ -1127,3 +1127,9 @@
 - 안전 fallback은 캐릭터별 말투와 분야를 분리한다. 현우/민준/서준/도윤은 반말, 하나/지안/닥터는 존댓말로 유지한다.
 - 쉬운 말 게이트에는 실제 production 응답에서 나온 `아웃풋`도 차단 단어로 추가했다.
 - 로컬 검증은 tsc, vitest 58 files/274 tests, eslint, git diff check, Next 직접 build가 통과했다. `pnpm build` 래퍼의 `fetch failed`는 기존 관찰 포인트로 남는다.
+
+## 2026-07-27 production live QA 통과
+- 커밋 `f01beba 상담 QA 잔여이슈 보강`을 `fork/main`에 푸시했고 Vercel production `monthlysaju-i1db2v8zv-todocori.vercel.app`이 Ready 상태가 됐다.
+- `QA_BASE_URL=https://monthlysaju.vercel.app QA_SCENARIO=free-only node scripts/qa-live-api-check.mjs` 통과: 2문단, 질문 마무리, 사주 근거, 오늘 행동, 이모지/영어/혼합점술/전문용어 과다 없음. 단 `freeChatDurationMs=70288`.
+- `QA_BASE_URL=https://monthlysaju.vercel.app node scripts/qa-live-api-check.mjs` 통과: paid/free 모두 품질 기준 통과, paid 동시 상담은 `409` lock 확인. `paidChatDurationMs=12165`, `paidConflictDurationMs=2986`, `freeChatDurationMs=34332`.
+- 이전 실패였던 live QA free/full은 닫혔다. 남은 운영 리스크는 무료 첫 상담 응답 시간이 34초~70초까지 늘어나는 점이다.
