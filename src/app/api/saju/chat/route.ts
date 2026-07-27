@@ -19,7 +19,6 @@ import {
 import {
   buildSafeInitialAnalysisFallback,
   getFirstConsultationInstructions,
-  getInitialAnalysisPrompt,
 } from "@/lib/saju/initial-analysis";
 import {
   getUserFacingChatErrorMessage,
@@ -672,7 +671,7 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
 
   const userMessage = rawMessages[rawMessages.length - 1];
   const userText = userMessage ? extractText(userMessage).trim() : "";
-  const isInitialAnalysisRequest = isFirstAssistantTurn && userText === getInitialAnalysisPrompt(characterId);
+  const isInitialAnalysisRequest = isFirstAssistantTurn && Boolean(userText);
 
   const persistSuccessfulAssistantAnswer = async (params: {
     assistantText: string;
@@ -848,7 +847,7 @@ ${compatContext ? `- 이것은 궁합 분석이야. ${firstName} 씨와 상대�
       onFinish: async ({ text, finishReason, usage }) => {
         try {
           const assistantText = text.trim();
-          const isInitialAnalysis = userText === getInitialAnalysisPrompt(characterId);
+          const isInitialAnalysis = isFirstAssistantTurn && Boolean(userText);
           if (!shouldPersistAssistantAnswer({
             assistantText,
             finishReason,

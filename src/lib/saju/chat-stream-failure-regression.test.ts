@@ -95,6 +95,8 @@ describe("chat_stream_failure_regression", () => {
     expect(route).toContain("Initial analysis failed quality gate");
     expect(route).toContain("fallbackText");
     expect(route).toContain("finishReason: \"stop\"");
+    expect(route).toContain("const isInitialAnalysisRequest = isFirstAssistantTurn && Boolean(userText)");
+    expect(route).not.toContain("const isInitialAnalysisRequest = isFirstAssistantTurn && userText === getInitialAnalysisPrompt(characterId)");
     expect(firstConsultationIndex).toBeGreaterThan(-1);
     expect(generateInitialIndex).toBeGreaterThan(firstConsultationIndex);
     expect(uiStreamIndex).toBeGreaterThan(generateInitialIndex);

@@ -105,4 +105,23 @@ describe("initial_analysis", () => {
     expect(fallback).not.toContain("병오");
     expect(fallback).toMatch(/[?？]\s*$/);
   });
+
+  it("fallbacks_use_distinct_character_voice_without_generic_repeated_opening", () => {
+    const fallbackByCharacter = {
+      charon_m: buildSafeInitialAnalysisFallback({ characterId: "charon_m", callName: "하늘아" }),
+      minjun: buildSafeInitialAnalysisFallback({ characterId: "minjun", callName: "하늘아" }),
+      seojun: buildSafeInitialAnalysisFallback({ characterId: "seojun", callName: "하늘아" }),
+      doyun: buildSafeInitialAnalysisFallback({ characterId: "doyun", callName: "하늘아" }),
+      jian: buildSafeInitialAnalysisFallback({ characterId: "jian", callName: "하늘 씨" }),
+    };
+
+    expect(fallbackByCharacter.charon_m).not.toContain("지금은 지금");
+    expect(fallbackByCharacter.jian).not.toContain("관계의 거리을");
+    expect(fallbackByCharacter.charon_m).not.toContain("시기예요");
+    expect(fallbackByCharacter.seojun).not.toContain("해보세요");
+    expect(fallbackByCharacter.doyun).not.toContain("해보세요");
+    expect(new Set(Object.values(fallbackByCharacter).map((text) => text.split(".")[0])).size).toBe(
+      Object.keys(fallbackByCharacter).length,
+    );
+  });
 });

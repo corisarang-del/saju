@@ -31,4 +31,13 @@ describe("live_api_qa_runner", () => {
     expect(script).toContain("paidChatDurationMs");
     expect(script).toContain("paidConflictDurationMs");
   });
+
+  it("uses_the_shared_initial_prompt_source_instead_of_stale_inline_prompts", () => {
+    const script = readProjectFile("scripts/qa-live-api-check.mjs");
+    const sharedPrompts = readProjectFile("src/lib/saju/initial-analysis-prompts.mjs");
+
+    expect(script).toContain('from "../src/lib/saju/initial-analysis-prompts.mjs"');
+    expect(script).not.toContain("내 사주를 바탕으로 지금 관계운과 연애에서 조심할 점");
+    expect(sharedPrompts).toContain("내 정보와 상대방 정보를 함께 바탕으로");
+  });
 });

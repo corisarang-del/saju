@@ -1035,3 +1035,23 @@ production QA에서 도윤(`doyun`)이 약 50초 뒤 503으로 실패했다. 사
 - provider 오류는 `Initial analysis attempt provider error`로 기록된다.
 - 품질 실패는 `Initial analysis attempt failed quality gate`로 기록된다.
 - fallback도 저장 전 품질 게이트를 통과해야 한다.
+
+---
+
+## DEC-056: production 유료 오픈은 상담 QA와 응답 시간 기준을 같이 통과해야 한다
+
+**날짜**: 2026-07-27
+**상태**: 승인됨
+
+**결정**:
+유료 오픈은 최신 production free-only/full live QA 통과만으로 승인하지 않는다. 7개 캐릭터 각각 3회 이상 반복 QA, 첫 의미 있는 표시 15초 안쪽, 전체 첫 상담 완료 30초 안쪽 목표, latency/fallback/provider timeout 기록까지 함께 확인한 뒤 판단한다.
+
+**근거**:
+20대 여성 유저관점 production 상담QA 수정후 재리뷰에서 무료 3회 사용 의향은 `9.4/10`, 스타터 결제 의향은 `8.4/10`으로 높았다. 하지만 직전 production QA의 7명 캐릭터 응답 시간이 `37.9초~52.9초`였고, 이 속도가 유지되면 사용자는 앱이 멈췄거나 결제해도 느릴 것 같다고 느낄 수 있다.
+
+**검증 기준**:
+- `QA_SCENARIO=free-only` production live QA가 통과한다.
+- full production live QA가 통과한다.
+- 7개 캐릭터 각각 3회 이상 반복 QA에서 HTTP 200, assistant 저장, 차감/거래 로그, 2문단, 마지막 질문, 오늘 행동, 쉬운 말, 말투 차별화가 확인된다.
+- latency, fallback 여부, provider timeout 여부가 QA 산출물에 남는다.
+- 결제는 Paddle production env와 signed webhook live QA가 닫히기 전까지 계속 비활성화한다.

@@ -1,4 +1,5 @@
 import type { CharacterType } from "@/types/saju";
+import { getInitialAnalysisPrompt as getSharedInitialAnalysisPrompt } from "./initial-analysis-prompts.mjs";
 
 interface AutoStartInput {
   readingId?: string;
@@ -140,39 +141,42 @@ export function buildSafeInitialAnalysisFallback(params: {
 오늘은 이번 주에 결정하거나 미뤄둔 일을 세 가지로 기록하고, 각 항목 옆에 바로 정할 일과 조금 더 볼 일을 나누어 정리해보세요. 지금은 좋은 시기와 피하면 좋은 시기 중 무엇을 먼저 확인하고 싶나요?`;
   }
 
+  switch (params.characterId) {
+    case "charon_m":
+      return `${params.callName}, 사주 흐름을 보면 오늘은 큰 결론보다 먼저 흔들리는 선택지를 줄이는 게 중요해. 강하게 밀어붙일 일과 조금 더 볼 일을 나누면 마음이 덜 끌려다닐 거야.
+
+오늘은 마음에 걸리는 일을 세 가지로 적고, 바로 할 일과 미룰 일을 나눠 정리해봐. 지금 제일 먼저 보고 싶은 건 조심할 흐름이야, 좋은 흐름이야?`;
+    case "charon_f":
+      return `${params.callName}, 관계 흐름은 마음을 빨리 정하는 것보다 서로 표현하는 속도를 먼저 보는 게 중요해요. 사주 흐름으로 보면 지금은 상대 반응 하나에 결론을 내리기보다 내 마음이 흔들린 지점을 차분히 분리해야 해요.
+
+오늘은 최근 대화에서 마음이 흔들린 문장 하나와 그때 바랐던 반응을 각각 기록해보세요. 지금은 상대의 마음과 내 선택 기준 중 무엇을 먼저 보고 싶나요?`;
+    case "minjun":
+      return `${params.callName}, 사주 흐름을 보면 돈은 크게 새는 곳보다 작은 지출과 수입 기준이 흐려지는 지점부터 봐야 해. 지금은 더 벌 방법을 찾기 전에 들어오는 돈과 나가는 돈의 흐름을 먼저 잡는 게 좋아.
+
+오늘은 최근 한 달 지출을 세 묶음으로 나누고, 줄일 항목 하나와 유지할 항목 하나를 정리해봐. 먼저 보고 싶은 건 수입을 키우는 방향이야, 지출 정리야?`;
+    case "jian":
+      return `${params.callName}, 재회와 마음 정리는 상대 마음만 보려고 할수록 더 흔들릴 수 있어요. 사주 흐름으로 보면 지금은 다시 연락할지보다 마지막 대화에서 서로 다르게 받아들인 부분을 먼저 정리해야 해요.
+
+오늘은 마지막으로 나눈 말 한 문장과 그 뒤에 남은 감정을 각각 기록해보세요. 지금은 다시 연락해도 되는지와 마음을 접어야 하는지 중 무엇을 먼저 보고 싶나요?`;
+    case "seojun":
+      return `${params.callName}, 사주 흐름을 보면 일에서는 버틸 힘과 바꿔야 할 조건을 같이 봐야 해. 지금은 회사를 바로 떠날지보다 내가 계속 감당할 수 있는 일과 더는 버티기 어려운 일을 나누는 게 먼저야.
+
+오늘은 회사에서 힘든 점 세 가지를 적고, 내가 바꿀 수 있는 것과 회사가 바뀌어야 하는 것을 나눠 정리해봐. 먼저 보고 싶은 건 이직 준비야, 현재 일 정리야?`;
+    case "doyun":
+      return `${params.callName}, 사주 흐름을 보면 사업은 아이디어보다 조건을 먼저 봐야 해. 지금은 크게 벌 수 있는지보다 사람, 돈, 시간 중 어디가 약한지 확인해야 무리한 결정을 피할 수 있어.
+
+오늘은 사업에서 꼭 필요한 조건 세 가지를 적고, 이미 준비된 것과 아직 비어 있는 것을 나눠 정리해봐. 먼저 보고 싶은 건 창업 시기야, 사업 조건이야?`;
+    case "doctor":
+      return `${params.callName}, 사주 흐름을 보면 몸과 마음은 따로 움직이지 않고 같이 흔들리는 편이에요. 지금은 좋은 습관을 많이 늘리기보다 피로가 커지는 순간을 먼저 알아차리는 게 중요해요.
+
+오늘은 몸이 무거웠던 시간을 세 번 기록하고, 그때 먹은 것과 잠든 시간을 함께 정리해보세요. 지금은 몸 관리와 마음 정리 중 무엇을 먼저 보고 싶나요?`;
+  }
+
   return `${params.callName}, 지금은 ${fallback.concern}을 차분히 확인하고 싶은 마음이 큰 시기예요. 사주 흐름으로 보면 당장 결론을 정하기보다, 먼저 기준을 세우고 흔들리는 부분을 분리해야 안정되는 흐름이에요.
 
 오늘은 ${fallback.actionTarget}을 세 가지로 기록하고, 각 항목 옆에 내가 바라는 방향을 한 줄씩 정리해보세요. 지금은 ${fallback.questionTarget}을 먼저 확인하고 싶나요?`;
 }
 
 export function getInitialAnalysisPrompt(characterId: CharacterType): string {
-  if (characterId === "charon_f" || characterId === "jian") {
-    if (characterId === "jian") {
-      return "내 사주를 바탕으로 재회 가능성과 마음 정리 흐름을 먼저 차분히 정리해줘.";
-    }
-
-    return "내 정보와 상대방 정보를 함께 바탕으로 두 사람의 관계와 궁합 흐름, 잘 맞는 부분, 조심할 점을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "minjun") {
-    return "내 사주를 바탕으로 지금 돈 흐름과 수입을 키우는 방향을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "seojun") {
-    return "내 사주를 바탕으로 지금 커리어 흐름, 일에서 강점과 조심할 점을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "haeun") {
-    return "내 사주를 바탕으로 2026년 흐름과 이번 달, 이번 주에 좋은 시기와 피하면 좋은 시기, 오늘 할 행동을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "doyun") {
-    return "내 사주를 바탕으로 지금 사업 흐름, 창업 시기, 의사결정 포인트를 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "doctor") {
-    return "내 사주를 바탕으로 올해 전체 흐름과 건강, 마음 관리 포인트를 먼저 차분히 정리해줘.";
-  }
-
-  return "내 사주를 바탕으로 지금 가장 중요한 흐름과 조심할 점, 오늘부터 실천할 조언을 먼저 차분히 정리해줘.";
+  return getSharedInitialAnalysisPrompt(characterId);
 }

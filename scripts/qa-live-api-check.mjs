@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { lookup } from "node:dns/promises";
 import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { getInitialAnalysisPrompt } from "../src/lib/saju/initial-analysis-prompts.mjs";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -82,34 +83,6 @@ async function assertSupabaseDnsReachable() {
     };
     throw dnsError;
   }
-}
-
-function getInitialAnalysisPrompt(characterId) {
-  if (characterId === "charon_f" || characterId === "jian") {
-    if (characterId === "jian") {
-      return "내 사주를 바탕으로 재회 가능성과 마음 정리 흐름을 먼저 차분히 정리해줘.";
-    }
-
-    return "내 사주를 바탕으로 지금 관계운과 연애에서 조심할 점을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "minjun") {
-    return "내 사주를 바탕으로 지금 돈 흐름과 수입을 키우는 방향을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "seojun") {
-    return "내 사주를 바탕으로 지금 커리어 흐름, 일에서 강점과 조심할 점을 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "doyun") {
-    return "내 사주를 바탕으로 지금 사업 흐름, 창업 시기, 의사결정 포인트를 먼저 차분히 정리해줘.";
-  }
-
-  if (characterId === "doctor") {
-    return "내 사주를 바탕으로 올해 전체 흐름과 건강, 마음 관리 포인트를 먼저 차분히 정리해줘.";
-  }
-
-  return "내 사주를 바탕으로 지금 가장 중요한 흐름과 조심할 점, 오늘부터 실천할 조언을 먼저 차분히 정리해줘.";
 }
 
 function decodeJsonString(value) {

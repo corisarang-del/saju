@@ -1092,3 +1092,38 @@
 - 첫 상담 품질 게이트는 한자 병기뿐 아니라 `병오`, `일간`, `비견`, `세운`, `대운`, `월운`, `자미성` 같은 한글 전문용어도 저장 전 차단한다.
 - 도윤(`doyun`) 같은 간헐 provider 지연은 첫 상담 생성 시도별 25초 timeout, provider 오류 로그, 안전 fallback으로 방어한다.
 - 배포 후 캐릭터별 live QA는 7개 캐릭터 각각 3회 이상 반복해 status, 저장된 assistant, 별 차감, 첫 200자 쉬운 말, 2문단, 오늘 행동, 질문 마무리를 다시 확인해야 한다.
+
+## 2026-07-27 production 상담 QA 수정후재검증
+- 최신 production `https://monthlysaju.vercel.app/` 기본 기능은 정상이다. `/` -> `/ko` 307/200, 무인증 `/api/saju/chat` 401 JSON, `/api/analytics/track` 200, 홈 7명 카드, 비로그인 `/ko/reading` Google 로그인 CTA와 redirect query 보존을 확인했다.
+- focused saju regression은 6개 파일/48개 테스트가 통과했다.
+- 최신 초기 프롬프트로 직접 호출한 7명 캐릭터 QA는 모두 HTTP 200, assistant 저장, 2문단, 질문 마무리, 오늘 행동, 한자/전문용어 과다 없음 기준을 통과했다. 인영(`haeun`) 한자/전문용어 문제와 도윤(`doyun`) 503은 이번 표본에서 재현되지 않았다.
+- 단, `scripts/qa-live-api-check.mjs` free-only/full은 production에서 모두 실패했다. 원인은 스크립트가 `charon_f` 구버전 초기 프롬프트를 중복 정의해 앱 source of truth와 어긋난 점과, API가 구버전 초기 질문에서 품질 게이트를 안정적으로 적용하지 못하는 점으로 보인다.
+- 7명 캐릭터 응답 시간은 37985ms~52861ms로 모두 느리다. 내용이 구조 기준을 통과해도 무료 첫 경험 기준에서는 P1 지연으로 본다.
+- 여러 캐릭터 답변이 `지금은 ...을 차분히 확인하고 싶은 마음이 큰 시기예요` 같은 fallback 구조를 반복했다. 현우 `지금은 지금`, 지안 `관계의 거리을`, 반말 캐릭터의 존댓말 혼합도 관찰됐다.
+- 개발자 전달 문서: `docs/pm/production-상담QA-수정후재검증-잔여이슈-개발자전달-20260727.md`.
+
+## 2026-07-27 20대 여성 유저 production 상담QA 수정후 재리뷰
+- 소스코드는 수정하지 않고 최신 수정 기록, 테스트, QA 스크립트, 메모리만 읽고 20대 여성 유저 관점으로 재리뷰했다.
+- 사용 스킬은 `design-taste-frontend`, `memory`, `doc`이다.
+- 개발자 최신 수정은 live QA 스크립트의 초기 프롬프트 source of truth 통합, 구버전 첫 질문도 첫 상담 품질 게이트로 처리, 캐릭터별 fallback opening/행동 구조 분리, `아웃풋` 외래어 차단 추가로 판단된다.
+- 20대 여성 유저 관점에서는 이전보다 상담 신뢰가 좋아졌다. `지금은 지금`, `관계의 거리을`, 반말/존댓말 혼합 같은 문장 오류를 막는 방향은 “AI가 대충 만든 답변 같다”는 느낌을 줄인다.
+- 무료 3회 상담 사용 의향은 9.4/10, 2,900원 스타터 결제 의향은 8.4/10, 월 9,900원/50별 구독 의향은 7.1/10으로 판단했다.
+- 상담 품질 코드 기준 준비도는 8.5/10이지만, 실제 production 유료 전환 준비도는 최신 live QA와 응답 시간 미확인 때문에 7.2/10이다.
+- 가장 큰 잔여 리스크는 속도다. 직전 production QA의 37.9초~52.9초 응답 시간이 유지되면 첫 경험과 결제 의향이 크게 깎인다.
+- 최신 수정 배포 후 free/full live QA, 7개 캐릭터 각 3회 이상 반복 QA, latency/fallback/provider timeout 기록이 필요하다.
+- 무료 베타는 계속 보여줄 만하지만 유료 오픈은 production live QA 통과와 응답 시간 30초 안쪽 확인 뒤가 맞다.
+- 상세 문서: `docs/개발일지/20대-여성-유저관점-production상담QA-수정후-재리뷰-20260727.md`.
+
+## 2026-07-27 20대 여성 production 상담QA 재리뷰 개발자 전달
+- `docs/개발일지/20대-여성-유저관점-production상담QA-수정후-재리뷰-20260727.md`를 개발자 작업 문서로 재구성했다.
+- 개발자 전달 핵심은 최신 수정 배포 후 production free-only/full live QA 재실행, 7개 캐릭터 각각 3회 반복 QA, 첫 의미 있는 표시 15초/전체 완료 30초 목표 측정, latency/fallback/provider timeout 기록, 캐릭터별 fallback 반복감 보강, 결제 오픈 보류다.
+- 20대 여성 유저 관점 점수는 무료 3회 사용 의향 `9.4/10`, 스타터 `2,900원` 결제 의향 `8.4/10`, 월구독 `9,900원/50별` 의향 `7.1/10`, 상담 품질 코드 준비도 `8.5/10`, 실제 production 유료 전환 준비도 `7.2/10`이다.
+- 최신 수정 방향은 맞지만, 응답 시간이 직전처럼 `37.9초~52.9초`면 첫 경험과 결제 의향을 깎는 P1 리스크로 본다.
+- 개발자 전달 문서: `docs/pm/20대-여성-유저관점-production상담QA-수정후-재리뷰-개발자전달-20260727.md`.
+
+## 2026-07-27 production 상담 QA 잔여이슈 코드반영
+- live QA 초기 질문은 `src/lib/saju/initial-analysis-prompts.mjs`를 source of truth로 두고 앱/스크립트가 함께 import한다.
+- `/api/saju/chat`은 첫 assistant turn이면 exact prompt 일치 여부와 관계없이 첫 상담 품질 게이트와 fallback을 적용한다. 캐시된 클라이언트나 구버전 초기 질문도 방어 대상이다.
+- 안전 fallback은 캐릭터별 말투와 분야를 분리한다. 현우/민준/서준/도윤은 반말, 하나/지안/닥터는 존댓말로 유지한다.
+- 쉬운 말 게이트에는 실제 production 응답에서 나온 `아웃풋`도 차단 단어로 추가했다.
+- 로컬 검증은 tsc, vitest 58 files/274 tests, eslint, git diff check, Next 직접 build가 통과했다. `pnpm build` 래퍼의 `fetch failed`는 기존 관찰 포인트로 남는다.

@@ -90,6 +90,7 @@ const LIGHT_FOREIGN_WORDS = [
   "밸런스",
   "리스크",
   "포인트",
+  "아웃풋",
 ];
 const HARD_SAJU_TERMS = [
   "병오",
